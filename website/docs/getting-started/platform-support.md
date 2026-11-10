@@ -59,7 +59,7 @@ PRs to fix them will _not_ be accepted, and any code that keeps compatibility wi
 - Android / Termux on non-aarch64 devices (aarch64 is [supported](./termux.md) via our APT package)
 - installs via the AUR (we might upstream patches if it helps out &lt;3)
 - 32-bit x86 macOS, and Intel x86_64 macOS desktop bundles (none are built).
-- installs via `pypi` (e.g. `uv tool install aurora-agent`, `pip install aurora-agent`, etc.)
-- installs via `brew` (`brew install aurora-agent`)
+- installs via `pypi` (`uv tool install`, `pip install`, etc.): Aurora is not published there, and the `aurora-agent` package on PyPI is an unrelated project
+- installs via `brew`: there is no Aurora formula
 
 If you are using an unsupported distribution method, please read the [the installation guide](./installation.md) to learn how to switch to a supported one.

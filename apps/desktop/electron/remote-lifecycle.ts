@@ -264,7 +264,7 @@ async function locateAurora(ssh, remoteAuroraPath) {
 
   const err: any = new Error(
     'Aurora is not installed on the remote host (could not find an `aurora` executable). ' +
-      'Install it on the remote with:  curl -fsSL https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.sh | sh  ' +
+      'Install it on the remote with:  curl -fsSL https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.sh | bash  ' +
       '— or set the Aurora path explicitly in the SSH connection settings.'
   )
 
