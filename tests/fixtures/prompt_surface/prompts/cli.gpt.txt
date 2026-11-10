@@ -98,10 +98,10 @@ After difficult/iterative tasks, offer to save as a skill. If a skill you loaded
 
 <available_skills>
   autonomous-ai-agents:
+    - aurora-agent: Use, configure, theme, extend, and orchestrate Aurora Agent.
     - claude-code: Delegate coding to Claude Code CLI (features, PRs).
     - codex: Delegate coding to OpenAI Codex CLI (features, PRs).
     - computer-use: Drive the desktop background-first; escalate on signal.
-    - aurora-agent: Use, configure, theme, extend, and orchestrate Aurora Agent.
   creative:
     - architecture-diagram: Dark-themed SVG architecture/cloud/infra diagrams as HTML.
     - ascii-video: ASCII video: convert video/audio to colored ASCII MP4/GIF.

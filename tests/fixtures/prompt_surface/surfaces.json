@@ -32,6 +32,39 @@
       "write_file"
     ]
   },
+  "cli.aurora": {
+    "prompt_tokens": {
+      "context": 0,
+      "stable": 1225,
+      "volatile": 1268
+    },
+    "tool_tokens": 11138,
+    "tools": [
+      "browser_cdp",
+      "browser_dialog",
+      "browser_exec",
+      "clarify",
+      "delegate_task",
+      "execute_code",
+      "manage_connections",
+      "memory",
+      "patch",
+      "read_file",
+      "search_files",
+      "skill_manage",
+      "skill_view",
+      "skills_list",
+      "terminal",
+      "text_to_speech",
+      "tool_call",
+      "tool_describe",
+      "tool_search",
+      "vision_analyze",
+      "web_extract",
+      "web_search",
+      "write_file"
+    ]
+  },
   "cli.claude": {
     "prompt_tokens": {
       "context": 0,
@@ -105,39 +138,6 @@
       "volatile": 1264
     },
     "tool_tokens": 11293,
-    "tools": [
-      "browser_cdp",
-      "browser_dialog",
-      "browser_exec",
-      "clarify",
-      "delegate_task",
-      "execute_code",
-      "manage_connections",
-      "memory",
-      "patch",
-      "read_file",
-      "search_files",
-      "skill_manage",
-      "skill_view",
-      "skills_list",
-      "terminal",
-      "text_to_speech",
-      "tool_call",
-      "tool_describe",
-      "tool_search",
-      "vision_analyze",
-      "web_extract",
-      "web_search",
-      "write_file"
-    ]
-  },
-  "cli.aurora": {
-    "prompt_tokens": {
-      "context": 0,
-      "stable": 1225,
-      "volatile": 1268
-    },
-    "tool_tokens": 11138,
     "tools": [
       "browser_cdp",
       "browser_dialog",
