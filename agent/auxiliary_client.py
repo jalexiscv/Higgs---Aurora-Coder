@@ -1758,8 +1758,8 @@ class _AnthropicCompletionsAdapter:
         # Opus 4.7+ rejects non-default temperature/top_p/top_k; build_anthropic_kwargs
         # also strips these as a safety net — keep both layers.
         if temperature is not None:
-            from agent.anthropic_adapter import _forbids_sampling_params
-            if not _forbids_sampling_params(model):
+            from agent.anthropic_adapter import _forbids_sampling_params, _is_aurora_endpoint
+            if not _forbids_sampling_params(model) and not _is_aurora_endpoint(self._base_url):
                 anthropic_kwargs["temperature"] = temperature
         # Per-request HTTP headers (OpenCode session affinity); Messages create/stream accept them too.
         if isinstance(kwargs.get("extra_headers"), dict) and kwargs["extra_headers"]:

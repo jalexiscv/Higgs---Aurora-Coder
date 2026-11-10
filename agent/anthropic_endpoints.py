@@ -104,6 +104,14 @@ def _is_deepseek_anthropic_endpoint(base_url: str | None) -> bool:
     return base_url_host_matches(base_url or "", "api.deepseek.com") and "/anthropic" in _normalized_lower(base_url)
 
 
+def _is_aurora_endpoint(base_url: str | None) -> bool:
+    """Aurora's router (aurora.dtacenter.com). It publishes its own model ids, so the Claude-name
+    capability tables never match them: every id accepts adaptive thinking, and the flagship ids
+    accept nothing else (a manual budget, ``thinking: disabled`` and any sampling parameter answer
+    HTTP 400)."""
+    return base_url_host_matches(base_url or "", "aurora.dtacenter.com")
+
+
 def _is_nous_portal_endpoint(base_url: str | None) -> bool:
     """Nous Portal's Anthropic Messages route (Bearer JWT, verbatim catalog ids, native
     thinking-signature replay). Trusted hosts only: prod ``inference-api.nousresearch.com`` or the

@@ -1,0 +1,5 @@
+name: aurora-provider
+kind: model-provider
+version: 1.0.0
+description: Aurora — the built-in AI of Aurora Coder (Anthropic Messages API, own model ids)
+author: Aurora Coder

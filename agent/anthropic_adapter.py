@@ -18,8 +18,8 @@ from utils import normalize_proxy_env_vars
 
 from agent.anthropic_credentials import _is_oauth_token, anthropic_route_is_oauth, is_native_anthropic_host
 from agent.anthropic_endpoints import (
-    _base_url_needs_context_1m_beta, _is_azure_anthropic_endpoint, _is_kimi_coding_endpoint,
-    _is_minimax_anthropic_endpoint, _is_nous_portal_endpoint, _is_opencode_endpoint,
+    _base_url_needs_context_1m_beta, _is_aurora_endpoint, _is_azure_anthropic_endpoint,
+    _is_kimi_coding_endpoint, _is_minimax_anthropic_endpoint, _is_nous_portal_endpoint, _is_opencode_endpoint,
     _is_third_party_anthropic_endpoint, _model_name_is_kimi_family, _normalize_base_url_text,
     _requires_bearer_auth,
 )
@@ -614,12 +614,21 @@ def _apply_claude_code_identity(system, anthropic_tools, anthropic_messages, to_
     return system
 
 
-def _thinking_kwargs(reasoning_config: dict[str, Any], model: str, effective_max_tokens: int) -> dict[str, Any]:
+def _thinking_kwargs(
+    reasoning_config: dict[str, Any], model: str, effective_max_tokens: int, *, adaptive_only: bool = False,
+) -> dict[str, Any]:
     """Map ``reasoning_config`` to Anthropic thinking kwargs. Adaptive models (Claude 4.6+,
     Kimi/Moonshot) get ``thinking.type=adaptive`` + ``output_config.effort``; older models and
     manual-only compat endpoints (MiniMax) get budget_tokens. Haiku through 4.5 gets none. On
     4.7+ ``thinking.display`` defaults to "omitted", hiding the reasoning Aurora shows in its CLI,
-    so "summarized" is requested to keep the activity feed populated."""
+    so "summarized" is requested to keep the activity feed populated. ``adaptive_only`` is an
+    endpoint whose ids say nothing about the model behind them and that accepts only the adaptive
+    contract (every effort, no disable): "off" is an omission there."""
+    if adaptive_only:
+        if reasoning_config.get("enabled") is False:
+            return {}
+        effort = ADAPTIVE_EFFORT_MAP.get(str(reasoning_config.get("effort", "medium")).lower(), "medium")
+        return {"thinking": {"type": "adaptive", "display": "summarized"}, "output_config": {"effort": effort}}
     if reasoning_config.get("enabled") is False:
         # Adaptive models think by DEFAULT, so omitting the parameter is not a disable — the user
         # silently keeps paying. Mandatory-thinking models 400 on the disable, so they keep the
@@ -698,11 +707,12 @@ def build_anthropic_kwargs(
     # which silently hides reasoning text that Aurora surfaces in its CLI. We request "summarized" so the
     # reasoning blocks stay populated — matching 4.6 behavior and preserving the activity-feed UX during
     # long tool runs.
+    aurora = _is_aurora_endpoint(base_url)
     if reasoning_config and isinstance(reasoning_config, dict):
-        kwargs.update(_thinking_kwargs(reasoning_config, model, effective_max_tokens))
+        kwargs.update(_thinking_kwargs(reasoning_config, model, effective_max_tokens, adaptive_only=aurora))
     # Safety net so upstream 4.6 -> 4.7 migrations don't need coordinated edits everywhere callers
     # (auxiliary_client, ...) set sampling params.
-    if _forbids_sampling_params(model):
+    if aurora or _forbids_sampling_params(model):
         for key in ("temperature", "top_p", "top_k"):
             kwargs.pop(key, None)
     # Fast mode: native Anthropic only — third-party providers reject the unknown beta/param and
