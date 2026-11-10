@@ -759,11 +759,7 @@ def _run_setup_wizard_impl(args):
 
 
 def _record_setup_completed(config: dict) -> None:
-    """Count a wizard run that finished. Every setup flow ends here, so the one-time
-    shared-metrics offer runs first: a user who opts in now is counted; the API checks enablement."""
-    from aurora_cli.observability.shared_metrics_consent import offer_consent_if_undecided
-
-    offer_consent_if_undecided(config)
+    """Count a wizard run that finished. Every setup flow ends here; the API checks enablement."""
     from aurora_cli.observability.shared_metrics_events import record_setup_completed
     model = config.get("model")
     record_setup_completed(surface="cli", provider=model.get("provider") if isinstance(model, dict) else None)

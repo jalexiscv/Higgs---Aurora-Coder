@@ -812,38 +812,14 @@ telemetry:
 - Like `enabled`, `send` is profile-owned and is not overridden by
   managed-scope configuration.
 
-Both keys are asked once per profile, with the same two answers everywhere
-(Share with Nous / No thanks). Each answer sets both keys: "Share with Nous"
-writes `enabled: true, send: true`, "No thanks" writes both false. The keys stay
-separate so the sender keeps its own gate. Collecting without sending is no
-longer offered; a hand-edited config can still set it.
-
-| Surface | Where the offer appears |
-| --- | --- |
-| `aurora setup` | At the end of every flow (Quick, Full, Blank Slate, Portal, `--quick`). |
-| `aurora` / `aurora --tui` | Once before an interactive chat starts. Skipped for `-q`, piped or JSON output, spawned actions and Desktop-hosted panes. |
-| Aurora Desktop | A strip above the composer, after first-run onboarding. It never blocks the composer or takes focus. |
-| Web dashboard | A banner above every page, for the profile being managed. |
-
-"No thanks" is the default in the terminal, so pressing Enter never opts
-anyone in. Esc in the terminal and the dashboard banner's ✕ leave the question
-open, so it is asked again next time. The Desktop strip appears only after
-first-run onboarding is finished or skipped. Answering on any surface writes both keys
-to the profile's `config.yaml`, plus `offer_version`, and a profile that already
-carries either key is never asked again. A managed install is never offered.
-
-One exception: before the type-ahead fix, an Enter pressed while `aurora chat`
-was starting could save "No thanks" before the question appeared. A "No thanks"
-recorded without `offer_version` is therefore offered once more on every surface,
-with a note saying why. Any response settles it for good, including Esc or the
-banner's ✕, which keep "No thanks". Answers that opted in are never re-asked.
-
-The offer used to have a third answer that collected without sending ("Local
-only" / "Keep on this computer"). Profiles that chose it keep it and are not
-asked again; nothing is sent. Desktop's switch reads off for them and the
-`aurora tools` row reads "collecting locally". To change the answer
-later, use `aurora setup telemetry`, `aurora tools`, or Desktop's Settings ›
-Safety › Privacy & network; each offers the same single on/off choice.
+Both keys ship off and Aurora never asks for them unprompted: no question at
+the end of `aurora setup`, before a chat, in Aurora Desktop or in the web
+dashboard. Sharing is switched on by hand, with `aurora setup telemetry`,
+`aurora tools`, or Desktop's Settings › Safety › Privacy & network; each offers
+the same single on/off choice and sets both keys (`enabled: true, send: true`,
+or both false), plus `offer_version`. The keys stay separate so the sender keeps
+its own gate; a hand-edited config can still collect without sending, and
+nothing is sent then. A managed install cannot change the answer.
 
 **A package is only sent when its whole period falls inside a recorded
 consent window.** Consent is stored as explicit intervals in the shared-

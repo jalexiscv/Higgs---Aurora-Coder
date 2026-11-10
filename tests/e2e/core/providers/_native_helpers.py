@@ -94,8 +94,7 @@ def make_home(root: Path, model: dict[str, Any], *, env_file: dict[str, str] | N
         "updates": {"check": False},
         "auxiliary": {"title_generation": {"enabled": False}},
         "memory": {"memory_enabled": False, "user_profile_enabled": False},
-        # Answered at the current offer version (as write_aurora_home does), so an interactive
-        # chat never stops on the shared-metrics offer before the UI takes the terminal.
+        # Answered at the current offer version, as write_aurora_home does.
         "telemetry": {"shared_metrics": {"enabled": False, "send": False, "offer_version": OFFER_VERSION}},
     }
     for key, value in (extra_config or {}).items():

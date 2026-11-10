@@ -34,7 +34,6 @@ import { $profiles, $profilesByConnection, normalizeProfileKey } from '@/store/p
 import { $modelPickerOpen, $sessionPickerOpen } from '@/store/session'
 import { $switcherOpen } from '@/store/session-switcher'
 import {
-  $sharedMetricsConsent,
   readSharedMetricsConsent,
   type SharedMetricsConsent,
   sharedMetricsProfileRequester
@@ -153,19 +152,6 @@ export function useDesktopMetrics({
       window.removeEventListener('focus', refresh)
     }
   }, [connectionId, enabled, gatewayOpen, profileKey, request])
-
-  // A first-run answer or a Settings change lands in the consent atom.
-  useEffect(() => {
-    if (!enabled) {
-      return
-    }
-
-    return $sharedMetricsConsent.listen(consent => {
-      if (consent) {
-        setDesktopMetricsGate(gateFor(consent), consent.decided)
-      }
-    })
-  }, [enabled])
 
   useEffect(() => {
     const area = enabled

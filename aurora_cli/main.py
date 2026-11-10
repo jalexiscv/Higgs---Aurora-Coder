@@ -1588,11 +1588,12 @@ def cmd_chat(args):
 
     # The TUI owns its first-run state: it renders "Setup Required" with in-place /setup, so it
     # only gets the key question up front. The guard and its wizard front the classic CLI.
-    provider_configured = _has_any_provider_configured()
-    if use_tui and not provider_configured:
+    if _has_any_provider_configured():
+        pass
+    elif use_tui:
         from aurora_cli.aurora_first_run import offer_key_before_tui
         offer_key_before_tui()
-    elif not provider_configured and not _first_run_setup_guard(args):
+    elif not _first_run_setup_guard(args):
         return
 
     _start_chat_background_prefetch()
@@ -1615,12 +1616,6 @@ def cmd_chat(args):
         os.environ["AURORA_SESSION_SOURCE_EXPLICIT"] = "1"
 
     _pin_kanban_board_env()
-    from aurora_cli.observability.shared_metrics_consent import offer_consent_before_chat
-
-    # Not before setup: a blank install meets the key prompt or "Setup Required" first. The offer
-    # stays undecided, so it is asked on the next launch, the first that starts with a provider.
-    if provider_configured:
-        offer_consent_before_chat(args)
     _confirm_startup_expensive_model_override(args)
 
     passthrough = {k: getattr(args, k, d) for k, d in _CHAT_PASSTHROUGH}

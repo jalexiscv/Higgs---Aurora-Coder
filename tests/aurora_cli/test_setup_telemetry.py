@@ -107,7 +107,7 @@ def test_setup_parser_accepts_telemetry_section():
 
 def test_no_answer_survives_the_callers_later_config_save(monkeypatch):
     """A "no" equals the shipped defaults; saved only through ``save_config`` it was stripped, so
-    the profile read undecided and every surface (Desktop strip, CLI offer) asked again."""
+    the profile read undecided on every surface."""
     from aurora_cli.config import load_config, read_raw_config, save_config
 
     monkeypatch.setattr("aurora_cli.setup.prompt_yes_no", lambda _question, default: False)
@@ -118,75 +118,12 @@ def test_no_answer_survives_the_callers_later_config_save(monkeypatch):
     assert read_raw_config()["telemetry"]["shared_metrics"] == {"enabled": False, "send": False, "offer_version": 2}
 
 
-def test_chat_offer_asks_an_undecided_profile_once(monkeypatch):
-    from aurora_cli.config import read_raw_config
-    from aurora_cli.observability import shared_metrics_consent as consent
-
-    asked = []
-    monkeypatch.setattr("aurora_cli.curses_ui.curses_radiolist", lambda *a, **k: asked.append(a) or 0)
-    monkeypatch.setattr("sys.stdin.isatty", lambda: True)
-    monkeypatch.setattr("sys.stdout.isatty", lambda: True)
-    monkeypatch.delenv("AURORA_DESKTOP", raising=False)
-    monkeypatch.delenv("AURORA_NONINTERACTIVE", raising=False)
-
-    consent.offer_consent_before_chat(argparse.Namespace(query="hi"))  # no person to ask
-    assert asked == []
-    consent.offer_consent_before_chat(argparse.Namespace())
-    consent.offer_consent_before_chat(argparse.Namespace())
-
-    assert len(asked) == 1
-    assert asked[0][1] == ["Share with Nous", "No thanks"]
-    assert consent.consent_state(read_raw_config()) == {"enabled": True, "send": True, "decided": True, "reask": False}
-
-
-def test_offer_drops_keys_typed_before_it_appeared(monkeypatch):
-    """An Enter typed while Aurora booted answered "No thanks" before the offer was on screen."""
-    from aurora_cli.observability import shared_metrics_consent as consent
-
-    events = []
-    monkeypatch.setattr("aurora_cli.curses_ui.flush_stdin", lambda: events.append("flush"))
-    monkeypatch.setattr("aurora_cli.curses_ui.curses_radiolist", lambda *a, **k: events.append("ask") or -1)
-
-    consent.offer_consent()
-
-    assert events == ["flush", "ask"]
-
-
-def test_unseen_no_thanks_is_asked_once_more_and_then_settled(monkeypatch):
-    """A pre-fix "No thanks" is re-offered with the reason; Esc on the re-ask keeps it for good,
-    while a pre-fix opt-in (sharing, or the collect-only answer the offer no longer has) was a
-    deliberate pick and is never re-asked."""
-    from aurora_cli.config import read_raw_config, save_config
-    from aurora_cli.observability import shared_metrics_consent as consent
-
-    shown = []
-    monkeypatch.setattr("aurora_cli.curses_ui.curses_radiolist", lambda *a, **k: shown.append(k["description"]) or -1)
-    monkeypatch.setattr("sys.stdin.isatty", lambda: True)
-    monkeypatch.setattr("sys.stdout.isatty", lambda: True)
-    monkeypatch.delenv("AURORA_DESKTOP", raising=False)
-    monkeypatch.delenv("AURORA_NONINTERACTIVE", raising=False)
-
-    for send in (True, False):
-        save_config({"telemetry": {"shared_metrics": {"enabled": True, "send": send}}}, strip_defaults=False)
-        consent.offer_consent_before_chat(argparse.Namespace())
-    assert shown == []
-
-    save_config({"telemetry": {"shared_metrics": {"enabled": False, "send": False}}}, strip_defaults=False)
-    consent.offer_consent_before_chat(argparse.Namespace())
-    consent.offer_consent_before_chat(argparse.Namespace())
-
-    assert len(shown) == 1 and shown[0].startswith(consent._REASK_NOTE)
-    assert consent.consent_state(read_raw_config()) == {"enabled": False, "send": False, "decided": True, "reask": False}
-
-
-def test_every_cli_promise_that_pre_opt_in_data_stays_local_names_the_install_note():
+def test_the_cli_promise_that_pre_opt_in_data_stays_local_names_the_install_note():
     """Invariant: the fresh-install note is the one record kept from before the consent answer and
-    counted after it, so each CLI surface stating the pre-opt-in promise names that exception, and
-    the explainer still fits an 80-column terminal (print_info indents by two)."""
-    from aurora_cli.observability.shared_metrics_consent import _OFFER_DESCRIPTION
+    counted after it, so the CLI explainer stating the pre-opt-in promise names that exception, and
+    it still fits an 80-column terminal (print_info indents by two)."""
     from aurora_cli.setup import _SEND_CONSENT_EXPLAINER
 
-    explainer = " ".join(_SEND_CONSENT_EXPLAINER)
-    for text in (explainer, " ".join(_OFFER_DESCRIPTION.split())):
-        assert "before you opt in" in text and "install note" in text.split("before you opt in")[0], text
+    text = " ".join(_SEND_CONSENT_EXPLAINER)
+    assert "before you opt in" in text and "install note" in text.split("before you opt in")[0], text
     assert max(len(line) for line in _SEND_CONSENT_EXPLAINER) + 2 <= 80
