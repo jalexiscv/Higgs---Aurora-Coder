@@ -760,8 +760,10 @@ def test_cmd_model_forwards_nous_login_tls_options(monkeypatch):
     monkeypatch.setattr("aurora_cli.config.save_env_value", lambda key, value: None)
     monkeypatch.setattr("aurora_cli.auth.resolve_provider", lambda requested, **kwargs: "nous")
     monkeypatch.setattr("aurora_cli.auth.get_provider_auth_state", lambda provider_id: None)
-    monkeypatch.setattr(aurora_main, "_prompt_provider_choice", lambda choices, **kwargs: 0)
-    monkeypatch.setattr(aurora_cli_main_provider_setup, "_prompt_provider_choice", lambda choices, **kwargs: 0)
+    # Keep the preselected row: the active provider's, Nous here.
+    monkeypatch.setattr(aurora_main, "_prompt_provider_choice", lambda choices, default=0, **kwargs: default)
+    monkeypatch.setattr(
+        aurora_cli_main_provider_setup, "_prompt_provider_choice", lambda choices, default=0, **kwargs: default)
 
     captured = {}
 
