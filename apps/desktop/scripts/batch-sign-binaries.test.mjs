@@ -42,8 +42,8 @@ test('getBinaries collects .exe and .dll recursively, case-insensitive, sorted',
   const files = getBinaries(root).map(f => path.relative(root, f))
 
   assert.deepEqual(files, [
-    path.join('FFMPEG.DLL'),
     path.join('Aurora.exe'),
+    path.join('FFMPEG.DLL'),
     path.join('resources', 'agent-payload', 'tools', 'chromium-1', 'meep', 'chrome.dll'),
     path.join('resources', 'agent-payload', 'tools', 'python', 'bin', 'node.exe')
   ])
