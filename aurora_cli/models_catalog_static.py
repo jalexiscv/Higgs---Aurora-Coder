@@ -372,6 +372,7 @@ class ProviderEntry(NamedTuple):
 
 
 CANONICAL_PROVIDERS: list[ProviderEntry] = [ProviderEntry(*row) for row in (
+    ("aurora", "Aurora", "Aurora (The built-in AI of Aurora Coder, API key from aurora.dtacenter.com)"),
     ("nous", "Nous Portal", "Nous Portal (Everything your agent needs, 300+ models with bundled tool use)"),
     ("fireworks", "Fireworks AI", "Fireworks AI (OpenAI-compatible direct model API)"),
     ("openrouter", "OpenRouter", "OpenRouter (Pay-per-use API aggregator)"),

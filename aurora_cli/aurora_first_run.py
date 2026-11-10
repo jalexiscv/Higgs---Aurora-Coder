@@ -70,10 +70,10 @@ def offer_aurora_key() -> str:
         return CONFIGURED
 
 
-def first_run_setup_guard(args, run_setup) -> None:
-    """Classic-CLI gate for a blank install. An Aurora key goes straight on to the chat; an empty
-    answer runs the full setup wizard (*run_setup*); without a TTY, or on a cancel, exit 1 with
-    guidance."""
+def first_run_setup_guard(args, run_setup) -> bool:
+    """Classic-CLI gate for a blank install. True after an Aurora key: the launch goes straight on
+    to the chat. An empty answer runs the full setup wizard (*run_setup*), which ends the launch
+    (False); without a TTY, or on a cancel, exit 1 with guidance."""
     from aurora_cli.setup import is_interactive_stdin, print_noninteractive_setup_guidance
 
     if not is_interactive_stdin():
@@ -83,12 +83,21 @@ def first_run_setup_guard(args, run_setup) -> None:
         sys.exit(1)
     outcome = offer_aurora_key()
     if outcome == CONFIGURED:
-        return
+        return True
     if outcome == OTHER_PROVIDER:
         run_setup(args)
-        return
+        return False
     print("\nYou can run 'aurora setup' at any time to configure.")
     sys.exit(1)
+
+
+def offer_key_before_tui() -> None:
+    """Ask the key question in the terminal before the TUI takes the screen. Any other answer
+    lands on the TUI's own "Setup Required" screen, which carries the rest of the setup."""
+    from aurora_cli.setup import is_interactive_stdin
+
+    if is_interactive_stdin():
+        offer_aurora_key()
 
 
 def _key_env_var() -> str:

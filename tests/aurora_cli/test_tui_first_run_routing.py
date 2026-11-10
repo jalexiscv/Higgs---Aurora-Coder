@@ -1,8 +1,8 @@
 """First-run routing between the classic CLI guard, the TUI and the shared-metrics offer.
 
 A blank install (no provider) must reach the TUI's own "Setup Required" screen under
-``aurora --tui``; the classic "Run setup now? [Y/n]" guard only fronts the classic CLI, and the
-one-time shared-metrics offer waits until a provider exists (#128663).
+``aurora --tui``, after the one key question; the classic guard and its setup wizard only front the
+classic CLI, and the one-time shared-metrics offer waits until a provider exists (#128663).
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ class _Launched(Exception):
     """Raised by the stubbed ``_launch_tui`` (the real one ``exec``s and never returns)."""
 
 
-def _run_chat(monkeypatch, argv, *, provider_configured):
+def _run_chat(monkeypatch, argv, *, provider_configured, key_accepted=False):
     import aurora_cli.main as main_mod
     from aurora_cli._parser import build_top_level_parser
     import aurora_cli.observability.shared_metrics_consent as consent
@@ -35,8 +35,9 @@ def _run_chat(monkeypatch, argv, *, provider_configured):
         calls.append("classic")
 
     monkeypatch.setattr(main_mod, "_has_any_provider_configured", lambda: provider_configured)
-    monkeypatch.setattr(main_mod, "_first_run_setup_guard", lambda _args: calls.append("guard"))
+    monkeypatch.setattr(main_mod, "_first_run_setup_guard", lambda _args: calls.append("guard") or key_accepted)
     monkeypatch.setattr(consent, "offer_consent_before_chat", lambda _args: calls.append("offer"))
+    monkeypatch.setattr("aurora_cli.aurora_first_run.offer_key_before_tui", lambda: calls.append("key"))
     monkeypatch.setattr(main_mod, "_launch_tui", launch_tui)
     monkeypatch.setattr(main_mod, "_pin_kanban_board_env", lambda: None)
     monkeypatch.setattr(main_mod, "_start_chat_background_prefetch", lambda: None)
@@ -67,8 +68,14 @@ def _no_tui_env(monkeypatch):
 
 
 def test_blank_install_tui_skips_classic_guard_and_offer(monkeypatch):
-    assert _run_chat(monkeypatch, ["chat", "--tui"], provider_configured=False) == ["tui"]
+    assert _run_chat(monkeypatch, ["chat", "--tui"], provider_configured=False) == ["key", "tui"]
 
 
 def test_blank_install_classic_cli_still_gets_the_guard(monkeypatch):
     assert _run_chat(monkeypatch, ["chat", "--cli"], provider_configured=False) == ["guard"]
+
+
+def test_classic_cli_carries_on_to_the_chat_after_an_aurora_key(monkeypatch):
+    """The key prompt is the only first-run question: the chat opens in the same launch, and the
+    shared-metrics offer waits for the next one."""
+    assert _run_chat(monkeypatch, ["chat", "--cli"], provider_configured=False, key_accepted=True) == ["guard", "classic"]

@@ -94,24 +94,25 @@ def test_cancelling_the_prompt_changes_nothing(answers):
 
 @pytest.fixture
 def guard(monkeypatch):
-    """Run the classic-CLI guard on a TTY with a canned prompt outcome; returns the wizard calls."""
+    """Run the classic-CLI guard on a TTY with a canned prompt outcome; returns whether the launch
+    carries on to the chat, and the wizard calls."""
     wizard: list = []
 
     def run(outcome, *, tty=True):
         monkeypatch.setattr("aurora_cli.setup.is_interactive_stdin", lambda: tty)
         monkeypatch.setattr(aurora_first_run, "offer_aurora_key", lambda: outcome)
-        aurora_first_run.first_run_setup_guard(object(), wizard.append)
-        return wizard
+        return aurora_first_run.first_run_setup_guard(object(), wizard.append), wizard
 
     return run
 
 
 def test_guard_goes_on_to_the_chat_once_a_key_is_configured(guard):
-    assert guard(aurora_first_run.CONFIGURED) == []
+    assert guard(aurora_first_run.CONFIGURED) == (True, [])
 
 
 def test_guard_runs_the_setup_wizard_when_no_key_is_given(guard):
-    assert len(guard(aurora_first_run.OTHER_PROVIDER)) == 1
+    carry_on, wizard = guard(aurora_first_run.OTHER_PROVIDER)
+    assert not carry_on and len(wizard) == 1
 
 
 def test_guard_exits_when_the_prompt_is_cancelled(guard):
@@ -125,3 +126,18 @@ def test_guard_without_a_terminal_names_the_key_variable_and_exits(guard, capsys
         guard(aurora_first_run.CONFIGURED, tty=False)
     assert stop.value.code == 1
     assert "AURORA_API_KEY" in capsys.readouterr().out
+
+
+def test_aurora_leads_the_provider_picker():
+    from aurora_cli.models_catalog_static import listed_canonical_providers
+
+    assert listed_canonical_providers()[0].slug == aurora_first_run.PROVIDER
+
+
+@pytest.mark.parametrize("tty, asked", [(True, 1), (False, 0)])
+def test_tui_start_asks_for_the_key_only_on_a_terminal(monkeypatch, tty, asked):
+    calls: list = []
+    monkeypatch.setattr("aurora_cli.setup.is_interactive_stdin", lambda: tty)
+    monkeypatch.setattr(aurora_first_run, "offer_aurora_key", lambda: calls.append("ask") or aurora_first_run.CANCELLED)
+    aurora_first_run.offer_key_before_tui()
+    assert len(calls) == asked

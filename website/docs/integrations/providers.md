@@ -82,8 +82,9 @@ one thing, an Aurora API key:
 ```
 
 The key is checked against Aurora's model listing, saved as `AURORA_API_KEY` in `~/.aurora/.env`,
-and the install starts on the `Spark` model. Pressing Enter without a key opens the regular setup
-with every other provider. To configure it by hand:
+and the chat opens on the `Spark` model in the same launch. Pressing Enter without a key opens the
+regular setup with every other provider (under `aurora --tui`, the TUI's own setup screen). Aurora
+is also the first entry of the `aurora model` provider list. To configure it by hand:
 
 ```yaml
 model:
