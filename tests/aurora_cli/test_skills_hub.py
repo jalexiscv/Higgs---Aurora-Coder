@@ -680,7 +680,7 @@ def _stub_search(monkeypatch, results):
 
 
 @pytest.mark.parametrize("identifier", [
-    "computer-use", "NousResearch/hermes-agent/skills/productivity/pdf",
+    "computer-use", "jalexiscv/Higgs---Aurora-Coder/skills/productivity/pdf",
     "skills-sh/nousresearch/hermes-agent/google-workspace", "blender-bpy-enhanced"])
 def test_install_by_name_resolves_to_the_skill_it_names(monkeypatch, tmp_path, identifier):
     """`aurora skills install <bundled skill>` failed every time: the name resolved to a stranger's

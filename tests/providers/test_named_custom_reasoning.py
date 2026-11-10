@@ -1,6 +1,6 @@
 """Named custom routes use the same reasoning contract as bare custom.
 
-Regression for https://github.com/NousResearch/hermes-agent/issues/119681
+Regression for https://github.com/jalexiscv/Higgs---Aurora-Coder/issues/119681
 """
 from providers import get_provider_profile, register_provider
 from providers.base import ProviderProfile
@@ -10,7 +10,7 @@ from agent.transports.chat_completions import ChatCompletionsTransport
 def test_bare_named_custom_provider_gets_custom_profile(monkeypatch):
     """Bare name (no ``custom:`` prefix) configured in providers: resolves to custom profile.
 
-    Regression for https://github.com/NousResearch/hermes-agent/issues/119681
+    Regression for https://github.com/jalexiscv/Higgs---Aurora-Coder/issues/119681
     """
     import providers
     get_provider_profile("custom")

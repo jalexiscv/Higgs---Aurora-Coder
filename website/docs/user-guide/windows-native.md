@@ -20,7 +20,7 @@ If you prefer a POSIX environment for `fork` semantics or Linux-style file watch
 Open **PowerShell** (or Windows Terminal) and run:
 
 ```powershell
-iex (irm https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.ps1)
+iex (irm https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.ps1)
 ```
 
 No admin rights required. The installer goes to `%LOCALAPPDATA%\aurora\` and adds `aurora` to your **User PATH** — open a new terminal after it finishes.
@@ -28,7 +28,7 @@ No admin rights required. The installer goes to `%LOCALAPPDATA%\aurora\` and add
 **Installer options** use a scriptblock:
 
 ```powershell
-& ([scriptblock]::Create((irm https://hermes-agent.nousresearch.com/install.ps1))) -NonInteractive -Channel main
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.ps1))) -NonInteractive -Channel main
 ```
 
 | Parameter | Purpose |

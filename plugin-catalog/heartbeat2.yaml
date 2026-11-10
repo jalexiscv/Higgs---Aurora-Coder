@@ -19,10 +19,10 @@ screenshots:
 readme: true
 platforms: [linux, macos]
 known_issues:
-  - "A wake turn that fails at the provider shows Aurora's own failure notice; the plugin cannot suppress it (NousResearch/hermes-agent#136749). HeartBeat 2.0 backs all wakes off until a model call on the profile succeeds."
-  - "notify=false silences the final reply; platforms that show tool progress by default (Discord, WhatsApp, Matrix) still show a progress bubble per wake turn unless display.platforms.<p>.tool_progress is off (quiet injection requested upstream: NousResearch/hermes-agent#136825)."
+  - "A wake turn that fails at the provider shows Aurora's own failure notice; the plugin cannot suppress it (jalexiscv/Higgs---Aurora-Coder#136749). HeartBeat 2.0 backs all wakes off until a model call on the profile succeeds."
+  - "notify=false silences the final reply; platforms that show tool progress by default (Discord, WhatsApp, Matrix) still show a progress bubble per wake turn unless display.platforms.<p>.tool_progress is off (quiet injection requested upstream: jalexiscv/Higgs---Aurora-Coder#136825)."
   - "Delivers only to messaging-gateway DMs by default (dm_only); CLI, TUI, Desktop, API-server and cron arming are refused until Aurora core supports silent injected turns there."
-  - "When Aurora falls back to another model during a wake turn, its model-fallback notice is posted to the chat, even for a wake that stays silent (NousResearch/hermes-agent#137738)."
+  - "When Aurora falls back to another model during a wake turn, its model-fallback notice is posted to the chat, even for a wake that stays silent (jalexiscv/Higgs---Aurora-Coder#137738)."
 capabilities:
   provides_tools:
     - pulse

@@ -1,6 +1,6 @@
 # plugin-catalog/aurora-rich-ui.yaml — catalog PR: 1 commit, 1 file.
 # Schema fetched 2026-09-28 from
-# https://raw.githubusercontent.com/NousResearch/hermes-agent/main/plugin-catalog/README.md
+# https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/plugin-catalog/README.md
 # Owner-gated: `sha` is filled at tag-push time (publish.sh replaces it with the
 # v0.1.0 tag's 40-hex commit SHA); the loader rejects anything but a full SHA.
 name: aurora-rich-ui

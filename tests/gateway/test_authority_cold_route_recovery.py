@@ -1,4 +1,4 @@
-"""A cold messaging-platform session mounts for a local viewer (TUI-8, NousResearch/hermes-agent#134889).
+"""A cold messaging-platform session mounts for a local viewer (TUI-8, jalexiscv/Higgs---Aurora-Coder#134889).
 
 Before its first post-restart inbound nothing publishes a messaging-platform lane (Telegram, Weixin,
 Discord, ...) into the authority, so ``session.resume`` of its row answered ``not_found`` until

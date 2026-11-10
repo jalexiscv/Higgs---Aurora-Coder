@@ -128,13 +128,13 @@ def test_commit_build_dispatch_is_repository_independent(fixture_repo):
     assert dispatches == [expected]
     assert 'disposable' not in result.stdout.lower()
     # The upstream URL used to select a different command shape; it no longer does.
-    git(repo, 'remote', 'set-url', 'origin', 'https://github.com/NousResearch/hermes-agent.git')
+    git(repo, 'remote', 'set-url', 'origin', 'https://github.com/jalexiscv/Higgs---Aurora-Coder.git')
     result, calls = invoke('--build-commit', tip, '--publish',
-                           extra={'PROBE_UPSTREAM_URL': 'https://github.com/NousResearch/hermes-agent.git'})
+                           extra={'PROBE_UPSTREAM_URL': 'https://github.com/jalexiscv/Higgs---Aurora-Coder.git'})
     assert result.returncode == 0, result.stderr
     dispatches = [call for call in calls if call[1:3] == ['workflow', 'run']]
     assert dispatches == [['gh', 'workflow', 'run', 'desktop-bundled-release.yml',
-                           '--ref', 'main', '--repo', 'NousResearch/hermes-agent',
+                           '--ref', 'main', '--repo', 'jalexiscv/Higgs---Aurora-Coder',
                            '-f', f'build_commit={tip}', '-f', 'tag=', '-f', 'upload_release=false',
                            '-f', 'termux_upgrade_from_tag=']]
 

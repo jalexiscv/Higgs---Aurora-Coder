@@ -46,11 +46,11 @@ uv2nix 环境、覆盖包、插件依赖和开发 shell 使用同一个解释器
 
 ```bash
 # 直接运行（首次使用时构建，之后使用缓存）
-nix run github:NousResearch/hermes-agent -- setup
-nix run github:NousResearch/hermes-agent -- chat
+nix run github:jalexiscv/Higgs---Aurora-Coder -- setup
+nix run github:jalexiscv/Higgs---Aurora-Coder -- chat
 
 # 或持久化安装
-nix profile install github:NousResearch/hermes-agent
+nix profile install github:jalexiscv/Higgs---Aurora-Coder
 aurora setup
 aurora chat
 ```
@@ -61,7 +61,7 @@ aurora chat
 <summary><strong>从本地克隆构建</strong></summary>
 
 ```bash
-git clone https://github.com/NousResearch/hermes-agent.git
+git clone https://github.com/jalexiscv/Higgs---Aurora-Coder.git
 cd aurora-agent
 nix build
 ./result/bin/aurora setup
@@ -86,7 +86,7 @@ nix build
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    aurora-agent.url = "github:NousResearch/hermes-agent";
+    aurora-agent.url = "github:jalexiscv/Higgs---Aurora-Coder";
   };
 
   outputs = { nixpkgs, aurora-agent, ... }: {
@@ -696,7 +696,7 @@ services.aurora-agent = {
 
 ```nix
 {
-  inputs.aurora-agent.url = "github:NousResearch/hermes-agent";
+  inputs.aurora-agent.url = "github:jalexiscv/Higgs---Aurora-Coder";
   outputs = { aurora-agent, nixpkgs, ... }: {
     nixpkgs.overlays = [ aurora-agent.overlays.default ];
     # 然后：

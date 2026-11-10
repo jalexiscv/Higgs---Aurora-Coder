@@ -12,7 +12,7 @@ It exists so that skills created via the [self-improvement loop](./skills.md#age
 
 By default the curator manages only agent-created skills. With `curator.prune_builtins: true` it can also archive **unused bundled built-in skills** (shipped with the repo) after `archive_after_days` of non-use; this is opt-in because shipped skills silently disappearing from `skills_list` is easy to mistake for a broken install. Hub-installed skills (from [agentskills.io](https://agentskills.io)) are always off-limits. The curator also **never auto-deletes** — the worst outcome is archival into `~/.aurora/skills/.archive/`, which is recoverable.
 
-Tracks [issue #7816](https://github.com/NousResearch/hermes-agent/issues/7816).
+Tracks [issue #7816](https://github.com/jalexiscv/Higgs---Aurora-Coder/issues/7816).
 
 ## How it runs
 
@@ -450,4 +450,4 @@ The curator also refuses to run if `min_idle_hours` hasn't elapsed, so on an act
 - [Skills System](./skills.md) — how skills work in general and the self-improvement loop that creates them
 - [Memory](./memory.md) — a parallel background review that maintains long-term memory
 - [Bundled Skills Catalog](../../reference/skills-catalog.md)
-- [Issue #7816](https://github.com/NousResearch/hermes-agent/issues/7816) — original proposal and design discussion
+- [Issue #7816](https://github.com/jalexiscv/Higgs---Aurora-Coder/issues/7816) — original proposal and design discussion

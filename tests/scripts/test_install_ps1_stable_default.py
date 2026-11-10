@@ -59,7 +59,9 @@ def test_install_ps1_lands_on_the_latest_stable_release(tmp_path, side, start, c
     commits["tip"] = _git(origin, "rev-parse", "HEAD")
     gitconfig = tmp_path / "gitconfig"
     gitconfig.write_text(f'[url "{origin.as_uri()}"]\n  insteadOf = {OFFICIAL}\n', encoding="utf-8")
-    env = {**os.environ, "GIT_CONFIG_GLOBAL": str(gitconfig), "NO_COLOR": "1"}
+    # The installer's default clone URL is this repository, which publishes no releases; the
+    # release train under test belongs to the repository named here.
+    env = {**os.environ, "GIT_CONFIG_GLOBAL": str(gitconfig), "NO_COLOR": "1", "AURORA_REPO_URL": OFFICIAL}
     env.pop("AURORA_INSTALL_CHANNEL", None)
     if start:
         _git(tmp_path, "clone", "-q", OFFICIAL, str(install), env=env)

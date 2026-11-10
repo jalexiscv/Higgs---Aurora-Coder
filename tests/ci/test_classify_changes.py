@@ -694,20 +694,20 @@ def _write_event(tmp_path, number: int | None = 88442) -> Path:
 
 def test_pull_request_changed_files_skips_non_pr_events(monkeypatch):
     monkeypatch.setenv("EVENT_NAME", "push")
-    monkeypatch.setenv("REPO", "NousResearch/hermes-agent")
+    monkeypatch.setenv("REPO", "jalexiscv/Higgs---Aurora-Coder")
     assert pull_request_changed_files() == []
 
 
 def test_pull_request_changed_files_skips_without_pr_number(tmp_path, monkeypatch):
     monkeypatch.setenv("EVENT_NAME", "pull_request")
-    monkeypatch.setenv("REPO", "NousResearch/hermes-agent")
+    monkeypatch.setenv("REPO", "jalexiscv/Higgs---Aurora-Coder")
     monkeypatch.setenv("GITHUB_EVENT_PATH", str(_write_event(tmp_path, number=None)))
     assert pull_request_changed_files() == []
 
 
 def test_pull_request_changed_files_parses_gh_output(tmp_path, monkeypatch):
     monkeypatch.setenv("EVENT_NAME", "pull_request")
-    monkeypatch.setenv("REPO", "NousResearch/hermes-agent")
+    monkeypatch.setenv("REPO", "jalexiscv/Higgs---Aurora-Coder")
     monkeypatch.setenv("GITHUB_EVENT_PATH", str(_write_event(tmp_path)))
 
     def fake_run(*args, **kwargs):
@@ -727,7 +727,7 @@ def test_pull_request_changed_files_parses_gh_output(tmp_path, monkeypatch):
 
 def test_pull_request_changed_files_returns_empty_when_gh_fails(tmp_path, monkeypatch):
     monkeypatch.setenv("EVENT_NAME", "pull_request")
-    monkeypatch.setenv("REPO", "NousResearch/hermes-agent")
+    monkeypatch.setenv("REPO", "jalexiscv/Higgs---Aurora-Coder")
     monkeypatch.setenv("GITHUB_EVENT_PATH", str(_write_event(tmp_path)))
 
     def fake_run(*args, **kwargs):
@@ -779,7 +779,7 @@ def test_pull_request_labels_prefers_the_live_labels_over_the_replayed_event(tmp
     event = tmp_path / "event.json"
     event.write_text(json.dumps({"pull_request": {"number": 7, "labels": []}}), encoding="utf-8")
     monkeypatch.setenv("EVENT_NAME", "pull_request")
-    monkeypatch.setenv("REPO", "NousResearch/hermes-agent")
+    monkeypatch.setenv("REPO", "jalexiscv/Higgs---Aurora-Coder")
     monkeypatch.setenv("GITHUB_EVENT_PATH", str(event))
 
     live = subprocess.CompletedProcess([], 0, stdout="run-e2e\n", stderr="")

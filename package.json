@@ -22,13 +22,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NousResearch/Hermes-Agent.git"
+    "url": "git+https://github.com/jalexiscv/Higgs---Aurora-Coder.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NousResearch/Hermes-Agent/issues"
+    "url": "https://github.com/jalexiscv/Higgs---Aurora-Coder/issues"
   },
-  "homepage": "https://github.com/NousResearch/Hermes-Agent#readme",
+  "homepage": "https://github.com/jalexiscv/Higgs---Aurora-Coder#readme",
   "devDependencies": {
     "@eslint/js": "9.39.5",
     "eslint": "10.12.0",

@@ -1,5 +1,5 @@
 # Catalog entry draft — Cost Sentinel
-# PR target: NousResearch/hermes-agent → plugin-catalog/cost-sentinel.yaml
+# PR target: jalexiscv/Higgs---Aurora-Coder → plugin-catalog/cost-sentinel.yaml
 # Fill `sha` + `repo` after the plugin repo is pushed to GitHub.
 name: cost-sentinel
 repo: https://github.com/SongotenU/hermes-cost-sentinel

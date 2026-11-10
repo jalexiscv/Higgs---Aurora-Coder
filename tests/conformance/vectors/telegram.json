@@ -1,7 +1,7 @@
 {
   "$comment": "GENERATED — do not hand-edit. Regenerate with aurora-agent scripts/generate_conformance_vectors.py; the native renderers are the oracle (executable spec).",
   "oracle": {
-    "repo": "NousResearch/hermes-agent",
+    "repo": "jalexiscv/Higgs---Aurora-Coder",
     "commit": "262eebfe1bf07a957f5c57d0b447db9bc00a7c95",
     "generator": "scripts/generate_conformance_vectors.py",
     "generator_version": 1

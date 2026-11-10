@@ -16,7 +16,7 @@ commands.
 
 ## Threat Model
 
-The Aurora [SECURITY.md](https://github.com/NousResearch/hermes-agent/blob/main/SECURITY.md) §2 defines the trust model. The
+The Aurora [SECURITY.md](https://github.com/jalexiscv/Higgs---Aurora-Coder/blob/main/SECURITY.md) §2 defines the trust model. The
 terminal backend is the primary execution boundary. However, when running with
 `network_mode: host`, any command the agent executes can reach any endpoint on
 the network, including external ones.
@@ -195,7 +195,7 @@ docker compose exec gateway \
 
 ## Related
 
-- [SECURITY.md](https://github.com/NousResearch/hermes-agent/blob/main/SECURITY.md) — Aurora trust model and vulnerability reporting
+- [SECURITY.md](https://github.com/jalexiscv/Higgs---Aurora-Coder/blob/main/SECURITY.md) — Aurora trust model and vulnerability reporting
 - [Docker](../docker.md) — running Aurora in a container
 - [Egress proxy](iron-proxy.md) — credential-injection firewall for the sandbox
-- [docker-compose.yml](https://github.com/NousResearch/hermes-agent/blob/main/docker-compose.yml) — default compose configuration
+- [docker-compose.yml](https://github.com/jalexiscv/Higgs---Aurora-Coder/blob/main/docker-compose.yml) — default compose configuration

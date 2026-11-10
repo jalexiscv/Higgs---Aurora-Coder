@@ -58,7 +58,7 @@ from scripts.releases.desktop_targets import TARGETS as DESKTOP_TARGETS
 
 MARKER = "<!-- AURORA_BUILDS_TABLE -->"
 END_MARKER = "<!-- /AURORA_BUILDS_TABLE -->"
-DEFAULT_REPO = "NousResearch/hermes-agent"
+DEFAULT_REPO = "jalexiscv/Higgs---Aurora-Coder"
 
 # Asset name shapes (electron-builder artifactName in
 # apps/desktop/electron-builder.config.cjs):

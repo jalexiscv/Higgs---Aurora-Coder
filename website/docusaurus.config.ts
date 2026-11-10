@@ -11,8 +11,8 @@ const config: Config = {
   url: 'https://hermes-agent.nousresearch.com',
   baseUrl: '/docs/',
 
-  organizationName: 'NousResearch',
-  projectName: 'aurora-agent',
+  organizationName: 'jalexiscv',
+  projectName: 'Higgs---Aurora-Coder',
 
   onBrokenLinks: 'warn',
 
@@ -83,7 +83,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/',  // Docs at the root of /docs/
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/NousResearch/hermes-agent/edit/main/website/',
+          editUrl: 'https://github.com/jalexiscv/Higgs---Aurora-Coder/edit/main/website/',
           // Relative `.md` links (readable on GitHub, #114428) must also resolve
           // across the zh-Hans fallback boundary; see src/remark/relativeDocLinks.js.
           beforeDefaultRemarkPlugins: [[relativeDocLinks, {siteDir: __dirname}]],
@@ -161,7 +161,7 @@ const config: Config = {
           position: 'right',
         },
         {
-          href: 'https://github.com/NousResearch/hermes-agent',
+          href: 'https://github.com/jalexiscv/Higgs---Aurora-Coder',
           label: 'GitHub',
           position: 'right',
         },
@@ -188,7 +188,7 @@ const config: Config = {
           title: 'Community',
           items: [
             { label: 'Discord', href: 'https://discord.gg/NousResearch' },
-            { label: 'GitHub Issues', href: 'https://github.com/NousResearch/hermes-agent/issues' },
+            { label: 'GitHub Issues', href: 'https://github.com/jalexiscv/Higgs---Aurora-Coder/issues' },
             { label: 'Skills Hub', href: 'https://agentskills.io' },
           ],
         },
@@ -196,7 +196,7 @@ const config: Config = {
           title: 'More',
           items: [
             { label: 'Desktop Download', href: 'https://hermes-agent.nousresearch.com/' },
-            { label: 'GitHub', href: 'https://github.com/NousResearch/hermes-agent' },
+            { label: 'GitHub', href: 'https://github.com/jalexiscv/Higgs---Aurora-Coder' },
             { label: 'Nous Research', href: 'https://nousresearch.com' },
           ],
         },

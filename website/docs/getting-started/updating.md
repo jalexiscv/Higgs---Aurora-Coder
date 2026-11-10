@@ -229,8 +229,8 @@ On Windows, a Desktop reopened during packaging is stopped again immediately bef
 
 Run the installer again to repair it. It moves the damaged checkout aside as `aurora-agent.broken-<timestamp>` (nothing is deleted) and clones fresh; your config, sessions and other data live outside the checkout and are kept. The error prints the exact command for your checkout. For the default location it is:
 
-- Linux / macOS / WSL2: `curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash`
-- Windows (PowerShell): `iex (irm https://hermes-agent.nousresearch.com/install.ps1)`
+- Linux / macOS / WSL2: `curl -fsSL https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.sh | bash`
+- Windows (PowerShell): `iex (irm https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.ps1)`
 
 A checkout installed somewhere else needs its directory passed again (`bash -s -- --dir <path>` on Linux/macOS, `-InstallDir <path>` on Windows), as in the printed command; without it the installer repairs the default location instead.
 
@@ -539,7 +539,7 @@ A few situations stop with a message rather than carry on, because carrying on c
 aurora --version
 ```
 
-Compare against the latest release at the [GitHub releases page](https://github.com/NousResearch/hermes-agent/releases).
+Compare against the latest release at the [GitHub releases page](https://github.com/jalexiscv/Higgs---Aurora-Coder/releases).
 
 ### Updating from Messaging Platforms
 

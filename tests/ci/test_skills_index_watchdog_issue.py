@@ -34,7 +34,7 @@ def _run(tmp_path: Path, watchdog: str, issues: list[dict], *, list_fails: bool 
     env = {
         "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
         "GH_TOKEN": "ghs_secret",
-        "GITHUB_REPOSITORY": "NousResearch/hermes-agent",
+        "GITHUB_REPOSITORY": "jalexiscv/Higgs---Aurora-Coder",
         "STATUS": "degraded",
         "DETAIL": "github: 0 < 30",
         "STUB_CALLS": str(calls),
@@ -53,11 +53,11 @@ def test_no_open_issue_opens_one_with_the_watchdog_prefix(tmp_path):
     listing, create = calls
     assert listing["argv"][listing["argv"].index("--search") + 1] == 'in:title "[skills-index-watchdog]"'
     argv = create["argv"]
-    assert argv[:5] == ["issue", "create", "--repo", "NousResearch/hermes-agent", "--title"]
+    assert argv[:5] == ["issue", "create", "--repo", "jalexiscv/Higgs---Aurora-Coder", "--title"]
     assert argv[5] == "[skills-index-watchdog] Skills index is stale or degraded (degraded)"
     body = argv[argv.index("--body") + 1]
     assert "**Status:** `degraded`\n**Detail:** github: 0 < 30" in body
-    assert "https://github.com/NousResearch/hermes-agent/actions/workflows/skills-index.yml" in body
+    assert "https://github.com/jalexiscv/Higgs---Aurora-Coder/actions/workflows/skills-index.yml" in body
     assert all(c["token"] == "ghs_secret" and "ghs_secret" not in c["argv"] for c in calls)
 
 
@@ -68,7 +68,7 @@ def test_open_issue_with_the_prefix_gets_a_comment(tmp_path):
     stdout, calls = _run(tmp_path, "plugin-catalog-cors", issues)
     assert stdout == "Appending to existing issue #9\n"
     argv = calls[1]["argv"]
-    assert argv[:6] == ["issue", "comment", "9", "--repo", "NousResearch/hermes-agent", "--body"]
+    assert argv[:6] == ["issue", "comment", "9", "--repo", "jalexiscv/Higgs---Aurora-Coder", "--body"]
     assert argv[6].startswith("Probe still failing at ")
     assert argv[6].endswith("Z: `degraded` — github: 0 < 30")
 

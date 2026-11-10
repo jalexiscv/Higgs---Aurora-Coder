@@ -15,17 +15,17 @@ description: "在 Linux、macOS、WSL2 或原生 Windows 上安装 Aurora Agent"
 基于 git 的安装方式，跟踪 `main` 分支，可立即获取最新变更：
 
 ```bash
-curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.sh | bash
 ```
 
 ### Windows（原生，PowerShell）
 
-原生 Windows 无需 WSL 即可运行 Aurora——CLI、gateway、TUI 和工具均可原生运行。（原生安装与 WSL2 安装可干净共存；唯一仅限 WSL2 的功能见下方功能说明。）遇到 bug 请[提交 issue](https://github.com/NousResearch/hermes-agent/issues)。
+原生 Windows 无需 WSL 即可运行 Aurora——CLI、gateway、TUI 和工具均可原生运行。（原生安装与 WSL2 安装可干净共存；唯一仅限 WSL2 的功能见下方功能说明。）遇到 bug 请[提交 issue](https://github.com/jalexiscv/Higgs---Aurora-Coder/issues)。
 
 打开 PowerShell 并运行：
 
 ```powershell
-iex (irm https://hermes-agent.nousresearch.com/install.ps1)
+iex (irm https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.ps1)
 ```
 
 源码安装脚本克隆仓库，再由 PM 准备 Python 3.14、Node.js、npm、pnpm、ripgrep、FFmpeg 和 Python 依赖。

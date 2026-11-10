@@ -222,7 +222,7 @@ One caveat: "basic messaging works without Private API" assumes BlueBubbles can 
 - For the multi-user setup itself, follow [BlueBubbles: multiple users on the same Mac](https://docs.bluebubbles.app/server/basic-guides/multiple-users-on-the-same-mac) — one port per user, and don't log out the user running the server
 
 ### Duplicate replies
-- Known issue: session handling can split one correspondent into two sessions (raw-GUID form vs. phone/email form) — tracked in [#30708](https://github.com/NousResearch/hermes-agent/issues/30708) and [#34372](https://github.com/NousResearch/hermes-agent/issues/34372)
+- Known issue: session handling can split one correspondent into two sessions (raw-GUID form vs. phone/email form) — tracked in [#30708](https://github.com/jalexiscv/Higgs---Aurora-Coder/issues/30708) and [#34372](https://github.com/jalexiscv/Higgs---Aurora-Coder/issues/34372)
 - Not a documentation or configuration problem — follow those issues for fixes
 
 ### "♻️ Recovered reply" repeats, or sends hang for minutes

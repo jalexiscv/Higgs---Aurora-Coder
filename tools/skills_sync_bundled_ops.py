@@ -60,12 +60,14 @@ def reset_bundled_skill(name: str, restore: bool = False) -> dict:
     return {"ok": True, "action": action, "message": message, "synced": synced}
 
 
-_OWN_REPO_PREFIXES = ("nousresearch/hermes-agent/skills/", "skills-sh/nousresearch/hermes-agent/")
+# The Skills Hub site and the skills.sh mirror still hand out the upstream identifiers.
+_OWN_REPO_PREFIXES = ("jalexiscv/higgs---aurora-coder/skills/", "nousresearch/hermes-agent/skills/",
+                      "skills-sh/nousresearch/hermes-agent/")
 
 
 def bundled_skill_for_install(identifier: str) -> Optional[str]:
     """Bundled skill name an install identifier means, else None: a bare bundled name, or this
-    repo's own copy of one (``NousResearch/hermes-agent/skills/<cat>/<name>``, which the Skills Hub
+    repo's own copy of one (``jalexiscv/Higgs---Aurora-Coder/skills/<cat>/<name>``, which the Skills Hub
     site hands out for built-ins, or its ``skills-sh/nousresearch/hermes-agent/<name>`` mirror).
     Fetched from GitHub, that copy is scanned as a community skill and refused — every time."""
     ident = identifier.strip().strip("/")

@@ -31,6 +31,6 @@
     "log": "bootstrap",
     "signatures": ["bootstrap\\.log: ✗ Another Aurora update is already running \\(PID [0-9]+, started [^\\r\\n]* stage=update", "aurora_bootstrap_lib::update: update stage stage=update state=Failed [^\\r\\n]*Aurora is still running\\. Close all Aurora windows and try the update again\\."],
     "explanation": "The published June Aurora-Setup.dmg updater writes the update marker with its own PID, then runs the v2026.7.30 checkout's aurora update. That release recognises its orchestrator only through AURORA_UPDATE_HANDOFF_PID, which the June binary predates, so the pre-pull CLI refuses with Another Aurora update is already running. The update target cannot change that loaded code; aurora update from a terminal or re-running the installer recovers.",
-    "evidence": "https://github.com/NousResearch/hermes-agent/actions/runs/41435547785/job/125244635706"
+    "evidence": "https://github.com/jalexiscv/Higgs---Aurora-Coder/actions/runs/41435547785/job/125244635706"
   }
 ]

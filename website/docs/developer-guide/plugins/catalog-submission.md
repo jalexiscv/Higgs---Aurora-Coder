@@ -12,7 +12,7 @@ catalog plugin by name, at the exact commit a maintainer read. This page holds
 the complete guidelines for getting a plugin in and keeping it there.
 
 The canonical copy of the admission rules is
-[`plugin-catalog/README.md`](https://github.com/NousResearch/hermes-agent/blob/main/plugin-catalog/README.md)
+[`plugin-catalog/README.md`](https://github.com/jalexiscv/Higgs---Aurora-Coder/blob/main/plugin-catalog/README.md)
 in the repository. The [rules section](#admission-rules) below mirrors it word
 for word, and a test fails the build if the two drift apart.
 
@@ -48,9 +48,9 @@ for word, and a test fails the build if the two drift apart.
 ## Opening the PR
 
 1. Add **one** file, `plugin-catalog/<name>.yaml`, to
-   [`NousResearch/hermes-agent`](https://github.com/NousResearch/hermes-agent).
+   [`jalexiscv/Higgs---Aurora-Coder`](https://github.com/jalexiscv/Higgs---Aurora-Coder).
    The fields are documented in the README's
-   [entry schema](https://github.com/NousResearch/hermes-agent/blob/main/plugin-catalog/README.md#entry-schema)
+   [entry schema](https://github.com/jalexiscv/Higgs---Aurora-Coder/blob/main/plugin-catalog/README.md#entry-schema)
    and in [What's in an entry](../../user-guide/features/plugin-catalog.md#whats-in-an-entry).
    Pin `sha` to a full 40-character commit, and quote `version`.
 2. In the PR description, say what the plugin does, which Aurora surfaces it
@@ -253,7 +253,7 @@ changed or removed, open a PR on its file. Owners keep control of their entries.
   authors get an issue on their repository explaining the change and time to
   update before anything is removed.
 - **Removal** adds the plugin to
-  [`removed.yaml`](https://github.com/NousResearch/hermes-agent/blob/main/plugin-catalog/README.md#removedyaml--the-blocklist),
+  [`removed.yaml`](https://github.com/jalexiscv/Higgs---Aurora-Coder/blob/main/plugin-catalog/README.md#removedyaml--the-blocklist),
   which is reserved for security and policy incidents. Installers refuse
   anything on that list, and installed copies stop updating and cannot be
   enabled.
@@ -261,7 +261,7 @@ changed or removed, open a PR on its file. Owners keep control of their entries.
 ## Asking for a hook
 
 If your plugin needs something the plugin surface doesn't offer, open an issue
-on [aurora-agent](https://github.com/NousResearch/hermes-agent/issues)
+on [aurora-agent](https://github.com/jalexiscv/Higgs---Aurora-Coder/issues)
 describing what you need and why. We would much rather add a proper seam than
 list a patch, and a plugin that will use the hook is exactly the concrete
 consumer a new hook needs.

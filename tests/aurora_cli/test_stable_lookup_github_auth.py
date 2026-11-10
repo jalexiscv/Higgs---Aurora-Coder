@@ -71,7 +71,7 @@ def github(monkeypatch):
 def test_stable_lookup_sends_the_configured_token(github, monkeypatch):
     seen, _ = github
     monkeypatch.setenv("GH_TOKEN", "ghp_user")
-    target = source_releases._resolve_stable("NousResearch/hermes-agent")
+    target = source_releases._resolve_stable("jalexiscv/Higgs---Aurora-Coder")
     assert (target.commit, target.version) == (SHA, "0.21.6")
     assert seen and all(auth == "Bearer ghp_user" for _, auth in seen)
 
@@ -85,7 +85,7 @@ def test_a_rate_limit_is_reported_as_one_not_as_a_missing_release(github, monkey
     else:
         monkeypatch.delenv("GH_TOKEN", raising=False)
     with pytest.raises(ValueError) as caught:
-        source_releases._resolve_stable("NousResearch/hermes-agent")
+        source_releases._resolve_stable("jalexiscv/Higgs---Aurora-Coder")
     message = str(caught.value)
     assert "rate limit" in message and "No published stable release" not in message
     assert ("GITHUB_TOKEN in the environment" in message) is (token is None)
@@ -96,7 +96,7 @@ def test_a_rejected_token_then_anonymous_limit_names_the_anonymous_quota(github,
     state["limited"] = state["reject_token"] = True
     monkeypatch.setenv("GH_TOKEN", "ghp_revoked")
     with pytest.raises(ValueError) as caught:
-        source_releases._resolve_stable("NousResearch/hermes-agent")
+        source_releases._resolve_stable("jalexiscv/Higgs---Aurora-Coder")
     # The 403 came from the anonymous retry, so the user's token quota is not the one to wait on.
     assert [auth for _, auth in seen] == ["Bearer ghp_revoked", None]
     assert "anonymous requests are limited" in str(caught.value)

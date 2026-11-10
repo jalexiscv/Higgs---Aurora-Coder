@@ -11,7 +11,7 @@ version: "0.4.1"
 readme: true
 platforms: [macos, linux]
 known_issues:
-  - Automatic carryover (reset into a fresh session) was removed in 0.4.1 until Aurora offers a public session-reset hook (NousResearch/hermes-agent#149633). A saved carryover setting runs as handoff.
+  - Automatic carryover (reset into a fresh session) was removed in 0.4.1 until Aurora offers a public session-reset hook (jalexiscv/Higgs---Aurora-Coder#149633). A saved carryover setting runs as handoff.
   - Handoff writing uses a normal agent turn and tool approvals; the user starts the fresh session from the handoff.
 capabilities:
   provides_tools: []

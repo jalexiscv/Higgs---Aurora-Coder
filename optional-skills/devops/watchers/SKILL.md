@@ -66,7 +66,7 @@ Watch a GitHub repo (set `GITHUB_TOKEN` in `${AURORA_HOME:-~/.aurora}/.env` to a
 
 ```bash
 python $AURORA_HOME/skills/devops/watchers/scripts/watch_github.py \
-  --name aurora-issues --repo NousResearch/hermes-agent --scope issues
+  --name aurora-issues --repo jalexiscv/Higgs---Aurora-Coder --scope issues
 ```
 
 Poll an arbitrary JSON API:

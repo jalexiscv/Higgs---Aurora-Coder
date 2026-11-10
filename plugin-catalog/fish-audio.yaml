@@ -18,9 +18,9 @@ screenshots:
 readme: true
 platforms: [linux, macos]
 known_issues:
-  - "Aurora's text normaliser alters <|speaker:N|> markup and Drama 3 closing tags such as </whisper> on the plain text_to_speech path; use fish_speak for multi-speaker speech and Drama 3 word tags (NousResearch/hermes-agent#133131)."
-  - "An empty API key field in Settings is hard to see, worst in the dark theme; a fix is proposed (NousResearch/hermes-agent#138994)."
-  - "In Aurora Desktop voice conversations, part or all of a reply sometimes goes unspoken because Desktop stops passing it to speech mid-turn; this affects every speech provider, and fixes are proposed (NousResearch/hermes-agent#129305)."
+  - "Aurora's text normaliser alters <|speaker:N|> markup and Drama 3 closing tags such as </whisper> on the plain text_to_speech path; use fish_speak for multi-speaker speech and Drama 3 word tags (jalexiscv/Higgs---Aurora-Coder#133131)."
+  - "An empty API key field in Settings is hard to see, worst in the dark theme; a fix is proposed (jalexiscv/Higgs---Aurora-Coder#138994)."
+  - "In Aurora Desktop voice conversations, part or all of a reply sometimes goes unspoken because Desktop stops passing it to speech mid-turn; this affects every speech provider, and fixes are proposed (jalexiscv/Higgs---Aurora-Coder#129305)."
   - "Under plugins.isolation: host the aurora fish terminal command is unavailable and voice replies use whole-file speech instead of streaming; /fish, the tools and both providers still work."
 capabilities:
   provides_tools:

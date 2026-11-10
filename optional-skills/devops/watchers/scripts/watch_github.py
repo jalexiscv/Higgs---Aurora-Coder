@@ -6,7 +6,7 @@ Usage (via cron with --no-agent):
     aurora cron create aurora-issues \\
       --schedule "*/5 * * * *" --no-agent \\
       --script "$AURORA_HOME/skills/devops/watchers/scripts/watch_github.py" \\
-      --script-args "--name aurora-issues --repo NousResearch/hermes-agent --scope issues"
+      --script-args "--name aurora-issues --repo jalexiscv/Higgs---Aurora-Coder --scope issues"
 
 Set GITHUB_TOKEN (or GH_TOKEN) in the Aurora .env file
 (``${AURORA_HOME:-~/.aurora}/.env``) to avoid the 60 req/hr

@@ -63,17 +63,17 @@ No clone needed. Nix fetches, builds, and runs everything:
 
 ```bash
 # Run the desktop app
-nix run github:NousResearch/hermes-agent#desktop
+nix run github:jalexiscv/Higgs---Aurora-Coder#desktop
 
 # Or install persistently
-nix profile install github:NousResearch/hermes-agent#desktop
+nix profile install github:jalexiscv/Higgs---Aurora-Coder#desktop
 
 # run the tui
-nix run github:NousResearch/hermes-agent -- setup
-nix run github:NousResearch/hermes-agent -- --tui
+nix run github:jalexiscv/Higgs---Aurora-Coder -- setup
+nix run github:jalexiscv/Higgs---Aurora-Coder -- --tui
 
 # or install it in your profile
-nix profile install github:NousResearch/hermes-agent
+nix profile install github:jalexiscv/Higgs---Aurora-Coder
 aurora setup
 aurora --tui
 ```
@@ -91,7 +91,7 @@ The `default` package adds ~700 MB to the closure. If you only need messaging pl
 <summary><strong>Running from a local clone</strong></summary>
 
 ```bash
-git clone https://github.com/NousResearch/hermes-agent.git
+git clone https://github.com/jalexiscv/Higgs---Aurora-Coder.git
 cd aurora-agent
 nix develop
 aurora-checkout setup
@@ -116,7 +116,7 @@ This module needs NixOS. Aurora is an agent for one person. If you want an agent
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    aurora-agent.url = "github:NousResearch/hermes-agent";
+    aurora-agent.url = "github:jalexiscv/Higgs---Aurora-Coder";
   };
 
   outputs = { nixpkgs, aurora-agent, ... }: {
@@ -637,7 +637,7 @@ The option set is the same set that the NixOS module uses. It is `services.auror
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    aurora-agent.url = "github:NousResearch/hermes-agent";
+    aurora-agent.url = "github:jalexiscv/Higgs---Aurora-Coder";
   };
 }
 ```
@@ -901,7 +901,7 @@ External flakes can override the package directly:
 
 ```nix
 {
-  inputs.aurora-agent.url = "github:NousResearch/hermes-agent";
+  inputs.aurora-agent.url = "github:jalexiscv/Higgs---Aurora-Coder";
   outputs = { aurora-agent, nixpkgs, ... }: {
     nixpkgs.overlays = [ aurora-agent.overlays.default ];
     # Then:

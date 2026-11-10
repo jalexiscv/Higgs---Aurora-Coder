@@ -81,7 +81,7 @@ python $AURORA_HOME/skills/devops/watchers/scripts/watch_rss.py \
 
 ```bash
 python $AURORA_HOME/skills/devops/watchers/scripts/watch_github.py \
-  --name aurora-issues --repo NousResearch/hermes-agent --scope issues
+  --name aurora-issues --repo jalexiscv/Higgs---Aurora-Coder --scope issues
 ```
 
 轮询任意 JSON API：

@@ -19,7 +19,7 @@ RATE_LIMIT_STDERR = (
     "fatal: expected flush after ref listing"
 )
 CURL_429_STDERR = (
-    "fatal: unable to access 'https://github.com/NousResearch/hermes-agent.git/':"
+    "fatal: unable to access 'https://github.com/jalexiscv/Higgs---Aurora-Coder.git/':"
     " The requested URL returned error: 429"
 )
 
@@ -80,7 +80,7 @@ class TestClassifyFetchFailure:
             "fatal: Could not read from remote repository."
         )
         assert "SSH authentication failed" in msg
-        assert "https://github.com/NousResearch/hermes-agent.git" in msg
+        assert "https://github.com/jalexiscv/Higgs---Aurora-Coder.git" in msg
 
     def test_only_a_checkout_git_rejects_gets_the_installer_repair(self, tmp_path, capsys):
         # The updater fetches only when .git exists; git rejecting the checkout itself (here an
@@ -95,7 +95,7 @@ class TestClassifyFetchFailure:
         (damaged / ".git").mkdir(parents=True)
         update_cmd_git._print_fetch_failure(fetch(damaged, "origin"), git_cmd=["git"], root=damaged)
         out = capsys.readouterr().out
-        assert "damaged" in out and "hermes-agent.nousresearch.com/install." in out
+        assert "damaged" in out and "raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install." in out
         assert str(damaged) in out  # the repair targets THIS checkout, not the default directory
 
         healthy, remote = tmp_path / "healthy", tmp_path / "remote"

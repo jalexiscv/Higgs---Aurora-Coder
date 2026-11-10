@@ -1,7 +1,7 @@
 # Catalog entry — office-3d
 #
 # Add this file at `plugin-catalog/office-3d.yaml` in a PR against
-# NousResearch/hermes-agent (one file, nothing else). The `sha` below is the
+# jalexiscv/Higgs---Aurora-Coder (one file, nothing else). The `sha` below is the
 # commit that already contains the catalog layout; re-check it matches the
 # pushed commit before opening the PR, and re-pin `version`/`image`/
 # `screenshots` whenever the sha moves.

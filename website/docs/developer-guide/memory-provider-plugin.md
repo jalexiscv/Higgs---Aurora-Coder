@@ -18,7 +18,7 @@ Aurora discovers memory providers from four sources, in this precedence order:
 
 | Source | Location | Notes |
 |---|---|---|
-| Bundled | `plugins/memory/<name>/` | Ships with Aurora. Closed to new providers — see [CONTRIBUTING](https://github.com/NousResearch/hermes-agent/blob/main/CONTRIBUTING.md). |
+| Bundled | `plugins/memory/<name>/` | Ships with Aurora. Closed to new providers — see [CONTRIBUTING](https://github.com/jalexiscv/Higgs---Aurora-Coder/blob/main/CONTRIBUTING.md). |
 | User | `$AURORA_HOME/plugins/<name>/` | Dropped in by the user, per profile. |
 | Project | `./.aurora/plugins/<name>/` | Opt-in via `AURORA_ENABLE_PROJECT_PLUGINS=1`. |
 | Package | `aurora_agent.memory_providers` entry point | Distribution supplied by the installation owner; nothing to copy. |

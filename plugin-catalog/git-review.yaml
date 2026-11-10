@@ -1,4 +1,4 @@
-# Catalog entry for NousResearch/hermes-agent: plugin-catalog/git-review.yaml
+# Catalog entry for jalexiscv/Higgs---Aurora-Coder: plugin-catalog/git-review.yaml
 # Pinned to the release commit of v0.3.0. Bump sha and version together.
 name: git-review
 repo: https://github.com/mister-ideas/git-review

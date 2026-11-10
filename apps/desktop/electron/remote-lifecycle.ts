@@ -204,7 +204,7 @@ async function locateAurora(ssh, remoteAuroraPath) {
     //   - version checking: `<python> --version` printed "Python x.y.z" instead of
     //     the Aurora version, and
     //   - capability probing: `<python> serve --help` failed entirely.
-    // See https://github.com/NousResearch/hermes-agent/issues/74411
+    // See https://github.com/jalexiscv/Higgs---Aurora-Coder/issues/74411
     return candidate
   }
 
@@ -264,7 +264,7 @@ async function locateAurora(ssh, remoteAuroraPath) {
 
   const err: any = new Error(
     'Aurora is not installed on the remote host (could not find an `aurora` executable). ' +
-      'Install it on the remote with:  curl -fsSL https://hermes-agent.nousresearch.com/install.sh | sh  ' +
+      'Install it on the remote with:  curl -fsSL https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.sh | sh  ' +
       '— or set the Aurora path explicitly in the SSH connection settings.'
   )
 

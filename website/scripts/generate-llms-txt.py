@@ -305,12 +305,12 @@ def emit_llms_index() -> str:
     )
     lines.append("")
     lines.append(
-        "Install: `curl -fsSL https://raw.githubusercontent.com/NousResearch/"
-        "aurora-agent/main/scripts/install.sh | bash`  "
+        "Install: `curl -fsSL https://raw.githubusercontent.com/jalexiscv/"
+        "Higgs---Aurora-Coder/main/scripts/install.sh | bash`  "
         "(Linux, macOS, WSL2)"
     )
     lines.append("")
-    lines.append("Repo: https://github.com/NousResearch/hermes-agent")
+    lines.append("Repo: https://github.com/jalexiscv/Higgs---Aurora-Coder")
     lines.append("")
 
     for section, items in SECTIONS:

@@ -7,7 +7,7 @@
 # is a single static ESM file that never fetches, downloads, or replaces
 # itself (rule 3).
 #
-# To submit: fork NousResearch/hermes-agent, add this file at
+# To submit: fork jalexiscv/Higgs---Aurora-Coder, add this file at
 # `plugin-catalog/background-review-watch.yaml`, and open a PR with the description in
 # `PR-description.md`.
 name: background-review-watch

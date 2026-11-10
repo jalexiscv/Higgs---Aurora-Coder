@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://hermes-agent.nousresearch.com/docs/"><img src="https://img.shields.io/badge/Docs-hermes--agent.nousresearch.com-FFD700?style=for-the-badge" alt="Documentation"></a>
   <a href="https://discord.gg/NousResearch"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
-  <a href="https://github.com/NousResearch/hermes-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
+  <a href="https://github.com/jalexiscv/Higgs---Aurora-Coder/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
   <a href="https://nousresearch.com"><img src="https://img.shields.io/badge/Built%20by-Nous%20Research-blueviolet?style=for-the-badge" alt="Built by Nous Research"></a>
   <a href="README.md"><img src="https://img.shields.io/badge/Lang-English-lightgrey?style=for-the-badge" alt="English"></a>
   <a href="README.ur-pk.md"><img src="https://img.shields.io/badge/Lang-اردو-green?style=for-the-badge" alt="اردو"></a>
@@ -32,7 +32,7 @@
 ## 快速安装
 
 ```bash
-curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.sh | bash
 ```
 
 支持 Linux、macOS 和 WSL2。安装程序会自动处理平台特定的配置。
@@ -41,7 +41,7 @@ curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
 >
 > **Windows：** 在 PowerShell 中运行：
 > ```powershell
-> iex (irm https://hermes-agent.nousresearch.com/install.ps1)
+> iex (irm https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.ps1)
 > ```
 > 安装完成后，可能需要重启终端，然后运行 `aurora` 开始对话。
 
@@ -178,8 +178,8 @@ PM 引导、Python 3.14 测试环境和规范验证命令见
 
 - 💬 [Discord](https://discord.gg/NousResearch)
 - 📚 [技能中心](https://agentskills.io)
-- 🐛 [问题反馈](https://github.com/NousResearch/hermes-agent/issues)
-- 💡 [讨论区](https://github.com/NousResearch/hermes-agent/discussions)
+- 🐛 [问题反馈](https://github.com/jalexiscv/Higgs---Aurora-Coder/issues)
+- 💡 [讨论区](https://github.com/jalexiscv/Higgs---Aurora-Coder/discussions)
 - 🔌 [AuroraClaw](https://github.com/AaronWong1999/hermesclaw) — 社区微信桥接：在同一微信账号上运行 Aurora Agent 和 OpenClaw。
 
 ---
