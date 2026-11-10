@@ -76,6 +76,7 @@ async def _request(conn, rid, method, params):
 
 @pytest.mark.asyncio
 async def test_a_fresh_install_is_offered_onboarding_once_the_desktop_says_it_is_local(tmp_path, monkeypatch):
+    monkeypatch.setattr("aurora_cli.welcome_trial.trial_enabled", lambda: True)  # opted into the trial
     conn = await _connect(tmp_path, monkeypatch)
     try:
         before = await _request(conn, 1, "onboarding.state", {"assume_fresh": True})
@@ -175,6 +176,7 @@ async def test_a_fresh_launch_claims_the_trial_and_opens_onboarding_on_it(tmp_pa
 
     monkeypatch.setattr(anon_auth, "current_nous_state", lambda *a, **k: dict(state) if state else None)
     monkeypatch.setattr(welcome_trial, "claim_desktop_free_tier", claim)
+    monkeypatch.setattr(welcome_trial, "trial_enabled", lambda: True)  # opted into the trial
     monkeypatch.setattr(welcome_trial, "_has_nous_identity", lambda: bool(state))
     conn = await _connect(tmp_path, monkeypatch)
     try:

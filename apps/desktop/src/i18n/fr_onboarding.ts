@@ -16,7 +16,7 @@ export const frOnboarding: TranslationOverrides['onboarding'] = {
   chooseLater: 'Je choisirai un fournisseur plus tard',
   recommended: 'Recommandé',
   connected: 'Connecté',
-  featuredPitch: 'Un abonnement, 300+ modèles de pointe — la méthode recommandée pour exécuter Aurora',
+  featuredPitch: 'L’IA intégrée d’Aurora Coder — collez votre clé API pour commencer',
   fireworksPitch: 'API de modèles directe — modèles de pointe hébergés par Fireworks',
   localModelsTitle: 'Exécuter des modèles en local',
   localModelsPitch: 'Aucun compte requis — téléchargez un modèle et exécutez-le sur cette machine',

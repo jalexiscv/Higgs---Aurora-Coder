@@ -1,6 +1,8 @@
 """The desktop's welcome trial: free inference on ``nous/welcome`` for a first install, once per OS user.
 
-Only the backend the desktop spawned on this machine can claim it, only when this OS user has never
+Opt-in (``nous.welcome_trial``, off by default): a first install otherwise lands on provider setup,
+which leads with the Aurora key. With it on,
+only the backend the desktop spawned on this machine can claim it, only when this OS user has never
 used Aurora here (``install_state``), and only with no provider and no Nous identity yet. The claim
 mints a guest stamped with ``WELCOME_CLAIM_FLAG`` in the mint's own write and writes the OS user's
 marker, so the trial is never claimed twice for that user. Another OS account on the same computer is
@@ -27,6 +29,18 @@ def _has_nous_identity() -> bool:
     from aurora_cli.auth_nous import _read_shared_nous_state
 
     return anon_auth.current_nous_state() is not None or _read_shared_nous_state() is not None
+
+
+def trial_enabled() -> bool:
+    """``nous.welcome_trial`` is switched on. An unreadable config reads off: never mint on a guess."""
+    from aurora_cli.config import load_config_readonly
+
+    try:
+        nous_cfg = load_config_readonly().get("nous")
+    except Exception:
+        logger.debug("welcome trial: config unreadable, treating nous.welcome_trial as false", exc_info=True)
+        return False
+    return isinstance(nous_cfg, dict) and nous_cfg.get("welcome_trial") is True
 
 
 def provider_configured() -> bool:
@@ -67,6 +81,7 @@ class _Ask:
 _CLAIM_BLOCKERS: tuple[tuple[str, Callable[[_Ask], bool]], ...] = (
     ("not the desktop's local backend", lambda _ask: not anon_auth.on_local_desktop_backend()),
     ("guests are switched off", lambda _ask: not anon_auth.guest_allowed()),
+    ("the welcome trial is switched off", lambda _ask: not trial_enabled()),
     ("a Nous identity exists", lambda _ask: _has_nous_identity()),
     ("a provider is configured",
      lambda ask: provider_configured() if ask.configured is None else ask.configured),

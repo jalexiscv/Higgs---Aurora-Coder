@@ -15,7 +15,7 @@ export const jaOnboarding: TranslationOverrides['onboarding'] = {
   chooseLater: '後でプロバイダーを選択します',
   recommended: '推奨',
   connected: '接続済み',
-  featuredPitch: '1 つのサブスクリプションで 300 以上の最先端モデル — Aurora を実行するための推奨方法',
+  featuredPitch: 'Aurora Coder に組み込まれた AI — API キーを貼り付けて始めましょう',
   fireworksPitch: '直接モデル API — Fireworks がホストする最先端モデル',
   localModelsTitle: 'モデルをローカルで実行',
   localModelsPitch: 'アカウント不要——モデルをダウンロードしてこのマシンで実行',

@@ -15,7 +15,7 @@ export const ruOnboarding: TranslationOverrides['onboarding'] = {
   chooseLater: 'Выберу провайдера позже',
   recommended: 'Рекомендуется',
   connected: 'Подключено',
-  featuredPitch: 'Одна подписка, 300+ передовых моделей — рекомендуемый способ запускать Aurora',
+  featuredPitch: 'Встроенный ИИ Aurora Coder — вставьте API-ключ, чтобы начать',
   fireworksPitch: 'Прямой API моделей — передовые модели на хостинге Fireworks',
   openRouterPitch: 'Один ключ, сотни моделей — надёжный вариант по умолчанию',
   apiKeyOptions: {

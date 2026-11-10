@@ -15,7 +15,7 @@ export const zhOnboarding: TranslationOverrides['onboarding'] = {
   chooseLater: '稍后再选择提供方',
   recommended: '推荐',
   connected: '已连接',
-  featuredPitch: '一个订阅，300+ 前沿模型 — 运行 Aurora 的推荐方式',
+  featuredPitch: 'Aurora Coder 的内置 AI — 粘贴 API 密钥即可开始',
   fireworksPitch: '直接模型 API — Fireworks 托管的前沿模型',
   localModelsTitle: '本地运行模型',
   localModelsPitch: '无需账号——下载模型，在本机运行',

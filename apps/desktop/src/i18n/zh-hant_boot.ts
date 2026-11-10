@@ -295,7 +295,7 @@ export const zhHantBoot = {
     chooseLater: '稍後再選擇提供方',
     recommended: '建議',
     connected: '已連線',
-    featuredPitch: '一個訂閱，300+ 前沿模型 — 執行 Aurora 的建議方式',
+    featuredPitch: 'Aurora Coder 的內建 AI — 貼上 API 金鑰即可開始',
     fireworksPitch: '直接模型 API — Fireworks 託管的前沿模型',
     localModelsTitle: '本地執行模型',
     localModelsPitch: '無需帳號——下載模型，在本機執行',

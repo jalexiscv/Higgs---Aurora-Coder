@@ -369,3 +369,21 @@ def test_a_configured_model_beats_the_trial_for_cron_jobs_and_kanban_workers(por
 
     assert _cron_model() == "anthropic/claude-sonnet-4"
     assert _kanban_worker_model(monkeypatch, tmp_path) == "anthropic/claude-sonnet-4"
+
+
+_SHIPPED_TRIAL_SWITCH = welcome_trial.trial_enabled  # ``install_portal`` pins it on for the rest
+
+
+def test_a_first_install_claims_nothing_until_the_trial_is_switched_on(portal, monkeypatch):
+    """The trial is opt-in: a first install lands on provider setup, and nothing is minted at Nous."""
+    from aurora_cli.config import save_config
+
+    monkeypatch.setattr(welcome_trial, "trial_enabled", _SHIPPED_TRIAL_SWITCH)
+    as_local_desktop_backend(monkeypatch)
+
+    assert welcome_trial.claim_blocker() == "the welcome trial is switched off"
+    assert welcome_trial.claim_desktop_free_tier() is None
+    assert portal.creates() == 0
+
+    save_config({"nous": {"welcome_trial": True}}, strip_defaults=False)
+    assert welcome_trial.claim_blocker() is None

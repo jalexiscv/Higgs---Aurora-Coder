@@ -15,7 +15,7 @@ export const enOnboarding: Translations['onboarding'] = {
   chooseLater: "I'll choose a provider later",
   recommended: 'Recommended',
   connected: 'Connected',
-  featuredPitch: 'One subscription, 300+ frontier models — the recommended way to run Aurora',
+  featuredPitch: 'The built-in AI of Aurora Coder — paste your API key to get started',
   fireworksPitch: 'Direct model API — Fireworks-hosted frontier models',
   localModelsTitle: 'Run models locally',
   localModelsPitch: 'No account needed — download a model and run it on this machine',

@@ -48,36 +48,33 @@ afterEach(() => {
 })
 
 describe('onboarding Picker', () => {
-  it('features Nous Portal and hides other providers behind a disclosure', () => {
+  it('features Aurora and hides every other provider behind a disclosure', () => {
     setProviders([makeOAuthProvider('anthropic', 'Anthropic Claude'), makeOAuthProvider('nous', 'Nous Portal')])
     render(<Picker ctx={ctx} />)
 
-    expect(screen.getByText('Nous Portal')).toBeTruthy()
+    expect(screen.getByText('Aurora')).toBeTruthy()
     expect(screen.getByText('Recommended')).toBeTruthy()
-    // Fireworks stays behind the disclosure with the other alternatives; only
-    // Nous Portal is visible before the user expands the list.
+    // Only Aurora is visible before the user expands the list.
+    expect(screen.queryByText('Nous Portal')).toBeNull()
     expect(screen.queryByText('Fireworks AI')).toBeNull()
     expect(screen.queryByText('Anthropic Account')).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: 'Other providers' }))
 
+    expect(screen.getByText('Nous Portal')).toBeTruthy()
     expect(screen.getByText('Fireworks AI')).toBeTruthy()
     expect(screen.getByText('Anthropic Account')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Collapse' })).toBeTruthy()
   })
 
-  it('shows every provider directly when Nous Portal is absent', () => {
-    setProviders([
-      makeOAuthProvider('anthropic', 'Anthropic Claude'),
-      makeOAuthProvider('openai-codex', 'OpenAI Codex / ChatGPT')
-    ])
+  it('opens the key form on the Aurora key from the featured row', () => {
+    setProviders([makeOAuthProvider('nous', 'Nous Portal')])
     render(<Picker ctx={ctx} />)
 
-    expect(screen.getByText('Fireworks AI')).toBeTruthy()
-    expect(screen.getByText('Anthropic Account')).toBeTruthy()
-    expect(screen.getByText('ChatGPT or Codex Subscription')).toBeTruthy()
-    expect(screen.queryByText('Other sign-in options')).toBeNull()
-    expect(screen.queryByText('Recommended')).toBeNull()
+    fireEvent.click(screen.getByText('Aurora'))
+
+    expect($desktopOnboarding.get().mode).toBe('apikey')
+    expect(screen.getByPlaceholderText('sk-hr-…')).toBeTruthy()
   })
 
   it('offers "choose later" on first run and persists the skip', () => {
@@ -92,14 +89,13 @@ describe('onboarding Picker', () => {
     expect(window.localStorage.getItem('aurora-onboarding-skipped-v1')).toBe('1')
   })
 
-  it('keeps Nous Portal on top of the key form when the provider list failed to load', () => {
+  it('keeps Nous Portal reachable from the key form when the provider list failed to load', () => {
     // A failed/empty OAuth list drops the picker onto the key form with no way back.
     setProviders([])
     $desktopOnboarding.set({ ...$desktopOnboarding.get(), mode: 'apikey' })
     render(<Picker ctx={ctx} />)
 
     expect(screen.getByText('Nous Portal')).toBeTruthy()
-    expect(screen.getByText('Recommended')).toBeTruthy()
     expect(screen.getByText('Fireworks AI')).toBeTruthy()
     cleanup()
 

@@ -100,6 +100,16 @@ model:
 | `AuroraFlash` | 1,048,576 | |
 | `Itzel` | 1,000,000 | Used for auxiliary tasks (titles, summaries, vision). |
 
+Aurora Desktop asks the same way: its first-run provider screen leads with Aurora, and choosing it
+opens the API-key form on the Aurora key. The other providers sit behind **Other providers**. The
+Nous welcome trial, which lets a first Desktop install claim free Nous inference on its own, is off
+by default so that screen is what a new install sees; switch it back on with:
+
+```yaml
+nous:
+  welcome_trial: true
+```
+
 Switch between them with `aurora model` or `/model`. Aurora speaks the Anthropic Messages API at
 `https://aurora.dtacenter.com`; reasoning is always requested as adaptive thinking with an effort
 level, and on `Spark`, `AuroraAGI` and `Itzel` turning reasoning off leaves the model's own default
@@ -107,7 +117,7 @@ in place. Keys carry a monthly token quota set by whoever issued them.
 
 ### Nous Portal
 
-[Nous Portal](https://portal.nousresearch.com) is Nous Research's unified subscription gateway and **the recommended way to run Aurora Agent**. One OAuth login covers 300+ frontier agentic models (Claude, GPT, Gemini, DeepSeek, Qwen, Kimi, GLM, MiniMax, Grok, ...) plus the [Tool Gateway](../user-guide/features/tool-gateway.md) (web search, image generation, TTS, browser automation) — billed against your Nous subscription instead of separate per-provider accounts.
+[Nous Portal](https://portal.nousresearch.com) is Nous Research's unified subscription gateway. One OAuth login covers 300+ frontier agentic models (Claude, GPT, Gemini, DeepSeek, Qwen, Kimi, GLM, MiniMax, Grok, ...) plus the [Tool Gateway](../user-guide/features/tool-gateway.md) (web search, image generation, TTS, browser automation) — billed against your Nous subscription instead of separate per-provider accounts.
 
 ```bash
 aurora setup --portal     # fresh install — OAuth + provider + gateway in one command

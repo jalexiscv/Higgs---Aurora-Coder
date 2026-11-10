@@ -17,7 +17,7 @@ export const deOnboarding: TranslationOverrides['onboarding'] = {
   chooseLater: 'Ich wähle später einen Anbieter',
   recommended: 'Empfohlen',
   connected: 'Verbunden',
-  featuredPitch: 'Ein Abo, 300+ Frontier-Modelle – die empfohlene Art, Aurora zu nutzen',
+  featuredPitch: 'Die integrierte KI von Aurora Coder – API-Schlüssel einfügen und loslegen',
   fireworksPitch: 'Direkte Model-API – Fireworks-gehostete Frontier-Modelle',
   localModelsTitle: 'Modelle lokal ausführen',
   localModelsPitch: 'Kein Konto nötig – laden Sie ein Modell herunter und führen Sie es auf diesem Rechner aus',

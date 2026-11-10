@@ -82,9 +82,19 @@ export interface ApiKeyOption {
   short?: string
 }
 
-// Curated order mirrors CANONICAL_PROVIDERS: Fireworks sits #2 overall (after
-// Nous Portal OAuth), ahead of OpenRouter and the rest of the key catalog.
+/** The env var that holds the key of Aurora, the built-in provider the pickers feature. */
+export const FEATURED_ENV_KEY = 'AURORA_API_KEY'
+
+// Curated order mirrors CANONICAL_PROVIDERS: Aurora leads, then Fireworks,
+// OpenRouter and the rest of the key catalog.
 const API_KEY_OPTIONS: ApiKeyOption[] = [
+  {
+    id: 'aurora',
+    name: 'Aurora',
+    envKey: FEATURED_ENV_KEY,
+    docsUrl: 'https://aurora.dtacenter.com/developers',
+    placeholder: 'sk-hr-…'
+  },
   {
     id: 'fireworks',
     name: 'Fireworks AI',
@@ -584,8 +594,6 @@ function Header() {
   )
 }
 
-export const FEATURED_ID = 'nous'
-
 // Stand-in for the Nous row when the OAuth provider list could not be read
 // (it failed or came back empty, which drops the picker onto the key form).
 // Starting sign-in only needs the id; the backend's start reply decides the flow.
@@ -593,7 +601,7 @@ const NOUS_FALLBACK: OAuthProvider = {
   cli_command: 'aurora auth add nous',
   docs_url: 'https://portal.nousresearch.com',
   flow: 'device_code',
-  id: FEATURED_ID,
+  id: 'nous',
   name: 'Nous Portal',
   status: { logged_in: false }
 }
@@ -660,14 +668,8 @@ export function Picker({ ctx }: { ctx: OnboardingContext }) {
     return <Status>{t.onboarding.lookingUpProviders}</Status>
   }
 
-  const featured = ordered.find(p => p.id === FEATURED_ID) ?? null
-  const rest = featured ? ordered.filter(p => p.id !== FEATURED_ID) : ordered
-  // Collapse the secondary providers behind a disclosure whenever Nous Portal
-  // is present to anchor the choice — otherwise show the full list. The
-  // Fireworks/OpenRouter key rows always live behind the disclosure, so the
-  // toggle is warranted even when there are no other OAuth providers.
-  const collapsible = Boolean(featured)
-  const showRest = !collapsible || showAll
+  // Aurora anchors the choice; every other provider sits behind the disclosure.
+  const showRest = showAll
 
   // "Run models locally" leaves the picker for Settings -> Providers ->
   // Local Models, where install/download live. First-run: persist the skip
@@ -687,35 +689,33 @@ export function Picker({ ctx }: { ctx: OnboardingContext }) {
   return (
     <div className="grid gap-2">
       <div className="grid max-h-[60dvh] gap-2 overflow-y-auto p-1">
-        {featured ? <FeaturedProviderRow onSelect={select} provider={featured} /> : null}
+        <FeaturedProviderRow onClick={() => openKeyForm(FEATURED_ENV_KEY)} />
         {/* The no-account path: everything runs on this machine. Shipped
             behind the --local launch flag. (Fireworks moved into the
             expanded list on main.) */}
         {$localModelsEnabled.get() ? <LocalModelsProviderRow onClick={openLocalModels} /> : null}
         {showRest ? (
           <>
-            {/* Fireworks leads the expanded list, matching CANONICAL_PROVIDERS
-                (Nous → Fireworks), but stays hidden until the user opens it. */}
+            {/* Fireworks leads the expanded list, matching CANONICAL_PROVIDERS,
+                but stays hidden until the user opens it. */}
             <FireworksProviderRow onClick={() => openKeyForm('FIREWORKS_API_KEY')} />
-            {rest.map(p => (
+            {ordered.map(p => (
               <ProviderRow key={p.id} onSelect={select} provider={p} />
             ))}
             <OpenRouterProviderRow onClick={() => openKeyForm('OPENROUTER_API_KEY')} />
           </>
         ) : null}
       </div>
-      {collapsible ? (
-        <Button
-          className="mt-1 self-center font-medium"
-          onClick={() => setShowAll(persistShowAll(!showAll))}
-          size="xs"
-          type="button"
-          variant="text"
-        >
-          {showAll ? t.onboarding.collapse : t.onboarding.otherProviders}
-          <ChevronDown className={cn('size-3.5 transition', showAll && 'rotate-180')} />
-        </Button>
-      ) : null}
+      <Button
+        className="mt-1 self-center font-medium"
+        onClick={() => setShowAll(persistShowAll(!showAll))}
+        size="xs"
+        type="button"
+        variant="text"
+      >
+        {showAll ? t.onboarding.collapse : t.onboarding.otherProviders}
+        <ChevronDown className={cn('size-3.5 transition', showAll && 'rotate-180')} />
+      </Button>
       <div className="flex items-center justify-between gap-3 pt-1">
         {/* First run only: let the user defer the choice and land in the app.
             In manual mode the overlay already has a close affordance, so the
@@ -751,11 +751,11 @@ function KeyFormStep({
   onSelect: (provider: OAuthProvider) => void
   providers: OAuthProvider[]
 }) {
-  const nous = localEndpoint ? null : (providers.find(p => p.id === FEATURED_ID) ?? NOUS_FALLBACK)
+  const nous = localEndpoint ? null : (providers.find(p => p.id === NOUS_FALLBACK.id) ?? NOUS_FALLBACK)
 
   return (
     <div className="grid gap-3">
-      {nous ? <FeaturedProviderRow onSelect={onSelect} provider={nous} /> : null}
+      {nous ? <ProviderRow onSelect={onSelect} provider={nous} /> : null}
       <ApiKeyForm
         canGoBack={hasOauth && !localEndpoint}
         initialEnvKey={localEndpoint ? 'OPENAI_BASE_URL' : initialEnvKey}

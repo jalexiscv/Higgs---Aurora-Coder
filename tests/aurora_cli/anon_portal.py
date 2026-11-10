@@ -144,6 +144,9 @@ def install_portal(monkeypatch, tmp_path, fake: FakePortal | None = None) -> Fak
     # resolve_nous_access_token memoises the last token for 5 s per profile home (dict); a token minted
     # by an earlier test must not be served to this one.
     monkeypatch.setattr(auth_mod, "_RESOLVE_TOKEN_CACHE", {})
+    # The portal's world is an install that opted into the welcome trial (``nous.welcome_trial``,
+    # off by default); tests rewrite config.yaml freely, so the opt-in is pinned at its reader.
+    monkeypatch.setattr("aurora_cli.welcome_trial.trial_enabled", lambda: True)
     return fake
 
 
@@ -168,6 +171,7 @@ def claimed_trial(monkeypatch) -> dict:
     from aurora_cli import welcome_trial
 
     as_local_desktop_backend(monkeypatch)
+    monkeypatch.setattr(welcome_trial, "trial_enabled", lambda: True)  # an install that opted in
     state = welcome_trial.claim_desktop_free_tier()
     assert state is not None, welcome_trial.claim_blocker()
     return state

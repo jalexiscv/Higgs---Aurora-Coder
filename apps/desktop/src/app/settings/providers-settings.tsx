@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { runInTerminal } from '@/app/right-sidebar/store'
 import { disconnectOAuthProvider, listOAuthProviders } from '@/aurora'
 import {
-  FEATURED_ID,
+  FEATURED_ENV_KEY,
   FeaturedProviderRow,
   FireworksProviderRow,
   LocalModelsProviderRow,
@@ -144,7 +144,7 @@ function buildProviderKeyGroups(vars: Record<string, EnvVarInfo>): ProviderKeyGr
 }
 
 // Deliberately a near-1:1 replica of the first-run onboarding picker
-// (`Picker` in desktop-onboarding-overlay): same recommended card, same
+// (`Picker` in desktop-onboarding-overlay): same recommended Aurora card, same
 // always-visible Local models row, same provider rows, same "Other
 // providers" disclosure (Fireworks and OpenRouter quick-key rows live
 // inside it on both surfaces), and the same bottom-right "I have an API
@@ -153,6 +153,7 @@ function buildProviderKeyGroups(vars: Record<string, EnvVarInfo>): ProviderKeyGr
 // off to the shared onboarding overlay, which runs that provider's real
 // sign-in flow; the key affordances open the API-key catalog below.
 function OAuthPicker({
+  auroraKeySet,
   disconnecting,
   onDisconnect,
   onTerminalDisconnect,
@@ -161,6 +162,7 @@ function OAuthPicker({
   providers,
   profile
 }: {
+  auroraKeySet: boolean
   disconnecting: null | string
   onDisconnect: (provider: OAuthProvider) => void
   onTerminalDisconnect: (provider: OAuthProvider) => void
@@ -180,16 +182,14 @@ function OAuthPicker({
 
   const select = (p: OAuthProvider) => startManualProviderOAuth(p.id, profile)
 
-  // The free tier holds a token but no account: it is never "connected"; the featured Nous row
+  // The free tier holds a token but no account: it is never "connected"; the Nous row
   // names it (Nous · free tier) and offers the sign-in that keeps its connectors.
   const isConnected = (p: OAuthProvider) => Boolean(p.status?.logged_in) && p.status?.free_tier !== true
-  const featured = ordered.find(p => p.id === FEATURED_ID && !isConnected(p)) ?? null
-  const rest = featured ? ordered.filter(p => p.id !== FEATURED_ID) : ordered
   // Keep connected accounts grouped and always visible; only the unconnected
   // providers hide behind the disclosure, so the page leads with what's set up.
   // Both lists preserve `sortProviders` order (curated priority, then name).
-  const connected = rest.filter(isConnected)
-  const others = rest.filter(p => !isConnected(p))
+  const connected = ordered.filter(isConnected)
+  const others = ordered.filter(p => !isConnected(p))
   const collapsible = others.length > 0
   const showOthers = !collapsible || showAll
 
@@ -210,7 +210,7 @@ function OAuthPicker({
       <p className="-mt-2 mb-1 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
         {p.intro}
       </p>
-      {featured && <FeaturedProviderRow onSelect={select} provider={featured} />}
+      {!auroraKeySet && <FeaturedProviderRow onClick={onWantApiKey} />}
       {/* Slot #2 — the no-account path, matching onboarding. Behind the
           --local launch flag like every local-models surface. */}
       {$localModelsEnabled.get() && <LocalModelsProviderRow onClick={onWantLocalModels} />}
@@ -606,6 +606,7 @@ export function ProvidersSettings({
     <SettingsContent>
       <SettingsProfileScope className="mb-5" />
       <OAuthPicker
+        auroraKeySet={vars[FEATURED_ENV_KEY]?.is_set === true}
         disconnecting={disconnecting}
         onDisconnect={provider => void handleDisconnect(provider)}
         onTerminalDisconnect={provider => void handleTerminalDisconnect(provider)}

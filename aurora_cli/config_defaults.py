@@ -2668,10 +2668,10 @@ DEFAULT_CONFIG = {
         # NousResearch/api#227), so chat is the default until that is fixed.
         "anthropic_wire": "chat",
         # Nous free tier: with no other provider configured, Aurora sets up a free Nous identity on
-        # first use (inference on nous/welcome + connectors) and offers `/login` (terminal:
-        # `aurora auth upgrade`) to sign in. false turns the free tier off entirely: nothing is set
-        # up and nothing is used.
+        # first use (nous/welcome inference + connectors; `/login` signs in). false: never set up or used.
         "guest": True,
+        # Desktop's welcome trial (a first install claims that free tier unasked) is opt-in.
+        "welcome_trial": False,
     },
     # Google Vertex AI (Gemini). Auth is OAuth2 from a service-account JSON or ADC, NOT an API key;
     # the credential path lives in .env (VERTEX_CREDENTIALS_PATH / GOOGLE_APPLICATION_CREDENTIALS).
