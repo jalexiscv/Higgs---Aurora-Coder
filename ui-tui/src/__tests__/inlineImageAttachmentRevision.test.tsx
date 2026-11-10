@@ -1,7 +1,7 @@
 import { PassThrough } from 'stream'
 
-import { renderSync } from '@hermes/ink'
-import type { ImageRenderResult } from '@hermes/shared/gateway-events'
+import { renderSync } from '@aurora/ink'
+import type { ImageRenderResult } from '@aurora/shared/gateway-events'
 import { afterEach, expect, it, vi } from 'vitest'
 
 import { GatewayProvider } from '../app/gatewayContext.js'

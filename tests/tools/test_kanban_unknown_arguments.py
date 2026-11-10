@@ -6,13 +6,13 @@ from pathlib import Path
 def test_review_unknown_argument_rejects_before_handoff(tmp_path, monkeypatch):
     home = tmp_path / 'home'
     home.mkdir()
-    monkeypatch.setenv('HERMES_HOME', str(home))
-    monkeypatch.setenv('HERMES_KANBAN_HOME', str(home))
+    monkeypatch.setenv('AURORA_HOME', str(home))
+    monkeypatch.setenv('AURORA_KANBAN_HOME', str(home))
     monkeypatch.setattr(Path, 'home', lambda: tmp_path)
-    for key in ('HERMES_KANBAN_TASK', 'HERMES_KANBAN_DB', 'HERMES_KANBAN_BOARD', 'HERMES_KANBAN_RUN_ID'):
+    for key in ('AURORA_KANBAN_TASK', 'AURORA_KANBAN_DB', 'AURORA_KANBAN_BOARD', 'AURORA_KANBAN_RUN_ID'):
         monkeypatch.delenv(key, raising=False)
-    from hermes_cli import kanban_db as kb
-    from hermes_cli import kanban_db_connect as kbc
+    from aurora_cli import kanban_db as kb
+    from aurora_cli import kanban_db_connect as kbc
     from tools import kanban_tools  # register actual handlers
     from tools.registry import registry
     kb._INITIALIZED_PATHS.clear()

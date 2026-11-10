@@ -295,7 +295,7 @@ def _maybe_fire_tui_heartbeat_tick(sid: str, session: dict) -> None:
     due instead of being silently consumed.
     """
     try:
-        from hermes_cli.heartbeat import HeartbeatManager
+        from aurora_cli.heartbeat import HeartbeatManager
     except Exception:
         return
     if not (sid_key := session.get("session_key") or ""):
@@ -338,8 +338,8 @@ def _session_owns_live_wakeup_schedule(session: dict) -> bool:
     if not (sid_key := session.get("session_key") or ""):
         return False
     try:
-        from hermes_cli.heartbeat import HeartbeatManager
-        from hermes_cli.loops import LoopManager
+        from aurora_cli.heartbeat import HeartbeatManager
+        from aurora_cli.loops import LoopManager
         with _session_profile_runtime_scope(session, hydrate_secrets=False):
             loop = LoopManager(session_id=sid_key)
             if loop.is_active() and not _loop_route_is_gateway_chat(loop.state):
@@ -377,7 +377,7 @@ def _maybe_fire_tui_loop_tick(sid: str, session: dict) -> None:
     """Fire a due /loop wakeup for an idle TUI/Desktop/dashboard session (per-session poller, coarse cadence). Claims
     the session (running=True) before dispatching so a racing user prompt wins; the post-turn hook completes the tick."""
     try:
-        from hermes_cli.loops import LoopManager, goal_blocks_loop_tick
+        from aurora_cli.loops import LoopManager, goal_blocks_loop_tick
     except Exception:
         return
     if not (sid_key := session.get("session_key") or ""):
@@ -450,7 +450,7 @@ def _format_kanban_event_text(sub: dict, task, ev, board_slug: str) -> Optional[
 
 
 def _kb_board_key(_kb, board_meta) -> tuple[str, str]:
-    """(slug, resolved DB identity) — multiple slugs can point at one DB when HERMES_KANBAN_DB pins it."""
+    """(slug, resolved DB identity) — multiple slugs can point at one DB when AURORA_KANBAN_DB pins it."""
     slug = (board_meta or {}).get("slug") or _kb.DEFAULT_BOARD
     db_path = (board_meta or {}).get("db_path")
     try:
@@ -470,7 +470,7 @@ def _kb_stray_delegate_keys(session: dict, session_key: str) -> tuple:
         with _session_db(session) as db:
             if db is None:
                 return ()  # store unavailable: not cached, so a later poll retries
-            from hermes_state_delegate_children import delegate_descendant_ids
+            from aurora_state_delegate_children import delegate_descendant_ids
             keys = tuple(delegate_descendant_ids(db, session_key))
     except sqlite3.Error as exc:  # busy/locked store: not cached, so a later poll retries
         _notif_log_failure("kanban stray-subscription lookup failed", exc)
@@ -483,7 +483,7 @@ def _kb_reclaim_stray_subs(_kbn, slug: str, session_key: str, stray: tuple) -> b
     """Re-key ``tui`` subscriptions bound to this session's own subagents back onto it. True when the board is
     clean afterwards (nothing to move, or moved); False on a DB error so the caller retries next poll."""
     import sqlite3
-    from hermes_cli import kanban_db_connect as _kbc
+    from aurora_cli import kanban_db_connect as _kbc
     try:
         if not any(_kbn.count_notify_subs(board=slug, platform="tui", chat_id=k) for k in stray):
             return True
@@ -499,8 +499,8 @@ def _kb_poll_board(_kb, slug: str, session_key: str, stray: tuple = (), unreclai
     """Claim + format this session's unseen events on one board. One poller per live session: the board is not opened
     writable unless it has a subscription owned by this exact session (a failed read-only probe — locked/corrupt DB —
     falls through so delivery is preserved). A board whose stray-subscription reclaim failed lands in ``unreclaimed``."""
-    from hermes_cli import kanban_db_connect as _kbc
-    from hermes_cli import kanban_db_notify as _kbn
+    from aurora_cli import kanban_db_connect as _kbc
+    from aurora_cli import kanban_db_notify as _kbn
     if stray and not _kb_reclaim_stray_subs(_kbn, slug, session_key, stray) and unreclaimed is not None:
         unreclaimed.append(slug)
     with contextlib.suppress(Exception):
@@ -541,7 +541,7 @@ def _kb_poll_board(_kb, slug: str, session_key: str, stray: tuple = (), unreclai
 
 def _collect_kanban_notifications(session: dict) -> list:
     """Claim unseen terminal kanban events for this session's ``platform="tui"`` subscriptions (``kanban_create``
-    auto-subscribes with ``chat_id=HERMES_SESSION_KEY``; no "tui" messaging adapter exists, so this poller is the
+    auto-subscribes with ``chat_id=AURORA_SESSION_KEY``; no "tui" messaging adapter exists, so this poller is the
     delivery path). Same atomic cursor-claim as the gateway notifier: exactly-once even if a gateway polls the same DB.
 
     See #59890.
@@ -550,7 +550,7 @@ def _collect_kanban_notifications(session: dict) -> list:
     if not session_key or session.get("_finalized"):
         return []
     try:
-        from hermes_cli import kanban_db as _kb
+        from aurora_cli import kanban_db as _kb
     except Exception:
         return []
     try:
@@ -560,7 +560,7 @@ def _collect_kanban_notifications(session: dict) -> list:
             boards = [_kb.read_board_metadata(_kb.DEFAULT_BOARD)]
         except Exception:
             return []
-    # dict keyed by resolved DB identity: first slug per DB wins (a pinned HERMES_KANBAN_DB aliases slugs).
+    # dict keyed by resolved DB identity: first slug per DB wins (a pinned AURORA_KANBAN_DB aliases slugs).
     unique = {}
     for slug, resolved in (_kb_board_key(_kb, board_meta) for board_meta in boards):
         unique.setdefault(resolved, slug)
@@ -883,7 +883,7 @@ _desktop_ui_wired = False
 def _wire_desktop_sinks() -> None:
     """Idempotently wire process-registry and desktop-tool sinks to renderer events: `agent.terminal.output` and
     `terminal.close` (drops a tab without killing the process) route to the window owning the process; desktop-only
-    tools pass the turn's ``HERMES_UI_SESSION_ID`` as ``sid``. `_emit` is thread-safe."""
+    tools pass the turn's ``AURORA_UI_SESSION_ID`` as ``sid``. `_emit` is thread-safe."""
     global _desktop_ui_wired
     from tools.process_registry import process_registry
 

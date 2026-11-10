@@ -1,11 +1,11 @@
-import { LOCAL_CONNECTION_ID } from '@hermes/shared'
+import { LOCAL_CONNECTION_ID } from '@aurora/shared'
 
 import type {
+  AuroraApiRequest,
+  AuroraConnection,
   DesktopConnectionsRegistry,
   DesktopRegistryConnection,
-  DesktopRosterAgent,
-  HermesApiRequest,
-  HermesConnection
+  DesktopRosterAgent
 } from '@/global'
 import { createServedProfiles, SERVED_SET_READ_TIMEOUT_MS, type ServedProfiles } from '@/lib/browser-served-profiles'
 import { browserApi, type BrowserBootstrap, websocketUrl } from '@/lib/browser-transport'
@@ -13,25 +13,25 @@ import { BACKEND_BOOT_WAIT_TIMEOUT_MS, withTimeout } from '@/lib/with-timeout'
 
 /**
  * This machine's saved gateway connections, browser side: the ONE list native Desktop keeps
- * (`hermes_cli/gateway_connections.py`), read and written over `/api/gateway-connections`, so the
+ * (`aurora_cli/gateway_connections.py`), read and written over `/api/gateway-connections`, so the
  * Webapp's Settings → Gateways is Desktop's own Saved connections page and both see every change.
  *
  * Every request to a saved gateway goes to this same origin under `/api/relay/<connection id>`; the
  * serving gateway sends it on with the credential saved for that connection, as Desktop sends it
- * (`hermes_cli/webapp_relay_target.py`). So a saved connection is a bootstrap with that base path:
+ * (`aurora_cli/webapp_relay_target.py`). So a saved connection is a bootstrap with that base path:
  * REST, file links and uploads reuse the serving gateway's transport unchanged. A relayed socket
  * carries only this gateway's one-use `relay_ticket`; the serving gateway mints the other gateway's
  * credential for each dial. The ids are the registry's own, the ones native Desktop routes by, so
  * profile routes, Bot Mode and group-chat records name the same gateway on both hosts.
  */
 
-type Api = <T>(request: HermesApiRequest) => Promise<T>
+type Api = <T>(request: AuroraApiRequest) => Promise<T>
 
 type ChangeReason = 'removed' | 'saved' | 'updated'
 
 type ChangeListener = (payload: { connectionId: string; reason: ChangeReason }) => void
 
-type Bridge = NonNullable<Window['hermesDesktop']['connections']>
+type Bridge = NonNullable<Window['auroraDesktop']['connections']>
 
 const ROUTE = '/api/gateway-connections'
 
@@ -101,7 +101,7 @@ export interface BrowserSavedConnections {
   bootstrapFor: (connectionId: null | string | undefined) => BrowserBootstrap
   /** A fresh socket URL on *connectionId* for *path*, admitted by a relay ticket minted for this dial. */
   socketUrl: (connectionId: string, path: RelayedSocketPath, profile?: null | string) => Promise<string>
-  connection: (connectionId: string, profile?: null | string) => HermesConnection
+  connection: (connectionId: string, profile?: null | string) => AuroraConnection
   rosterAgents: (connectionId: string) => Promise<DesktopRosterAgent[]>
   /** Whether *connectionId* serves *profile*, from the set its last inventory read reported. */
   serves: (connectionId: string, profile?: null | string) => boolean
@@ -150,13 +150,13 @@ export function createBrowserSavedConnections({
     const read = await api<DesktopConnectionsRegistry | null>({ path: ROUTE })
 
     if (!Array.isArray(read?.connections)) {
-      throw new Error('Hermes did not return the saved connections')
+      throw new Error('Aurora did not return the saved connections')
     }
 
     return publish(read)
   }
 
-  const mutated = async <T extends { registry: DesktopConnectionsRegistry }>(request: HermesApiRequest) => {
+  const mutated = async <T extends { registry: DesktopConnectionsRegistry }>(request: AuroraApiRequest) => {
     const result = await api<T>(request)
     publish(result.registry)
 
@@ -188,7 +188,7 @@ export function createBrowserSavedConnections({
     const ticket = String(minted?.ticket || '').trim()
 
     if (!ticket) {
-      throw new Error('Hermes did not return a relay ticket')
+      throw new Error('Aurora did not return a relay ticket')
     }
 
     const url = new URL(websocketUrl(relayed.basePath, path, {}, profile))
@@ -197,7 +197,7 @@ export function createBrowserSavedConnections({
     return url.toString()
   }
 
-  const connection = (connectionId: string, profile?: null | string): HermesConnection => {
+  const connection = (connectionId: string, profile?: null | string): AuroraConnection => {
     const row = gateway(connectionId)
     const relayed = bootstrapFor(connectionId)
 
@@ -240,7 +240,7 @@ export function createBrowserSavedConnections({
     let set = served.get(key)
 
     if (!set) {
-      const relayed: Api = <T>(request: HermesApiRequest) => browserApi<T>(bootstrapFor(connectionId), request)
+      const relayed: Api = <T>(request: AuroraApiRequest) => browserApi<T>(bootstrapFor(connectionId), request)
 
       set = createServedProfiles(
         relayed,

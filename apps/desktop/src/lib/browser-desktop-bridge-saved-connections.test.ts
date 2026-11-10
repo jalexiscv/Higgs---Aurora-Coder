@@ -11,10 +11,10 @@ import { RELAYED_ROSTER_TIMEOUT_MS } from './browser-saved-connections'
 import { UnservedProfileError } from './browser-served-profiles'
 
 type RelayWindow = Window & {
-  __HERMES_AUTH_REQUIRED__?: boolean
-  __HERMES_BASE_PATH__?: string
-  __HERMES_UI_SURFACE__?: string
-  hermesDesktop?: Window['hermesDesktop']
+  __AURORA_AUTH_REQUIRED__?: boolean
+  __AURORA_BASE_PATH__?: string
+  __AURORA_UI_SURFACE__?: string
+  auroraDesktop?: Window['auroraDesktop']
 }
 
 const win = window as unknown as RelayWindow
@@ -51,7 +51,7 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json' }, status })
 
 /**
- * The serving gateway at /hermes, whose machine saved Mini; answers by path and records every
+ * The serving gateway at /aurora, whose machine saved Mini; answers by path and records every
  * request. A stalled Mini takes the request and never answers it. `miniServes` is the served set
  * Mini reports (its multiplexer's `gateway_shared_with`); left out, Mini reports none, as an older
  * one does. `miniProfiles` is what Mini has installed. A test changes either array to change Mini,
@@ -77,21 +77,21 @@ function servingGateway({
     requests.push({ body: init?.body ? JSON.parse(String(init.body)) : undefined, method, path, search: url.search })
     saved.rows = saved.rows.map(row => (row.id === 'mini' ? mini.row : row))
 
-    if (path === '/hermes/api/gateway-connections' && method === 'GET') {
+    if (path === '/aurora/api/gateway-connections' && method === 'GET') {
       return json(registryWith(saved.rows))
     }
 
-    if (path.startsWith('/hermes/api/gateway-connections') && method === 'POST') {
+    if (path.startsWith('/aurora/api/gateway-connections') && method === 'POST') {
       return json({ ok: true, registry: registryWith(saved.rows) })
     }
 
-    if (path === '/hermes/api/gateway-connections/mini' && method === 'DELETE') {
+    if (path === '/aurora/api/gateway-connections/mini' && method === 'DELETE') {
       saved.rows = []
 
       return json({ ok: true, registry: registryWith(saved.rows) })
     }
 
-    if (path === '/hermes/api/relay/mini/api/profiles') {
+    if (path === '/aurora/api/relay/mini/api/profiles') {
       if (miniStalled) {
         return new Promise<Response>((_resolve, reject) =>
           init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')))
@@ -101,25 +101,25 @@ function servingGateway({
       return json({ profiles: miniProfiles.map(name => ({ name })) })
     }
 
-    if (path === '/hermes/api/relay/mini/api/profiles/sessions') {
+    if (path === '/aurora/api/relay/mini/api/profiles/sessions') {
       return json({ sessions: [{ id: 'm1', profile: 'research', title: 'On Mini' }], total: 1 })
     }
 
-    if (path === '/hermes/api/relay/mini/api/status') {
+    if (path === '/aurora/api/relay/mini/api/status') {
       return json(miniServes ? { gateway_shared_with: miniServes } : {})
     }
 
-    if (path === '/hermes/api/relay/mini/api/profiles/active') {
+    if (path === '/aurora/api/relay/mini/api/profiles/active') {
       return json({ active: mini.own, current: mini.own })
     }
 
-    if (path === '/hermes/api/profiles') {
+    if (path === '/aurora/api/profiles') {
       return json({ profiles: [{ name: 'default' }] })
     }
 
     if (path.endsWith('/api/webapp/socket-ticket')) {
       const socket = url.searchParams.get('socket')
-      const where = path.startsWith('/hermes/api/relay/mini/') ? 'mini' : 'hub'
+      const where = path.startsWith('/aurora/api/relay/mini/') ? 'mini' : 'hub'
 
       return json({ ticket: `${where}-${socket}`, ttl_seconds: 30 })
     }
@@ -133,21 +133,21 @@ function servingGateway({
 }
 
 function install({ surface = 'webapp' } = {}) {
-  win.__HERMES_AUTH_REQUIRED__ = true
-  win.__HERMES_BASE_PATH__ = '/hermes'
-  win.__HERMES_UI_SURFACE__ = surface
+  win.__AURORA_AUTH_REQUIRED__ = true
+  win.__AURORA_BASE_PATH__ = '/aurora'
+  win.__AURORA_UI_SURFACE__ = surface
 
   expect(installBrowserDesktopBridge()).toBe(true)
 
-  return win.hermesDesktop!
+  return win.auroraDesktop!
 }
 
 afterEach(() => {
-  delete win.__HERMES_AUTH_REQUIRED__
-  delete win.__HERMES_BASE_PATH__
-  delete win.__HERMES_UI_SURFACE__
-  Reflect.deleteProperty(win, 'hermesDesktop')
-  document.documentElement.removeAttribute('data-hermes-desktop-host')
+  delete win.__AURORA_AUTH_REQUIRED__
+  delete win.__AURORA_BASE_PATH__
+  delete win.__AURORA_UI_SURFACE__
+  Reflect.deleteProperty(win, 'auroraDesktop')
+  document.documentElement.removeAttribute('data-aurora-desktop-host')
   window.localStorage.clear()
   $connection.set(null)
   $defaultProfileRoute.set(null)
@@ -181,10 +181,10 @@ describe('a Webapp on a machine with saved gateway connections', () => {
     await desktop.connections!.remove('mini')
 
     expect(requests.filter(r => r.method !== 'GET').map(r => [r.method, r.path, r.body])).toEqual([
-      ['POST', '/hermes/api/gateway-connections/launch-mode', { mode: 'last-used' }],
-      ['POST', '/hermes/api/gateway-connections/mini/primary', undefined],
-      ['POST', '/hermes/api/gateway-connections', { kind: 'remote', label: 'Mini', token: 'tok', url: MINI.url }],
-      ['DELETE', '/hermes/api/gateway-connections/mini', undefined]
+      ['POST', '/aurora/api/gateway-connections/launch-mode', { mode: 'last-used' }],
+      ['POST', '/aurora/api/gateway-connections/mini/primary', undefined],
+      ['POST', '/aurora/api/gateway-connections', { kind: 'remote', label: 'Mini', token: 'tok', url: MINI.url }],
+      ['DELETE', '/aurora/api/gateway-connections/mini', undefined]
     ])
     expect(events).toContain('mini:removed')
   })
@@ -215,7 +215,7 @@ describe('a Webapp on a machine with saved gateway connections', () => {
       path: '/api/profiles/sessions'
     })
 
-    expect(requests.at(-1)?.path).toBe('/hermes/api/relay/mini/api/profiles/sessions')
+    expect(requests.at(-1)?.path).toBe('/aurora/api/relay/mini/api/profiles/sessions')
     expect(listed.sessions.map(session => session.connection_id)).toEqual(['mini'])
   })
 
@@ -231,7 +231,7 @@ describe('a Webapp on a machine with saved gateway connections', () => {
 
     expect(dial.ok).toBe(true)
     const url = new URL(dial.wsUrl)
-    expect(url.pathname).toBe('/hermes/api/relay/mini/api/ws')
+    expect(url.pathname).toBe('/aurora/api/relay/mini/api/ws')
     // The serving gateway mints Mini's own credential for the dial; none rides the browser's URL.
     expect(url.searchParams.has('ticket')).toBe(false)
     expect(url.searchParams.has('native_dial')).toBe(false)
@@ -271,12 +271,12 @@ describe('a Webapp on a machine with saved gateway connections', () => {
     )
 
     await desktop.terminal.start({ restoreKey: 'relayed' }).catch(() => undefined)
-    expect(dialed[0]?.pathname).toBe('/hermes/api/relay/mini/api/host-terminal')
+    expect(dialed[0]?.pathname).toBe('/aurora/api/relay/mini/api/host-terminal')
     expect(dialed[0]?.searchParams.has('ticket')).toBe(false)
     expect(dialed[0]?.searchParams.get('relay_ticket')).toBe('hub-relay')
 
     const stream = new URL(await desktop.getGatewayFileStreamUrl!({ connectionId: 'mini', path: '/tmp/a.png' }))
-    expect(stream.pathname.startsWith('/hermes/api/relay/mini/')).toBe(true)
+    expect(stream.pathname.startsWith('/aurora/api/relay/mini/')).toBe(true)
   })
 
   it('closes a terminal on the gateway it started on after the window moves to another', async () => {
@@ -286,7 +286,7 @@ describe('a Webapp on a machine with saved gateway connections', () => {
     const onMini = { ...(await desktop.getConnectionFor!({ connectionId: 'mini' })) }
     $connection.set(onMini)
     const dialed: URL[] = []
-    const META = '\u0000HERMES_TERMINAL_META:'
+    const META = '\u0000AURORA_TERMINAL_META:'
 
     vi.stubGlobal(
       'WebSocket',
@@ -323,8 +323,8 @@ describe('a Webapp on a machine with saved gateway connections', () => {
     await desktop.terminal.dispose(started.id)
 
     expect(dialed.map(url => [url.pathname, url.searchParams.get('action')])).toEqual([
-      ['/hermes/api/relay/mini/api/host-terminal', null],
-      ['/hermes/api/relay/mini/api/host-terminal', 'close']
+      ['/aurora/api/relay/mini/api/host-terminal', null],
+      ['/aurora/api/relay/mini/api/host-terminal', 'close']
     ])
     expect(dialed[1]?.searchParams.get('attach')).toBe('t1')
   })
@@ -346,8 +346,8 @@ describe('a Webapp on a machine with saved gateway connections', () => {
     await desktop.saveImageBuffer(new TextEncoder().encode('<p>hi</p>'), '.html')
     const wrapper = new DOMParser().parseFromString(await blobs[0]!.text(), 'text/html')
 
-    expect(new URL(wrapper.querySelector('script')!.src).pathname).toBe('/hermes/assets/webapp-preview.js')
-    expect(new URL(wrapper.querySelector('iframe')!.src).pathname).toBe('/hermes/assets/webapp-preview.html')
+    expect(new URL(wrapper.querySelector('script')!.src).pathname).toBe('/aurora/assets/webapp-preview.js')
+    expect(new URL(wrapper.querySelector('iframe')!.src).pathname).toBe('/aurora/assets/webapp-preview.html')
   })
 
   it("keeps the default folder a saved gateway's profile chose apart from this gateway's", async () => {

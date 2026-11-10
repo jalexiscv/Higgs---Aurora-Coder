@@ -4,7 +4,7 @@
  * Pure, electron-free helpers for the desktop's multi-connection registry —
  * the v2 successor to the single global `mode` + `remote` block in
  * connection.json. The registry is a named list of agent SOURCES (local
- * runtime, remote gateways, Hermes Cloud instances, SSH hosts) that are all
+ * runtime, remote gateways, Aurora Cloud instances, SSH hosts) that are all
  * registered at once; routing/pooling changes that consume the registry land
  * separately, so this module is deliberately storage-shaped, not
  * transport-shaped.
@@ -27,8 +27,8 @@
  * these into the IPC layer and owns file I/O + secret encryption.
  */
 
-// Relative, not `@hermes/shared`: esbuild bundles electron/ without tsconfig paths.
-import { HERMES_CLOUD_MANAGED, isHermesCloudUrl } from '../../shared/src/hermes-cloud'
+// Relative, not `@aurora/shared`: esbuild bundles electron/ without tsconfig paths.
+import { AURORA_CLOUD_MANAGED, isAuroraCloudUrl } from '../../shared/src/aurora-cloud'
 
 import {
   hostLabelFromBaseUrl,
@@ -74,7 +74,7 @@ export interface RegistryConnection {
   user?: string
   port?: number
   keyPath?: string
-  remoteHermesPath?: string
+  remoteAuroraPath?: string
   remoteProfile?: string
 }
 
@@ -178,7 +178,7 @@ export function agentHandle(profile: string, connectionLabel: string, duplicated
  * profile names).
  *
  * NOTE: the renderer's socket registry uses the twin implementation in
- * apps/shared/src/backend-scope.ts (`@hermes/shared`) — tsconfig project
+ * apps/shared/src/backend-scope.ts (`@aurora/shared`) — tsconfig project
  * boundaries prevent a single physical module here. The two are pinned
  * byte-identical by the cross-copy contract test in
  * connection-registry.test.ts; change BOTH or that test fails.
@@ -232,7 +232,7 @@ export interface ResolvedConnectionSshDescriptor {
   host?: string
   keyPath?: string
   port?: number
-  remoteHermesPath?: string
+  remoteAuroraPath?: string
   remoteProfile?: string
   user?: string
 }
@@ -431,7 +431,7 @@ export async function reuseMatchingPrimarySshBackend({
     !sourceFingerprint ||
     !activeSsh ||
     sourceFingerprint !== String(activeSsh.effectiveConfigFingerprint || '').trim() ||
-    String(source.remoteHermesPath || '').trim() !== String(activeSsh.remoteHermesPath || '').trim() ||
+    String(source.remoteAuroraPath || '').trim() !== String(activeSsh.remoteAuroraPath || '').trim() ||
     rootProfile(source.remoteProfile) !== rootProfile(activeSsh.remoteProfile)
   ) {
     return null
@@ -528,7 +528,7 @@ function normalizedSshTarget(route: { host?: unknown; port?: unknown; user?: unk
  * route's REMOTE descriptor — so the forced-local child pools under the
  * `conn:local::<profile>` form instead (colons are invalid in profile names,
  * so it cannot collide). A concrete named profile that does not exist on
- * this machine is refused instead of spawned. `default` is `$HERMES_HOME`
+ * this machine is refused instead of spawned. `default` is `$AURORA_HOME`
  * itself, so it always exists here and is never refused. A per-profile
  * remote override still delegates to the legacy profile route.
  */
@@ -556,7 +556,7 @@ export function resolveRegistryLocalRoute(
     // A concrete named profile that does not exist on this machine is
     // remote-only. Spawning it locally is the #90477 loop, so refuse. An
     // unprofiled call is enumeration, not a dial. `default` lives at
-    // $HERMES_HOME, not profiles/default, so This device -> default always
+    // $AURORA_HOME, not profiles/default, so This device -> default always
     // force-locals. A profile that exists locally still force-locals so
     // "This device" does not dial the remote.
     if (concrete && profileKey !== 'default' && opts.localProfileExists === false) {
@@ -751,7 +751,7 @@ export function shouldRetrySshInventory(
 
 const PROFILE_NAME_RE = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/
 
-/** Turn `ls ~/.hermes/profiles` output into roster names. Always includes
+/** Turn `ls ~/.aurora/profiles` output into roster names. Always includes
  *  `default`. Drops rollback snapshots and junk lines. */
 export function parseRemoteProfileListing(text: string): string[] {
   const names = new Set<string>(['default'])
@@ -897,18 +897,18 @@ function pickCanonicalConnection<T extends { connection: RegistryConnection; ord
 export interface UpdateEligibility {
   eligible: boolean
   /** Present when not eligible: 'cloud-managed' (platform updates it). */
-  reason?: typeof HERMES_CLOUD_MANAGED
+  reason?: typeof AURORA_CLOUD_MANAGED
 }
 
 /**
- * Whether "Update all instances" may drive this connection. Hermes Cloud
- * instances are platform-managed — we never run `hermes update` against them,
+ * Whether "Update all instances" may drive this connection. Aurora Cloud
+ * instances are platform-managed — we never run `aurora update` against them,
  * including one saved as a plain URL remote. Local, remote, and ssh sources
  * are all eligible (reachability and busy checks happen at dispatch time).
  */
 export function updateEligibility(connection: RegistryConnection): UpdateEligibility {
-  if (connection.kind === 'cloud' || isHermesCloudUrl(connection.url)) {
-    return { eligible: false, reason: HERMES_CLOUD_MANAGED }
+  if (connection.kind === 'cloud' || isAuroraCloudUrl(connection.url)) {
+    return { eligible: false, reason: AURORA_CLOUD_MANAGED }
   }
 
   return { eligible: true }
@@ -977,7 +977,7 @@ export interface ConnectionInput {
   user?: string
   port?: number | string
   keyPath?: string
-  remoteHermesPath?: string
+  remoteAuroraPath?: string
   remoteProfile?: string
 }
 
@@ -988,7 +988,7 @@ export interface ConnectionInput {
  * edit and that entry is excluded from the label-collision check.
  */
 /**
- * Auth mode a stored remote-shaped entry actually uses. A Hermes Cloud gateway
+ * Auth mode a stored remote-shaped entry actually uses. An Aurora Cloud gateway
  * signs in through its OAuth session and never keeps a pasted token (the save
  * path drops one), so a cloud entry on token auth with no token has no
  * credential at all and Test can only fail (#89529). Read it as oauth; a cloud
@@ -1046,7 +1046,7 @@ export function normalizeConnectionInput(input: ConnectionInput, registry: Conne
       user: input.user,
       port: input.port,
       keyPath: input.keyPath,
-      remoteHermesPath: input.remoteHermesPath,
+      remoteAuroraPath: input.remoteAuroraPath,
       remoteProfile: input.remoteProfile
     })
 
@@ -1112,7 +1112,7 @@ export function normalizeConnectionInput(input: ConnectionInput, registry: Conne
     // Extra gateway headers (access-proxy credentials) apply to any
     // remote-shaped entry regardless of auth mode — Cloudflare Access sits in
     // front of both token- and OAuth-gated gateways. Normalization drops
-    // transport-/Hermes-managed names; an empty result stores nothing.
+    // transport-/Aurora-managed names; an empty result stores nothing.
     if (input.headers !== undefined) {
       const headers = normalizeRemoteHeaders(input.headers)
 
@@ -1144,7 +1144,7 @@ export function normalizeConnectionInput(input: ConnectionInput, registry: Conne
  * editor doesn't carry survive a save. Renaming a migrated cloud entry must
  * not drop its `org` (downstream update-fanout uses it to skip
  * platform-managed instances), and renaming an ssh entry must not drop
- * `remoteHermesPath`/`remoteProfile`. Only fields the payload explicitly
+ * `remoteAuroraPath`/`remoteProfile`. Only fields the payload explicitly
  * carries (non-undefined) override; `token` is deliberately NOT merged here —
  * the caller owns secret handling.
  */
@@ -1174,7 +1174,7 @@ export function mergeConnectionInput(input: ConnectionInput, existing?: null | R
 
   inherit('host')
   inherit('keyPath')
-  inherit('remoteHermesPath')
+  inherit('remoteAuroraPath')
   inherit('remoteProfile')
   // Headers inherit like other dial fields: an edit payload that omits the
   // field keeps the stored set; an explicit payload (even {}) is
@@ -1216,7 +1216,7 @@ export function connectionDialFieldsChanged(before: RegistryConnection, after: R
     'user',
     'port',
     'keyPath',
-    'remoteHermesPath',
+    'remoteAuroraPath',
     'remoteProfile'
   ]
 
@@ -1453,7 +1453,7 @@ export function migrateV1ToRegistry(v1: unknown): ConnectionRegistry {
     }
 
     const label = uniqueLabel(
-      hostLabelFromBaseUrl(url) || (kind === 'cloud' ? 'Hermes Cloud' : 'Remote gateway'),
+      hostLabelFromBaseUrl(url) || (kind === 'cloud' ? 'Aurora Cloud' : 'Remote gateway'),
       connections.map(c => c.label)
     )
 
@@ -1668,7 +1668,7 @@ export function reconcileAppliedGlobalConnection(
 
   const kind: ConnectionKind = mode === 'cloud' ? 'cloud' : 'remote'
 
-  const hostLabel = hostLabelFromBaseUrl(url) || (kind === 'cloud' ? 'Hermes Cloud' : 'Remote gateway')
+  const hostLabel = hostLabelFromBaseUrl(url) || (kind === 'cloud' ? 'Aurora Cloud' : 'Remote gateway')
   const name = kind === 'cloud' ? String(block.name ?? existing?.name ?? '').trim() : ''
 
   const label =
@@ -1760,7 +1760,7 @@ export function reconcileRegistryDrift(
       //
       // Known by target is not enough, though: the router tags the live
       // window by the FULL route identity (matchingConnectionId also compares
-      // keyPath, remoteHermesPath and remoteProfile). A v1 route carrying a
+      // keyPath, remoteAuroraPath and remoteProfile). A v1 route carrying a
       // keyPath the registered entry never had resolves to no connectionId,
       // the renderer treats the untagged window as the unscoped local backend
       // ("This device") and the roster force-spawns a phantom local child.
@@ -1773,7 +1773,7 @@ export function reconcileRegistryDrift(
       const { host: _host, user: _user, port: _port, ...identityFields } = sshFields
       const aligned: RegistryConnection = { ...registered }
       delete aligned.keyPath
-      delete aligned.remoteHermesPath
+      delete aligned.remoteAuroraPath
       delete aligned.remoteProfile
       Object.assign(aligned, identityFields)
 

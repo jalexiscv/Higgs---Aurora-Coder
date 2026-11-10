@@ -1,12 +1,12 @@
 name: fast-chat
-title: Hermes Fast Chat
+title: Aurora Fast Chat
 repo: https://github.com/iyoda/hermes-fast-chat
 sha: e244ada6f1a8f6bf08fc82e339c0f8ba31897e93
-description: "Launch a CLI or TUI session with an explicit model and Fast mode. Disclosure — `hermes fast-chat` runs the Hermes executable (or the one given with --hermes-bin) without a shell to bootstrap the gateway and may start a long-running gateway that keeps running after it exits; on Hermes releases without `gateway attach` it obtains a single-use session ticket over the local same-user gateway control socket; sessions it creates use the Fast/ultrafast service tier, which can cost more with the provider; no telemetry, no credential reads."
+description: "Launch a CLI or TUI session with an explicit model and Fast mode. Disclosure — `aurora fast-chat` runs the Aurora executable (or the one given with --aurora-bin) without a shell to bootstrap the gateway and may start a long-running gateway that keeps running after it exits; on Aurora releases without `gateway attach` it obtains a single-use session ticket over the local same-user gateway control socket; sessions it creates use the Fast/ultrafast service tier, which can cost more with the provider; no telemetry, no credential reads."
 maintainer: iyoda
 tier: community
 category: models
-requires_hermes: ">=0.23.0"
+requires_aurora: ">=0.23.0"
 version: "0.1.2"
 readme: true
 platforms: [linux, macos]

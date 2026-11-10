@@ -1,4 +1,4 @@
-import { LOCAL_CONNECTION_ID } from '@hermes/shared'
+import { LOCAL_CONNECTION_ID } from '@aurora/shared'
 import { useStore } from '@nanostores/react'
 import type * as React from 'react'
 import { useState } from 'react'

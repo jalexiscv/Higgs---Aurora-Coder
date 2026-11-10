@@ -1,4 +1,4 @@
-import type { PluginsManageResult, PluginUpdateAllRow } from '@hermes/shared'
+import type { PluginsManageResult, PluginUpdateAllRow } from '@aurora/shared'
 import { atom } from 'nanostores'
 
 import { type GatewayRequest, loadAgentPlugins } from '@/store/agent-plugins'

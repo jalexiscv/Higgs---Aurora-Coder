@@ -1,4 +1,4 @@
-import { randomUuid } from '@hermes/shared'
+import { randomUuid } from '@aurora/shared'
 
 import { queryAllVisible, queryVisible } from '@/components/pane-shell/pane-visibility'
 import { $workspaceOwnerKey } from '@/components/pane-shell/workspace-scope'
@@ -18,10 +18,10 @@ import type { AnnotatePin } from './stack'
  * active later.
  */
 
-export const PREVIEW_ANNOTATE_HANDOFF_CHANNEL = 'hermes.desktop.preview-annotate-handoff.v1'
-export const PREVIEW_ANNOTATE_WINDOW_ID_KEY = 'hermes.desktop.previewAnnotate.windowId'
+export const PREVIEW_ANNOTATE_HANDOFF_CHANNEL = 'aurora.desktop.preview-annotate-handoff.v1'
+export const PREVIEW_ANNOTATE_WINDOW_ID_KEY = 'aurora.desktop.previewAnnotate.windowId'
 
-const DESTINATION_PREFIX = 'hermes.desktop.previewAnnotate.destination.v1:'
+const DESTINATION_PREFIX = 'aurora.desktop.previewAnnotate.destination.v1:'
 const DESTINATION_MAX_AGE_MS = 24 * 60 * 60 * 1000
 
 export interface PreviewAnnotateComposerDestination {
@@ -311,7 +311,7 @@ export function subscribePreviewAnnotateHandoff(
     request: PreviewAnnotateHandoffRequest
   ) => PreviewAnnotateHandoffResult | null | Promise<PreviewAnnotateHandoffResult | null>
 ): () => void {
-  const desktopBridge = typeof window !== 'undefined' ? window.hermesDesktop?.windowRelay : undefined
+  const desktopBridge = typeof window !== 'undefined' ? window.auroraDesktop?.windowRelay : undefined
 
   if (desktopBridge?.onMessage && desktopBridge.send) {
     return desktopBridge.onMessage(payload => {
@@ -442,7 +442,7 @@ export async function handoffPreviewAnnotateStack(
     type: 'preview-annotate-handoff'
   }
 
-  const desktopBridge = typeof window !== 'undefined' ? window.hermesDesktop?.windowRelay : undefined
+  const desktopBridge = typeof window !== 'undefined' ? window.auroraDesktop?.windowRelay : undefined
 
   if (desktopBridge?.onMessage && desktopBridge.send) {
     return new Promise(resolve => {

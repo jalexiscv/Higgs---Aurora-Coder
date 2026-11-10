@@ -9,7 +9,7 @@ import { actOnActivePreview } from './preview-act'
 import { runPreviewGuestScript, usePreviewDriveChannels } from './preview-drive-channels'
 import { activePreviewScriptRunner } from './preview-script-runner'
 
-const originalDesktop = window.hermesDesktop
+const originalDesktop = window.auroraDesktop
 const begin = vi.fn(async () => 17)
 const end = vi.fn(async (_token: number) => {})
 const execute = vi.fn(async (_code: string): Promise<unknown> => 'answer')
@@ -24,22 +24,22 @@ beforeEach(() => {
   begin.mockReset().mockResolvedValue(17)
   end.mockReset().mockResolvedValue(undefined)
   execute.mockReset().mockResolvedValue('answer')
-  window.hermesDesktop = {
+  window.auroraDesktop = {
     beginPreviewGuestActivity: begin,
     endPreviewGuestActivity: end,
     executePreviewGuestScript: (_token: number, code: string) => execute(code)
-  } as unknown as Window['hermesDesktop']
+  } as unknown as Window['auroraDesktop']
 })
 
 afterEach(() => {
-  window.hermesDesktop = originalDesktop
+  window.auroraDesktop = originalDesktop
   vi.useRealTimers()
   closeRightRail()
 })
 
 describe('preview script wake scope', () => {
   it('does not dispatch guest code when the native scheduling capability is absent', async () => {
-    window.hermesDesktop = {
+    window.auroraDesktop = {
       ...originalDesktop,
       beginPreviewGuestActivity: undefined,
       endPreviewGuestActivity: undefined
@@ -199,7 +199,7 @@ describe('preview script wake scope', () => {
 
     view.executeJavaScript.mockImplementation(async code =>
       JSON.stringify(
-        code.includes('hermes-focus-probe')
+        code.includes('aurora-focus-probe')
           ? { success: true, focused: true, tag: 'INPUT' }
           : code.includes('document.activeElement') && !code.includes('"kind":"locate"')
             ? { success: true, field: true, len: 0 }

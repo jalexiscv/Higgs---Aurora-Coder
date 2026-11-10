@@ -3,10 +3,10 @@
 // `session.mutate` rename / rewind (`gateway/session_mutations.py`), the committed admission
 // result (`prompt.receipt include_result`) and the frozen launch policy (`session.info`).
 
-import type { SessionStats } from '@hermes/shared/gateway-events'
-import type { BillingStateResponse, RollbackListResponse } from '@hermes/shared/gateway-types'
-import { JsonRpcGatewayError } from '@hermes/shared/json-rpc-channel'
-import { CANONICAL_REASONING_EFFORTS } from '@hermes/shared/slash-input'
+import type { SessionStats } from '@aurora/shared/gateway-events'
+import type { BillingStateResponse, RollbackListResponse } from '@aurora/shared/gateway-types'
+import { JsonRpcGatewayError } from '@aurora/shared/json-rpc-channel'
+import { CANONICAL_REASONING_EFFORTS } from '@aurora/shared/slash-input'
 
 import { usageFromTick } from '../../domain/usage.js'
 import { t } from '../../i18n/runtime.js'
@@ -277,7 +277,7 @@ interface ToolsShowResult {
   total?: number
 }
 
-/** Main's `/tools` text (hermes_cli/cli_info_mixin.py show_tools): kawaii header box, one
+/** Main's `/tools` text (aurora_cli/cli_info_mixin.py show_tools): kawaii header box, one
  *  `[toolset]` block per section with the first description sentence, then the total. */
 export function renderToolsListing(result: ToolsShowResult): string {
   const sections = result.sections ?? []

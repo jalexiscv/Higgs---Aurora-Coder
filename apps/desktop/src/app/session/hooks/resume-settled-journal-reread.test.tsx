@@ -1,10 +1,10 @@
-import type { GatewayEvent } from '@hermes/shared'
+import type { GatewayEvent } from '@aurora/shared'
 import { QueryClient } from '@tanstack/react-query'
 import { act, cleanup, renderHook } from '@testing-library/react'
 import { useRef } from 'react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
-import { getLatestSessionMessages } from '@/hermes'
+import { getLatestSessionMessages } from '@/aurora'
 import { type ChatMessage, chatMessageText, textPart } from '@/lib/chat-messages'
 import {
   persistInFlightTurnState,
@@ -23,13 +23,13 @@ import {
   setSessions
 } from '@/store/session'
 import { clearAllSessionStates } from '@/store/session-states'
-import type { SessionMessage, SessionMessagesResponse, SessionResumeResult } from '@/types/hermes'
+import type { SessionMessage, SessionMessagesResponse, SessionResumeResult } from '@/types/aurora'
 
 import { useMessageStream } from './use-message-stream'
 import { useSessionActions } from './use-session-actions'
 import { useSessionStateCache } from './use-session-state-cache'
 
-vi.mock('@/hermes', async original => ({
+vi.mock('@/aurora', async original => ({
   ...(await original<Record<string, unknown>>()),
   getLatestSessionMessages: vi.fn()
 }))
@@ -99,7 +99,7 @@ function mount(snapshot: SessionResumeResult) {
       ...cache,
       queryClient,
       hydrateFromStoredSession: noop,
-      refreshHermesConfig: noop,
+      refreshAuroraConfig: noop,
       refreshSessions: noop
     })
 

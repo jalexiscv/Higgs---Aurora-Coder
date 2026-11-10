@@ -1,4 +1,4 @@
-import { LOCAL_CONNECTION_ID } from '@hermes/shared'
+import { LOCAL_CONNECTION_ID } from '@aurora/shared'
 import { useRef, useState } from 'react'
 
 import { FirstRunRemoteSetup } from '@/components/remote-setup/first-run'
@@ -13,7 +13,7 @@ export interface LocalDeviceTarget {
 }
 
 /**
- * Gate picking This device on Hermes actually being installed here. Only a
+ * Gate picking This device on Aurora actually being installed here. Only a
  * click that would start the installer confirms, and it offers Connect to
  * existing inline so the click cannot fall through into runBootstrap. An
  * installed runtime is just another connected gateway: no prompt.

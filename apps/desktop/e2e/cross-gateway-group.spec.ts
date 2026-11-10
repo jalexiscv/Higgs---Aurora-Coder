@@ -3,9 +3,9 @@
  * seats a bot from a NAMED profile on a second computer's gateway.
  *
  * "This device" (owner A) is the Electron-managed local backend with `default` + `scribe`.
- * "Homelab" (lender B) is a REAL `hermes gateway run` on its own HOME lending its named
- * profile `coder` (catalog at `<room_link_url>/p/coder`), plus the `hermes serve` viewer
- * Desktop connects to. A plain `hermes serve` Homelab (no lender) must make the dialog say
+ * "Homelab" (lender B) is a REAL `aurora gateway run` on its own HOME lending its named
+ * profile `coder` (catalog at `<room_link_url>/p/coder`), plus the `aurora serve` viewer
+ * Desktop connects to. A plain `aurora serve` Homelab (no lender) must make the dialog say
  * what is missing instead of creating anything.
  *
  * Model turns are REAL when NOUS_API_KEY is in the runner's environment (each probe home gets
@@ -68,20 +68,20 @@ async function freePort(): Promise<number> {
 }
 
 /** A real second gateway: its own HOME (the host singleton is per HOME) and
- *  HERMES_HOME, this tree's code, the runtime venv's interpreter. */
+ *  AURORA_HOME, this tree's code, the runtime venv's interpreter. */
 async function startRemoteGateway(root: string, mockUrl: string, config = MULTIPLEX) {
   const fakeHome = path.join(root, 'homelab-root')
-  const home = path.join(fakeHome, '.hermes')
+  const home = path.join(fakeHome, '.aurora')
   fs.mkdirSync(home, { recursive: true })
   provision(home, mockUrl, config)
   const port = await freePort()
   const url = `http://127.0.0.1:${port}`
   const python = process.env.CROSS_GATEWAY_PYTHON || path.join(REPO_ROOT, '.venv', 'bin', 'python')
 
-  const child: ChildProcess = spawn(python, ['-m', 'hermes_cli.main', 'serve', '--host', '127.0.0.1', '--port', String(port), '--skip-build'], {
+  const child: ChildProcess = spawn(python, ['-m', 'aurora_cli.main', 'serve', '--host', '127.0.0.1', '--port', String(port), '--skip-build'], {
     cwd: REPO_ROOT,
     detached: true,
-    env: { ...process.env, HOME: fakeHome, HERMES_HOME: home, PYTHONPATH: REPO_ROOT, HERMES_DASHBOARD_SESSION_TOKEN: REMOTE_TOKEN },
+    env: { ...process.env, HOME: fakeHome, AURORA_HOME: home, PYTHONPATH: REPO_ROOT, AURORA_DASHBOARD_SESSION_TOKEN: REMOTE_TOKEN },
     stdio: ['ignore', 'pipe', 'pipe']
   })
 
@@ -91,10 +91,10 @@ async function startRemoteGateway(root: string, mockUrl: string, config = MULTIP
   const deadline = Date.now() + 90_000
 
   while (Date.now() < deadline) {
-    if (child.exitCode !== null) {throw new Error(`remote hermes serve exited early (${child.exitCode}):\n${log}`)}
+    if (child.exitCode !== null) {throw new Error(`remote aurora serve exited early (${child.exitCode}):\n${log}`)}
 
     try {
-      if ((await fetch(`${url}/api/status`, { headers: { 'X-Hermes-Session-Token': REMOTE_TOKEN } })).ok) {break}
+      if ((await fetch(`${url}/api/status`, { headers: { 'X-Aurora-Session-Token': REMOTE_TOKEN } })).ok) {break}
     } catch {
       // not up yet
     }
@@ -268,9 +268,9 @@ test.describe('cross-gateway group chat without a lender', () => {
     test.setTimeout(300_000)
     mock = await startMockServer()
     sandbox = createSandbox('xgw')
-    writeMockProviderConfig(sandbox.hermesHome, mock.url, undefined, MULTIPLEX)
-    writeEnvFile(sandbox.hermesHome, undefined, mock.url)
-    // Homelab is a plain `hermes serve`: no gateway is lending its bots.
+    writeMockProviderConfig(sandbox.auroraHome, mock.url, undefined, MULTIPLEX)
+    writeEnvFile(sandbox.auroraHome, undefined, mock.url)
+    // Homelab is a plain `aurora serve`: no gateway is lending its bots.
     remote = await startRemoteGateway(sandbox.root, mock.url)
     writeConnectionsRegistry(sandbox, remote.url)
     ;({ app, page } = await launchDesktop(buildAppEnv(sandbox)))
@@ -308,8 +308,8 @@ test.describe('cross-gateway group chat without a lender', () => {
     await expect(note).toBeVisible()
     await expect(create).toBeDisabled()
     await page.keyboard.press('Escape')
-    const stored = await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('hermes.plugin.hermes-bots.group-chats') || '{}')))
-    const hosted = spawnSync('python3', ['-c', 'import sqlite3,sys; c=sqlite3.connect("file:"+sys.argv[1]+"/state.db?mode=ro",uri=True); print(c.execute("select count(*) from hosted_rooms").fetchone()[0])', sandbox.hermesHome], { encoding: 'utf8' }).stdout.trim()
+    const stored = await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('aurora.plugin.aurora-bots.group-chats') || '{}')))
+    const hosted = spawnSync('python3', ['-c', 'import sqlite3,sys; c=sqlite3.connect("file:"+sys.argv[1]+"/state.db?mode=ro",uri=True); print(c.execute("select count(*) from hosted_rooms").fetchone()[0])', sandbox.auroraHome], { encoding: 'utf8' }).stdout.trim()
     console.log('PROBE_RESULT leg5 rooms after', JSON.stringify({ localStorage: stored, ownerHostedRooms: hosted }))
     expect(stored).not.toContain('No lender')
     expect(hosted).toBe('0')
@@ -355,20 +355,20 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
 
   /** Every member reply after `afterSeq`, once each member has settled its turn. */
   const settledReplies = async (name: string, afterSeq: number, members: number) => {
-    await expect.poll(() => memberMessages(roomEvents(sandbox.hermesHome, name), afterSeq).length, { timeout: 240_000, intervals: [2_000] })
+    await expect.poll(() => memberMessages(roomEvents(sandbox.auroraHome, name), afterSeq).length, { timeout: 240_000, intervals: [2_000] })
       .toBeGreaterThanOrEqual(members)
     // A real discussion may run another round; let it settle before counting.
     let last = -1
 
     await expect.poll(() => {
-      const count = roomEvents(sandbox.hermesHome, name).length
+      const count = roomEvents(sandbox.auroraHome, name).length
       const quiet = count === last
       last = count
 
       return quiet
     }, { timeout: 120_000, intervals: [8_000] }).toBe(true)
 
-    return memberMessages(roomEvents(sandbox.hermesHome, name), afterSeq)
+    return memberMessages(roomEvents(sandbox.auroraHome, name), afterSeq)
   }
 
   const shownInRoom = (snippet: string) => page.locator('[role="log"]').filter({ visible: true }).evaluate(
@@ -378,12 +378,12 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
     test.setTimeout(300_000)
     mock = await startMockServer()
     sandbox = createSandbox('xgw-real')
-    provision(sandbox.hermesHome, mock.url, MULTIPLEX)
-    provision(path.join(sandbox.hermesHome, 'profiles', 'scribe'), mock.url)
+    provision(sandbox.auroraHome, mock.url, MULTIPLEX)
+    provision(path.join(sandbox.auroraHome, 'profiles', 'scribe'), mock.url)
     lender = await startPeerGateway(sandbox.root, mock.url, LENT_PROFILE)
     writeConnectionsRegistry(sandbox, lender.url)
     env = buildAppEnv(sandbox)
-    console.log(`PROBE_RESULT model ${REAL_MODEL} via Nous inference (real turns); owner home=${sandbox.hermesHome} lender home=${lender.home}`)
+    console.log(`PROBE_RESULT model ${REAL_MODEL} via Nous inference (real turns); owner home=${sandbox.auroraHome} lender home=${lender.home}`)
     await launch(true)
   })
 
@@ -414,7 +414,7 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
     await expect(dialog).toBeHidden({ timeout: 30_000 })
     const composer = page.getByRole('textbox', { name: 'Group message' }).filter({ visible: true })
     await expect(composer).toBeVisible({ timeout: 30_000 })
-    const record = await page.evaluate(name => JSON.parse(localStorage.getItem('hermes.plugin.hermes-bots.group-chats') || '{}')[name], ROOM)
+    const record = await page.evaluate(name => JSON.parse(localStorage.getItem('aurora.plugin.aurora-bots.group-chats') || '{}')[name], ROOM)
     console.log('PROBE_RESULT leg1 room record', JSON.stringify({ engine: record?.engine, members: record?.members?.map((m: any) => `${m.connectionId}/${m.targetProfile || m.name}`) }))
     expect(record?.engine?.kind).toBe('gateway')
     await composer.fill(`@all ${ASK}`)
@@ -429,8 +429,8 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
     const localSnippet = snippetOf(roundOne.default)
 
     const where = {
-      coder: { lender: assistantRows(lender.home, coderSnippet), owner: assistantRows(sandbox.hermesHome, coderSnippet) },
-      default: { lender: assistantRows(lender.home, localSnippet), owner: assistantRows(sandbox.hermesHome, localSnippet) }
+      coder: { lender: assistantRows(lender.home, coderSnippet), owner: assistantRows(sandbox.auroraHome, coderSnippet) },
+      default: { lender: assistantRows(lender.home, localSnippet), owner: assistantRows(sandbox.auroraHome, localSnippet) }
     }
 
     console.log('PROBE_RESULT leg1 assistant rows per state.db', JSON.stringify(where))
@@ -450,13 +450,13 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
 
   test('leg 2: a turn sent just before quitting finishes on the gateways; reopen shows each reply once', async () => {
     test.setTimeout(480_000)
-    const before = roomEvents(sandbox.hermesHome, ROOM).length
+    const before = roomEvents(sandbox.auroraHome, ROOM).length
     const composer = page.getByRole('textbox', { name: 'Group message' }).filter({ visible: true })
     await composer.fill(`@all Each of you: in two or three plain sentences (no markdown), describe a city you would like to visit and why.`)
     await composer.press('Enter')
     // The send is durable on the owner gateway before Desktop goes away.
-    await expect.poll(() => roomEvents(sandbox.hermesHome, ROOM).slice(before).some(event => event.kind === 'message.user'), { timeout: 30_000, intervals: [250] }).toBe(true)
-    const repliedBeforeQuit = memberMessages(roomEvents(sandbox.hermesHome, ROOM), before).length
+    await expect.poll(() => roomEvents(sandbox.auroraHome, ROOM).slice(before).some(event => event.kind === 'message.user'), { timeout: 30_000, intervals: [250] }).toBe(true)
+    const repliedBeforeQuit = memberMessages(roomEvents(sandbox.auroraHome, ROOM), before).length
     await app!.close()
     app = undefined
     const closedAt = Date.now() / 1000
@@ -489,7 +489,7 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
     await expect(dialog).toBeHidden({ timeout: 30_000 })
     const composer = page.getByRole('textbox', { name: 'Group message' }).filter({ visible: true })
     await expect(composer).toBeVisible({ timeout: 30_000 })
-    const engine = await page.evaluate(room => JSON.parse(localStorage.getItem('hermes.plugin.hermes-bots.group-chats') || '{}')[room]?.engine, name)
+    const engine = await page.evaluate(room => JSON.parse(localStorage.getItem('aurora.plugin.aurora-bots.group-chats') || '{}')[room]?.engine, name)
     console.log('PROBE_RESULT leg3 engine', JSON.stringify(engine))
     expect(engine?.kind).toBe('gateway')
     await composer.fill(`@all ${ASK}`)
@@ -509,8 +509,8 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
     await expect(page.getByText(REMOTE_LABEL).first()).toBeVisible({ timeout: 90_000 })
     const rows = page.locator('[data-roster-key]')
     const texts = await rows.evaluateAll(nodes => nodes.map(node => (node as HTMLElement).innerText.replace(/\s+/g, ' ').trim()))
-    // Roster rows show no connection label: this device's default Bot is the one named Hermes.
-    const index = texts.findIndex(text => /^Hermes\b/.test(text))
+    // Roster rows show no connection label: this device's default Bot is the one named Aurora.
+    const index = texts.findIndex(text => /^Aurora\b/.test(text))
     console.log('PROBE_RESULT leg6 roster rows', JSON.stringify(texts), 'chosen', index)
     expect(index).toBeGreaterThanOrEqual(0)
     await rows.nth(index).click({ button: 'right' })
@@ -536,7 +536,7 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
     await expect(dialog).toBeHidden({ timeout: 30_000 })
     const composer = page.getByRole('textbox', { name: 'Group message' }).filter({ visible: true })
     await expect(composer).toBeVisible({ timeout: 30_000 })
-    const rooms = await page.evaluate(() => JSON.parse(localStorage.getItem('hermes.plugin.hermes-bots.group-chats') || '{}'))
+    const rooms = await page.evaluate(() => JSON.parse(localStorage.getItem('aurora.plugin.aurora-bots.group-chats') || '{}'))
     const engines = Object.fromEntries(Object.entries(rooms).map(([room, record]: [string, any]) => [room, record?.engine]))
     console.log('PROBE_RESULT leg6 room engines', JSON.stringify(engines))
     expect(engines[name]?.kind).toBe('gateway')
@@ -556,7 +556,7 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
 
     // An older build's cross-machine room: Desktop-driven, members on both computers, some history.
     const members = [
-      { name: 'default', handle: 'default-this-device', display_name: 'Hermes', connectionId: 'local', connectionKind: 'local',
+      { name: 'default', handle: 'default-this-device', display_name: 'Aurora', connectionId: 'local', connectionKind: 'local',
         connectionLabel: 'This device', targetProfile: 'default', route: { connectionId: 'local', mode: 'local', profile: 'default', targetProfile: 'default' } },
       { name: LENT_PROFILE, handle: LENT_PROFILE, display_name: 'Coder', connectionId: REMOTE_ID, connectionKind: 'remote', connectionLabel: REMOTE_LABEL,
         remoteSource: true, sourceScoped: true, targetProfile: LENT_PROFILE,
@@ -564,7 +564,7 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
     ]
 
     await page.evaluate(({ room, seated }) => {
-      const key = 'hermes.plugin.hermes-bots.group-chats'
+      const key = 'aurora.plugin.aurora-bots.group-chats'
       const rooms = JSON.parse(localStorage.getItem(key) || '{}')
       const at = Date.now() - 3_600_000
 
@@ -592,7 +592,7 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
     await composer.fill(`@all ${ASK}`)
     await composer.press('Enter')
 
-    const log = () => page.evaluate(room => (JSON.parse(localStorage.getItem('hermes.plugin.hermes-bots.group-chats') || '{}')[room]?.log || [])
+    const log = () => page.evaluate(room => (JSON.parse(localStorage.getItem('aurora.plugin.aurora-bots.group-chats') || '{}')[room]?.log || [])
       .map((entry: any) => ({ from: entry.from?.name, kind: entry.from?.kind, text: String(entry.text).slice(0, 60) })), name)
 
     await expect.poll(async () => (await log()).filter((entry: any) => entry.kind === 'member').length, { timeout: 240_000, intervals: [2_000] })
@@ -600,10 +600,10 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
     await expect(page.getByRole('button', { name: 'Stop', exact: true })).toHaveCount(0, { timeout: 180_000 })
     const entries = await log()
     console.log('PROBE_RESULT leg4 classic room log', JSON.stringify(entries))
-    const engine = await page.evaluate(room => JSON.parse(localStorage.getItem('hermes.plugin.hermes-bots.group-chats') || '{}')[room]?.engine, name)
+    const engine = await page.evaluate(room => JSON.parse(localStorage.getItem('aurora.plugin.aurora-bots.group-chats') || '{}')[room]?.engine, name)
     console.log('PROBE_RESULT leg4 engine after send', JSON.stringify(engine))
     expect(engine).toBe('desktop')
-    expect(roomEvents(sandbox.hermesHome, name)).toEqual([])
+    expect(roomEvents(sandbox.auroraHome, name)).toEqual([])
     await expect(page.getByText(/hit an error/)).toHaveCount(0)
     await shot(page, 'leg4-old-classic-room')
   })
@@ -613,7 +613,7 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
 async function startPeerGateway(root: string, mockUrl: string, lent = '') {
   const apiPort = await freePort()
   const fakeHome = path.join(root, 'homelab-root')
-  const home = path.join(fakeHome, '.hermes')
+  const home = path.join(fakeHome, '.aurora')
   fs.mkdirSync(home, { recursive: true })
 
   const config = [MULTIPLEX.trimEnd(), `  room_link_url: http://127.0.0.1:${apiPort}`,
@@ -630,9 +630,9 @@ async function startPeerGateway(root: string, mockUrl: string, lent = '') {
 
   const python = process.env.CROSS_GATEWAY_PYTHON || path.join(REPO_ROOT, '.venv', 'bin', 'python')
 
-  const child = spawn(python, ['-m', 'hermes_cli.main', 'gateway', 'run'], {
+  const child = spawn(python, ['-m', 'aurora_cli.main', 'gateway', 'run'], {
     cwd: REPO_ROOT,
-    env: { ...process.env, HOME: fakeHome, HERMES_HOME: home, PYTHONPATH: REPO_ROOT,
+    env: { ...process.env, HOME: fakeHome, AURORA_HOME: home, PYTHONPATH: REPO_ROOT,
       API_SERVER_KEY: REMOTE_TOKEN, API_SERVER_ENABLED: 'true', API_SERVER_PORT: String(apiPort) },
     stdio: ['ignore', 'pipe', 'pipe']
   })
@@ -699,8 +699,8 @@ test('mock: gateway peers finish a held turn after Electron quits and reopen onc
   let app: ElectronApplication | undefined
 
   try {
-    writeMockProviderConfig(sandbox.hermesHome, localModel.url, undefined, MULTIPLEX)
-    writeEnvFile(sandbox.hermesHome, undefined, localModel.url)
+    writeMockProviderConfig(sandbox.auroraHome, localModel.url, undefined, MULTIPLEX)
+    writeEnvFile(sandbox.auroraHome, undefined, localModel.url)
     remote = await startPeerGateway(sandbox.root, peerModel.url)
     writeConnectionsRegistry(sandbox, remote.url)
     const env = buildAppEnv(sandbox)
@@ -728,13 +728,13 @@ test('mock: gateway peers finish a held turn after Electron quits and reopen onc
     await composer.press('Enter')
     // Discussion admits one member at a time: quit with the first held and the second outstanding.
     await expect.poll(() => localModel.heldCompletionCount() + peerModel.heldCompletionCount(), { timeout: 120_000 }).toBe(1)
-    expect(peerRoomLog(sandbox.hermesHome, name).filter(event => event.kind === 'message.member')).toEqual([])
+    expect(peerRoomLog(sandbox.auroraHome, name).filter(event => event.kind === 'message.member')).toEqual([])
     await app.close()
     app = undefined
     // Releasing also opens the gate for the provider whose turn has not started yet.
     localModel.releaseHeldStream()
     peerModel.releaseHeldStream()
-    const replies = () => peerRoomLog(sandbox.hermesHome, name).filter(event => event.kind === 'message.member').map(event => event.payload.text).sort()
+    const replies = () => peerRoomLog(sandbox.auroraHome, name).filter(event => event.kind === 'message.member').map(event => event.payload.text).sort()
     await expect.poll(replies, { timeout: 120_000, intervals: [1_000] }).toEqual([peerReply, localReply])
     launched = await launchDesktop(env)
     app = launched.app

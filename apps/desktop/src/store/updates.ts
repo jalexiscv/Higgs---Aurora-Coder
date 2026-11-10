@@ -3,21 +3,21 @@
  * surfaces it as an ambient pill, and orchestrates the apply flow.
  */
 
-import { updateDebt } from '@hermes/shared'
+import { updateDebt } from '@aurora/shared'
 import { atom } from 'nanostores'
 
 import { CANONICAL_GATEWAY_PROTOCOL } from '@/api/canonical-protocol'
 import { $apiRequestScope, connectionScoped, profileScoped } from '@/api/client'
+import { checkAuroraUpdate, getActionStatus, updateAurora } from '@/aurora'
 import type {
+  AuroraConnection,
   DesktopUpdateApplyOptions,
   DesktopUpdateApplyResult,
   DesktopUpdateProgress,
   DesktopUpdateStage,
   DesktopUpdateStatus,
-  DesktopVersionInfo,
-  HermesConnection
+  DesktopVersionInfo
 } from '@/global'
-import { checkHermesUpdate, getActionStatus, updateHermes } from '@/hermes'
 import { translateNow } from '@/i18n'
 import { persistString, storedString } from '@/lib/storage'
 import { cloudOwnsUpdates, updateTargetFor } from '@/store/cloud-updates'
@@ -25,11 +25,11 @@ import { $connectionsRegistry, refreshConnectionsRegistry } from '@/store/connec
 import { reconnectGateway } from '@/store/gateway-reconnect'
 import { dismissNotification, notify } from '@/store/notifications'
 import { $connection } from '@/store/session'
-import type { BackendUpdateCheckResponse, UpdateReceiptSummary } from '@/types/hermes'
+import type { BackendUpdateCheckResponse, UpdateReceiptSummary } from '@/types/aurora'
 
 /** Keyed per retired-channel revision: a new retirement (or a revision bump on
  *  the same channel) re-shows the notice, a plain re-check never does. */
-const DISCONTINUED_DISMISS_KEY = 'hermes:discontinued-notice-dismissed-for'
+const DISCONTINUED_DISMISS_KEY = 'aurora:discontinued-notice-dismissed-for'
 const DISCONTINUED_TOAST_ID = 'desktop-build-discontinued'
 
 export interface UpdateApplyState {
@@ -91,7 +91,7 @@ const UPDATE_TOAST_ID = 'desktop-update-available'
 // a day, so a "don't show this exact sha again" guard re-popped the toast on
 // every new commit. We instead suppress the toast for a cooldown window that
 // (re)starts whenever the user closes it.
-const UPDATE_TOAST_SNOOZE_KEY = 'hermes:update-toast-snooze-until'
+const UPDATE_TOAST_SNOOZE_KEY = 'aurora:update-toast-snooze-until'
 const UPDATE_TOAST_COOLDOWN_MS = 24 * 60 * 60 * 1000
 
 function snoozeUpdateToast(): void {
@@ -130,8 +130,8 @@ const GUI_SKEW_TOAST_ID = 'gui-contract-skew'
 // right after they closed it. Mirror the update toast: persist a cooldown when
 // the user dismisses it. It still reminds again after the window if the skew
 // persists, and clears immediately once the two sides align.
-const SKEW_TOAST_SNOOZE_KEY = 'hermes:backend-skew-toast-snooze-until'
-const GUI_SKEW_TOAST_SNOOZE_KEY = 'hermes:gui-skew-toast-snooze-until'
+const SKEW_TOAST_SNOOZE_KEY = 'aurora:backend-skew-toast-snooze-until'
+const GUI_SKEW_TOAST_SNOOZE_KEY = 'aurora:gui-skew-toast-snooze-until'
 const SKEW_TOAST_COOLDOWN_MS = 24 * 60 * 60 * 1000
 
 function snoozeSkewToast(): void {
@@ -159,7 +159,7 @@ const INSTALL_METHOD_TOAST_ID = 'install-method-not-supported'
 // re-derived from every session.info (session.create/resume/activate all
 // route through applyRuntimeInfo), so without a snooze it would re-pop on
 // every session switch even right after the user dismissed it.
-const INSTALL_METHOD_TOAST_SNOOZE_KEY = 'hermes:install-method-toast-snooze-until'
+const INSTALL_METHOD_TOAST_SNOOZE_KEY = 'aurora:install-method-toast-snooze-until'
 const INSTALL_METHOD_TOAST_COOLDOWN_MS = 24 * 60 * 60 * 1000
 
 function snoozeInstallMethodToast(): void {
@@ -212,11 +212,11 @@ export function reportBackendContract(contract: number | undefined, protocol?: s
     }
 
     notify({
-      // Hermes Cloud updates its agents itself: name the skew, offer no update.
+      // Aurora Cloud updates its agents itself: name the skew, offer no update.
       action: cloudOwnsUpdates('backend')
         ? undefined
         : {
-            label: translateNow('notifications.updateHermes'),
+            label: translateNow('notifications.updateAurora'),
             onClick: () => {
               snoozeSkewToast()
               void applyBackendUpdate()
@@ -239,7 +239,7 @@ export function reportBackendContract(contract: number | undefined, protocol?: s
     }
 
     notify({
-      // A Webapp served by Hermes Cloud: Cloud replaced the image under this tab, and a reload loads it.
+      // A Webapp served by Aurora Cloud: Cloud replaced the image under this tab, and a reload loads it.
       action: cloudOwnsUpdates('client')
         ? { label: translateNow('commandCenter.reloadWindow'), onClick: () => window.location.reload() }
         : {
@@ -507,7 +507,7 @@ export async function refreshDesktopVersion(): Promise<DesktopVersionInfo | null
   try {
     const seq = ++versionRequestSeq
     const scope = versionScopeKey()
-    const next = await window.hermesDesktop?.getVersion?.({ ...connectionScoped(), ...profileScoped() })
+    const next = await window.auroraDesktop?.getVersion?.({ ...connectionScoped(), ...profileScoped() })
 
     // Superseded, or the scope moved while in flight: the scope listener has
     // already asked again for the new target.
@@ -603,7 +603,7 @@ export async function checkBackendUpdates({
   $backendUpdateChecking.set(true)
 
   try {
-    const status = mapBackendCheck(await checkHermesUpdate(force))
+    const status = mapBackendCheck(await checkAuroraUpdate(force))
 
     if (connectionKey($connection.get()) === requestKey) {
       $backendUpdateStatus.set(status)
@@ -641,7 +641,7 @@ export async function checkBackendUpdates({
 }
 
 export async function checkUpdates({ force = false }: UpdateCheckOptions = {}): Promise<DesktopUpdateStatus | null> {
-  const bridge = window.hermesDesktop?.updates
+  const bridge = window.auroraDesktop?.updates
 
   if (!bridge || $updateChecking.get() || cloudOwnsUpdates('client')) {
     return $updateStatus.get()
@@ -725,7 +725,7 @@ export function sourceUpdateChannel(status: DesktopUpdateStatus | null): SourceU
  * An unreachable release still returns a status naming the saved channel.
  */
 export async function setUpdateChannel(channel: SourceUpdateChannel): Promise<DesktopUpdateStatus> {
-  const setChannel = window.hermesDesktop?.updates?.setChannel
+  const setChannel = window.auroraDesktop?.updates?.setChannel
 
   if (!setChannel) {
     throw new Error('This installation cannot change its update channel.')
@@ -757,7 +757,7 @@ export async function applyUpdates(opts: DesktopUpdateApplyOptions = {}): Promis
     return { ok: false, error: 'retirement-blocked' }
   }
 
-  const bridge = window.hermesDesktop?.updates
+  const bridge = window.auroraDesktop?.updates
 
   if (!bridge) {
     return { ok: false, error: 'unavailable', message: 'Desktop bridge unavailable.' }
@@ -770,15 +770,15 @@ export async function applyUpdates(opts: DesktopUpdateApplyOptions = {}): Promis
     const result = await bridge.apply(opts)
 
     // CLI install with no staged updater: not an error — the user just runs
-    // `hermes update` themselves. Land on a dedicated manual state so the
+    // `aurora update` themselves. Land on a dedicated manual state so the
     // overlay shows the command + copy button instead of a dead retry loop.
     if (result?.manual) {
       $updateApply.set({
         ...IDLE,
         applying: false,
         stage: 'manual',
-        message: result.message ?? result.command ?? 'hermes update',
-        command: result.command ?? 'hermes update'
+        message: result.message ?? result.command ?? 'aurora update',
+        command: result.command ?? 'aurora update'
       })
 
       return result
@@ -975,7 +975,7 @@ function completedAfterRestart(
   status: Awaited<ReturnType<typeof getActionStatus>>,
   actionId: string | undefined
 ): boolean {
-  return !!actionId && status.lines.some(line => line === `=== hermes-update completed ${actionId} ===`)
+  return !!actionId && status.lines.some(line => line === `=== aurora-update completed ${actionId} ===`)
 }
 
 /** Whether the durable update receipt attached to the status proves the
@@ -1044,7 +1044,7 @@ async function runBackendUpdate(): Promise<DesktopUpdateApplyResult> {
       ? previousStatus.targetSha.slice('backend:'.length)
       : undefined
 
-    const started = await updateHermes()
+    const started = await updateAurora()
     const applyStartedAtMs = Date.now()
 
     if (!started.ok) {
@@ -1052,7 +1052,7 @@ async function runBackendUpdate(): Promise<DesktopUpdateApplyResult> {
       // An empty update_command is the backend saying "there is no command to
       // run here" (managed container, commit build) — render the message-only
       // view. Only a field absent from an older backend falls back.
-      const command = ((started as { update_command?: string | null }).update_command ?? 'hermes update') || null
+      const command = ((started as { update_command?: string | null }).update_command ?? 'aurora update') || null
       $backendUpdateApply.set({ ...IDLE, applying: false, stage: 'manual', message, command })
 
       return { ok: false, error: 'manual', manual: true, message, command: command ?? undefined }
@@ -1122,7 +1122,7 @@ async function runBackendUpdate(): Promise<DesktopUpdateApplyResult> {
 
       if (!started.action_id && last.exit_code === null) {
         try {
-          const status = await checkHermesUpdate(true)
+          const status = await checkAuroraUpdate(true)
 
           if (legacyBackendReachedTarget(status, requestedTargetSha, previousVersion)) {
             return finishBackendApply(true)
@@ -1247,7 +1247,7 @@ export function applyEverythingUpdate(): Promise<void> {
   return updateEverythingInFlight
 }
 
-/** The everything-flow's backend leg: a remote backend, unless Hermes Cloud updates it itself. */
+/** The everything-flow's backend leg: a remote backend, unless Aurora Cloud updates it itself. */
 function backendLegApplies(): boolean {
   return isRemoteMode() && !cloudOwnsUpdates('backend')
 }
@@ -1275,7 +1275,7 @@ async function runEverythingUpdate(): Promise<void> {
     // 2. Fan out to every OTHER eligible registered connection. The active
     //    backend was just updated (excluded), and the local runtime updates
     //    with the client in step 3 (excluded). No registry/bridge → skip.
-    const bridge = window.hermesDesktop?.connections
+    const bridge = window.auroraDesktop?.connections
     const registry = $connectionsRegistry.get() ?? (await refreshConnectionsRegistry().catch(() => null))
     const excludeIds = ['local']
     const activeConnectionId = $connection.get()?.connectionId
@@ -1374,7 +1374,7 @@ let lastVersionScopeKey: string | undefined
 // the mode doesn't. Pooled profiles share a baseUrl, so the profile joins
 // the key: the update check is profile-scoped (per-profile overrides can
 // pin a different channel/branch).
-function connectionKey(conn: HermesConnection | null): string {
+function connectionKey(conn: AuroraConnection | null): string {
   if (conn?.mode !== 'remote') {
     return String(conn?.mode)
   }
@@ -1383,7 +1383,7 @@ function connectionKey(conn: HermesConnection | null): string {
 }
 
 export const BACKGROUND_UPDATE_CHECK_MS = 24 * 60 * 60 * 1000
-const FOCUS_RECHECK_KEY = 'hermes.updates.last-passive-check'
+const FOCUS_RECHECK_KEY = 'aurora.updates.last-passive-check'
 
 function passiveCheckDue(now: number): boolean {
   const last = Number(storedString(FOCUS_RECHECK_KEY) ?? 0)
@@ -1403,7 +1403,7 @@ export function startUpdatePoller(): void {
     return
   }
 
-  const bridge = window.hermesDesktop?.updates
+  const bridge = window.auroraDesktop?.updates
 
   if (!bridge) {
     return
@@ -1419,7 +1419,7 @@ export function startUpdatePoller(): void {
   // backend check above sees mode≠remote and no-ops. Re-check once the
   // connection resolves to remote, and again whenever the remote target
   // itself changes (switching between two remote profiles).
-  connectionUnsub = $connection.subscribe((conn: HermesConnection | null): void => {
+  connectionUnsub = $connection.subscribe((conn: AuroraConnection | null): void => {
     const key = connectionKey(conn)
 
     if (key === lastConnectionKey) {

@@ -1,9 +1,9 @@
 /**
- * The curated Hermes plugin catalog as the Desktop sees it.
+ * The curated Aurora plugin catalog as the Desktop sees it.
  *
  * `PLUGIN_CATALOG_URL` (`/docs/api/plugins.json`, generated from the repo's
  * `plugin-catalog/` directory at site build) is the catalog the Capabilities →
- * Plugins card catalog browses. A `hermes://plugin/install?catalog=<name>`
+ * Plugins card catalog browses. An `aurora://plugin/install?catalog=<name>`
  * deep link resolves against the SAME document so a link and an in-app pick
  * always agree on the repo, subdir and reviewed pin for a name.
  *
@@ -11,14 +11,14 @@
  * catalog with its cache, kill list and in-tree fallback: the same catalog the
  * install resolves its pin from. A renderer fetch of the JSON also depends on
  * the docs host's cross-origin redirect carrying a CORS header, which it did
- * not until 2026-10-13 (hermes-agent 136483). Only a backend that predates the
+ * not until 2026-10-13 (aurora-agent 136483). Only a backend that predates the
  * method falls back to the direct fetch.
  *
  * Everything here only classifies — nothing installs. Callers open the Install
  * Plugin dialog, which still requires the user's explicit confirmation.
  */
 
-import { type ConnectionState, PLUGIN_CATALOG_NAME_RE } from '@hermes/shared'
+import { type ConnectionState, PLUGIN_CATALOG_NAME_RE } from '@aurora/shared'
 import type { ReadableAtom } from 'nanostores'
 
 import { isMissingRpcMethod } from '@/lib/gateway-rpc'
@@ -138,7 +138,7 @@ export function sendWhenGatewayOpen<T>(
     })
   })
 
-  return withTimeout(opened, timeoutMs, 'Hermes backend did not connect', () => stop()).then(send)
+  return withTimeout(opened, timeoutMs, 'Aurora backend did not connect', () => stop()).then(send)
 }
 
 // The route lookup inside requestGatewayForActiveRoute has no deadline of its own, so the

@@ -124,7 +124,7 @@ def _recorded_homes(db, room_id, member_id):
 
 
 def _served_here(home):
-    from hermes_constants import named_profile_home, named_profile_is_deleted
+    from aurora_constants import named_profile_home, named_profile_is_deleted
     return home.is_dir() and not (named_profile_home(home) is not None and named_profile_is_deleted(home))
 
 
@@ -147,7 +147,7 @@ def unknown_home_refusal(service, room_id, deferred):
 def moved_attempt_gone(service, room_id, task):
     """True when *task*'s profile moved and the home that admitted its attempt has no gateway, so
     nothing can still run it and Retry may start a new generation at the current home."""
-    from hermes_cli.gateway_runtime import discover_gateway_endpoint
+    from aurora_cli.gateway_runtime import discover_gateway_endpoint
     from tui_gateway.hosted_room_service import task_member_id
     served = service.profile_homes().get(task['payload']['target_profile'])
     admitted = stopping_attempt_home(service.authority.db, room_id, task_member_id(task), task)
@@ -198,7 +198,7 @@ def unsettled_legacy_homes(service, room_id, task):
     """For a turn admitted before attempt homes were recorded, every other home its member was
     served from whose gateway is up and has not answered that it holds nothing for the room: the
     current home's answer says nothing about those. Empty when the turn has an attempt home."""
-    from hermes_cli.gateway_runtime import discover_gateway_endpoint
+    from aurora_cli.gateway_runtime import discover_gateway_endpoint
     from tui_gateway.hosted_room_service import task_member_id
     member, db = task_member_id(task), service.authority.db
     if stopping_attempt_home(db, room_id, member, task) is not None:
@@ -213,8 +213,8 @@ def unsettled_legacy_homes(service, room_id, task):
 def unserved_member_stopped(service, room_id, task):
     """True when *task*'s member profile is no longer served on this host and no gateway owns any
     home it was served from (its conventional home, each recorded one, and the roster's)."""
-    from hermes_cli.gateway_runtime import discover_gateway_endpoint
-    from hermes_cli.gateway_runtime_multiplex import multiplexer_root_for
+    from aurora_cli.gateway_runtime import discover_gateway_endpoint
+    from aurora_cli.gateway_runtime_multiplex import multiplexer_root_for
     from tui_gateway.hosted_room_service import task_member_id
     profile = task['payload']['target_profile']
     served = service.profile_homes().get(profile)

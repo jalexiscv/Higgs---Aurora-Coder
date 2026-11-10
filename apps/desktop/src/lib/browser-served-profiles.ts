@@ -1,4 +1,4 @@
-import type { HermesApiRequest } from '@/global'
+import type { AuroraApiRequest } from '@/global'
 import { browserLaunchProfileOrDefault } from '@/lib/platform'
 import { isSignedOutStatus } from '@/lib/signed-out-status'
 
@@ -38,7 +38,7 @@ export class UnservedProfileError extends Error {
  * gateway, the active one a relayed gateway reports (browser-saved-connections.ts).
  */
 export function createServedProfiles(
-  api: <T>(request: HermesApiRequest) => Promise<T>,
+  api: <T>(request: AuroraApiRequest) => Promise<T>,
   ownProfile: () => null | Promise<null | string | undefined> | string = browserLaunchProfileOrDefault
 ) {
   let served: null | Set<string> = null

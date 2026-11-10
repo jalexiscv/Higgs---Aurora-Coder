@@ -1,27 +1,27 @@
 ---
 sidebar_position: 8
 title: "Memory Provider Plugins"
-description: "How to build a memory provider plugin for Hermes Agent"
+description: "How to build a memory provider plugin for Aurora Agent"
 ---
 
 # Building a Memory Provider Plugin
 
-Memory provider plugins give Hermes Agent persistent, cross-session knowledge beyond the built-in MEMORY.md and USER.md. This guide covers how to build one.
+Memory provider plugins give Aurora Agent persistent, cross-session knowledge beyond the built-in MEMORY.md and USER.md. This guide covers how to build one.
 
 :::tip
-Memory providers are one of two **provider plugin** types. The other is [Context Engine Plugins](./context-engine-plugin.md), which replace the built-in context compressor. Both follow the same pattern: single-select, config-driven, managed via `hermes plugins`.
+Memory providers are one of two **provider plugin** types. The other is [Context Engine Plugins](./context-engine-plugin.md), which replace the built-in context compressor. Both follow the same pattern: single-select, config-driven, managed via `aurora plugins`.
 :::
 
 ## Installation Layouts
 
-Hermes discovers memory providers from four sources, in this precedence order:
+Aurora discovers memory providers from four sources, in this precedence order:
 
 | Source | Location | Notes |
 |---|---|---|
-| Bundled | `plugins/memory/<name>/` | Ships with Hermes. Closed to new providers — see [CONTRIBUTING](https://github.com/NousResearch/hermes-agent/blob/main/CONTRIBUTING.md). |
-| User | `$HERMES_HOME/plugins/<name>/` | Dropped in by the user, per profile. |
-| Project | `./.hermes/plugins/<name>/` | Opt-in via `HERMES_ENABLE_PROJECT_PLUGINS=1`. |
-| Package | `hermes_agent.memory_providers` entry point | Distribution supplied by the installation owner; nothing to copy. |
+| Bundled | `plugins/memory/<name>/` | Ships with Aurora. Closed to new providers — see [CONTRIBUTING](https://github.com/NousResearch/hermes-agent/blob/main/CONTRIBUTING.md). |
+| User | `$AURORA_HOME/plugins/<name>/` | Dropped in by the user, per profile. |
+| Project | `./.aurora/plugins/<name>/` | Opt-in via `AURORA_ENABLE_PROJECT_PLUGINS=1`. |
+| Package | `aurora_agent.memory_providers` entry point | Distribution supplied by the installation owner; nothing to copy. |
 
 Earlier sources win on a name collision, so a directory dropped into a working
 tree can never shadow a shipped provider.
@@ -36,24 +36,24 @@ Discovery only *enumerates* — it never imports a provider. Nothing runs until
 `memory.provider` names it.
 
 Entry-point discovery does not install packages. Do not inject a provider into
-Hermes's selected environment with pip. On PM-managed installations, ship a
+Aurora's selected environment with pip. On PM-managed installations, ship a
 directory provider with declared Python dependencies; plugin admission and
-`hermes memory setup` prepare them through PM before use. Owner-managed builds
+`aurora memory setup` prepare them through PM before use. Owner-managed builds
 (such as Nix) can include an entry-point distribution declaratively.
 
 CLI and dashboard setup share candidate preparation. PM includes the provider's
 `pyproject.toml` or legacy `pip_dependencies` / `python_dependencies` alongside
 the active plugin union; an importable module does not bypass declared version
 constraints. Dashboard readiness checks the same inputs without installing
-anything. A successful preparation may require restarting Hermes before the
+anything. A successful preparation may require restarting Aurora before the
 running process can use the selected dependency generation. External sidecar
 checks and setup commands remain separate from the Python union.
 
 ### Directory Provider
 
 A directory provider lives in `plugins/memory/<name>/` when bundled with
-Hermes, in `$HERMES_HOME/plugins/<name>/` when installed by a user, or in
-`./.hermes/plugins/<name>/` for a project-local one:
+Aurora, in `$AURORA_HOME/plugins/<name>/` when installed by a user, or in
+`./.aurora/plugins/<name>/` for a project-local one:
 
 ```
 plugins/memory/my-provider/
@@ -65,22 +65,22 @@ plugins/memory/my-provider/
 ### Packaged Provider
 
 A pip-installed provider publishes an entry point in the
-`hermes_agent.memory_providers` group. The entry-point name is the provider
+`aurora_agent.memory_providers` group. The entry-point name is the provider
 name users select in `memory.provider`; its value points to the provider's
 `register(ctx)` function:
 
 ```toml title="pyproject.toml"
-[project.entry-points."hermes_agent.memory_providers"]
+[project.entry-points."aurora_agent.memory_providers"]
 my-provider = "my_provider:register"
 ```
 
 Point the entry point at the **package**, or at a `register(ctx)` inside it, and
 keep your implementation, skills, and other resources in the normal Python
-package layout. No copy under `$HERMES_HOME/plugins/` is required.
+package layout. No copy under `$AURORA_HOME/plugins/` is required.
 
 A package entry point gets everything a directory install does, including the
-two files Hermes reads from disk rather than importing — `config_schema.py`
-(the dashboard config panel) and `cli.py` (your `hermes <provider>`
+two files Aurora reads from disk rather than importing — `config_schema.py`
+(the dashboard config panel) and `cli.py` (your `aurora <provider>`
 subcommands). Both are found next to your package's `__init__.py`, so point the
 entry point at a package rather than a single module if you ship either.
 
@@ -105,7 +105,7 @@ class MyMemoryProvider(MemoryProvider):
         """Called once at agent startup.
 
         kwargs always includes:
-          hermes_home (str): Active HERMES_HOME path. Use for storage.
+          aurora_home (str): Active AURORA_HOME path. Use for storage.
         """
         self._api_key = get_secret("MY_API_KEY") or ""
         self._session_id = session_id
@@ -121,19 +121,19 @@ fields; callers may initialize a provider without an agent or a session database
 
 | Keyword | Meaning |
 |---|---|
-| `hermes_home` | Active profile's storage directory. |
+| `aurora_home` | Active profile's storage directory. |
 | `platform` | Session surface, such as `cli`, `gui`, `acp`, or `telegram`. |
 | `session_title` | Stored session title, when available. A display label is not necessarily a user-selected identity. |
-| `session_title_source` | Stored title provenance, when available: `derived`, `llm`, or `user`. Automatic sources must not be mistaken for explicit identity overrides; missing provenance retains a provider's legacy behavior. Shared constants live in `hermes_state_common.py`. |
+| `session_title_source` | Stored title provenance, when available: `derived`, `llm`, or `user`. Automatic sources must not be mistaken for explicit identity overrides; missing provenance retains a provider's legacy behavior. Shared constants live in `aurora_state_common.py`. |
 | `cwd` | Non-empty logical workspace supplied as `AIAgent(cwd=...)`, available before provider initialization. Omitted for `None` or an empty string. |
 | `gateway_session_key` | Stable messaging-chat identity for per-chat session isolation. |
 | `user_id`, `user_id_alt`, `user_name`, `chat_id` | Gateway identity fields, included when present. |
 | `agent_identity` | Active profile name, when available. |
 | `resumed` | `True` when an earlier turn of this session id ran (the agent continues a stored transcript: `--resume`, a gateway chat after a restart, a reopened Desktop/TUI session). `False` for a new session id: a subagent, a cron run, a fresh chat. A `/branch` child seeded with copied history is `True`. A mid-process `/resume` arrives through `on_session_switch()` instead. |
 | `message_count` | Messages already stored for this session id. On TUI/Desktop it can include the prompt being submitted, so a fresh chat may report `1` with `resumed` `False`. |
-| `agent_workspace`, `agent_context` | Runtime agent scope. `agent_workspace` is `hermes`; `agent_context` is `cron` for scheduler runs, `subagent` for `delegate_task` children, else `primary` — skip automatic writes for the non-primary values. |
+| `agent_workspace`, `agent_context` | Runtime agent scope. `agent_workspace` is `aurora`; `agent_context` is `cron` for scheduler runs, `subagent` for `delegate_task` children, else `primary` — skip automatic writes for the non-primary values. |
 
-Read optional keys with `kwargs.get(...)`; older Hermes versions omit the newer ones (`resumed`,
+Read optional keys with `kwargs.get(...)`; older Aurora versions omit the newer ones (`resumed`,
 `message_count`).
 
 `on_turn_start(turn_number, message, **kwargs)` receives `model` (the turn's primary model id at
@@ -142,19 +142,19 @@ turn start; `""` when unset, a preset name under mixture-of-agents) and the turn
 a provider only the ones its signature accepts.
 
 It also receives `previous_message`: the text of the person's last message before this turn, taken
-from the transcript Hermes holds (`""` on a first turn, or when that message was image-only). Known
+from the transcript Aurora holds (`""` on a first turn, or when that message was image-only). Known
 runtime rows in the user role are skipped (continue nudges, task-list snapshots, single
 background-process completion and watch-match notices, compaction summaries, mid-turn `/steer`
 messages), a gateway timestamp prefix is removed, and the value is secret-scrubbed like `message`.
-On a turn with an image, Hermes appends recalled memory and plugin or gateway notes to the message as
+On a turn with an image, Aurora appends recalled memory and plugin or gateway notes to the message as
 text; `previous_message` is the turn's own text, without them. It
-is best-effort: an image turn stored by an older Hermes, or one that repair or compaction later merged
+is best-effort: an image turn stored by an older Aurora, or one that repair or compaction later merged
 with another turn, still carries its plugin and gateway notes, and
 other runtime notices a gateway replays after a restart (a cron delivery, a process
 heartbeat, a watch-disabled or batched-completion notice) can still come through. A process
-that resumed a session (`hermes chat --resume`, a gateway after a restart) never ran the previous
+that resumed a session (`aurora chat --resume`, a gateway after a restart) never ran the previous
 turn's end, so a provider that prepares recall in `queue_prefetch()` can redo that work from it, even
-when it stores no transcript of its own. Older Hermes omits it: read it with `kwargs.get`.
+when it stores no transcript of its own. Older Aurora omits it: read it with `kwargs.get`.
 
 Do not assume `os.getcwd()` identifies the conversation's workspace: one Desktop
 or gateway backend can serve several sessions. If `cwd` is absent and directory
@@ -188,8 +188,8 @@ workspace; absent or empty cwd remains unpinned.
 
 | Method | Purpose | Must Implement? |
 |--------|---------|-----------------|
-| `get_config_schema()` | Declare config fields for `hermes memory setup` | **Yes** |
-| `save_config(values, hermes_home)` | Write non-secret config to native location | **Yes** (unless env-var-only) |
+| `get_config_schema()` | Declare config fields for `aurora memory setup` | **Yes** |
+| `save_config(values, aurora_home)` | Write non-secret config to native location | **Yes** (unless env-var-only) |
 
 ### Optional Hooks
 
@@ -203,8 +203,8 @@ workspace; absent or empty cwd remains unpinned.
 | `on_pre_compress(messages)` | Before context compression | Save insights before discard |
 | `on_memory_write(action, target, content, metadata=None)` | Built-in memory writes | Mirror to your backend |
 | `shutdown()` | Process exit | Clean up connections |
-| `on_profile_created(profile_name, hermes_home)` | A profile selecting your provider was created (a clone carries `memory.provider`), from the CLI, dashboard or Desktop | Per-profile state: a peer, a host entry |
-| `on_profile_renamed(old_name, new_name, hermes_home)` | That profile was renamed (`hermes_home` is the new directory) | Re-key state stored under the old name |
+| `on_profile_created(profile_name, aurora_home)` | A profile selecting your provider was created (a clone carries `memory.provider`), from the CLI, dashboard or Desktop | Per-profile state: a peer, a host entry |
+| `on_profile_renamed(old_name, new_name, aurora_home)` | That profile was renamed (`aurora_home` is the new directory) | Re-key state stored under the old name |
 
 The two profile hooks run on an uninitialized instance with that profile's home and its own
 secrets bound: its `.env` plus its configured secret sources (1Password and the like). A key it
@@ -217,7 +217,7 @@ entry selected under the native-store lock. Notifications are emitted only after
 the complete write or batch succeeds. Batch notifications preserve operation order;
 each operation's previous content reflects earlier operations in that batch.
 `old_text` is the caller's search text, not the identity of the changed entry.
-Older Hermes versions can omit `previous_content`. Providers that require exact
+Older Aurora versions can omit `previous_content`. Providers that require exact
 identity should skip destructive mirroring when it is absent.
 
 ### Oversized prefetch results
@@ -242,7 +242,7 @@ the middle. Results at or below the threshold remain unchanged.
 The shared `hooks.output_spill` preview lengths and directory still apply, and
 `hooks.output_spill.enabled: false` disables spilling even with memory opt-in.
 Both settings are snapshotted when the external provider is registered; restart
-Hermes to apply changes to existing sessions. Built-in memory and normal
+Aurora to apply changes to existing sessions. Built-in memory and normal
 plugin-hook spilling are unaffected. See
 [Plugins — oversized-context spill](./plugins/index.md#oversized-context-spill).
 
@@ -284,14 +284,14 @@ uncompressed transcript is preserved, the compaction attempt errors with
 `BLOCKED_MISSING_PREREQUISITE`, and it can be retried once your store
 recovers. With the gate off (default), nothing changes for existing providers.
 
-None of the providers bundled with Hermes advertise checkpoint API v2 — the
+None of the providers bundled with Aurora advertise checkpoint API v2 — the
 contract is opt-in and exists for third-party archiving providers. Enabling
 `checkpoint_required` without one therefore blocks every compression attempt
 (manual and automatic): agent init logs a warning naming the active provider,
 and each refusal names `compression.checkpoint_required` as the key to disable.
 
 The gate binds to every compaction authority the host runs, not just the
-Hermes summarizer: server-side native compaction (`compression.codex_responses_native`)
+Aurora summarizer: server-side native compaction (`compression.codex_responses_native`)
 is suppressed while the gate is armed, post-turn micro-compaction
 (`compression.micro_compact`) is forced off at agent init (it absorbs old
 exchanges into a rolling summary with no checkpoint hook in its path), the
@@ -308,7 +308,7 @@ refuse such an engine yet.
 
 ### Forks under an armed gate
 
-Hermes runs a second agent without a provider in four places (delegated
+Aurora runs a second agent without a provider in four places (delegated
 subagents, the curator pass, the batch runner, the Feishu comment responder). With the gate off they stay provider-less. With
 `checkpoint_required` armed such a fork arms the same gate and would fail its
 first compaction with `BLOCKED_MISSING_PREREQUISITE`, so it loads the
@@ -356,24 +356,24 @@ Contract tests: `tests/agent/test_pre_compress_checkpoint_contract.py`.
 
 ## Setup UX — what a standalone provider keeps
 
-Every setup surface Hermes gives a bundled provider is driven by files in the provider's
+Every setup surface Aurora gives a bundled provider is driven by files in the provider's
 own directory, so a provider installed from the plugin catalog keeps all of them:
 
 | Surface | What the provider ships |
 |---|---|
 | Desktop → Capabilities → Tools → Memory (config panel) | `config_schema.py` (below) |
-| `hermes memory setup` wizard | `get_config_schema()` declares the fields the wizard prompts for, `save_config(config, hermes_home)` persists them, `post_setup(hermes_home, config)` runs afterwards for anything interactive (OAuth, first sync); `get_status_config()` feeds `hermes memory status` |
-| `hermes <provider> …` subcommands | `cli.py` with `register_cli(subparser)` ([Adding CLI Commands](#adding-cli-commands)) |
-| Python dependencies | `pyproject.toml` `[project] dependencies` (or `python_dependencies` in `plugin.yaml`); installed under Hermes' own pins at install time and re-applied across `hermes update` |
+| `aurora memory setup` wizard | `get_config_schema()` declares the fields the wizard prompts for, `save_config(config, aurora_home)` persists them, `post_setup(aurora_home, config)` runs afterwards for anything interactive (OAuth, first sync); `get_status_config()` feeds `aurora memory status` |
+| `aurora <provider> …` subcommands | `cli.py` with `register_cli(subparser)` ([Adding CLI Commands](#adding-cli-commands)) |
+| Python dependencies | `pyproject.toml` `[project] dependencies` (or `python_dependencies` in `plugin.yaml`); installed under Aurora's own pins at install time and re-applied across `aurora update` |
 
 Your provider's name, `memory.<name>` config section, data directory and tool names are the
-contract with existing users. A provider that moves out of core keeps all four; Hermes then
+contract with existing users. A provider that moves out of core keeps all four; Aurora then
 installs the catalog plugin automatically for anyone whose `memory.provider` still names it
-(on `hermes update`, and once at agent start when `security.allow_lazy_installs` is on).
+(on `aurora update`, and once at agent start when `security.allow_lazy_installs` is on).
 
 ## Config Schema
 
-`get_config_schema()` returns a list of field descriptors used by `hermes memory setup`:
+`get_config_schema()` returns a list of field descriptors used by `aurora memory setup`:
 
 ```python
 def get_config_schema(self):
@@ -395,7 +395,7 @@ def get_config_schema(self):
         {
             "key": "project",
             "description": "Project identifier",
-            "default": "hermes",
+            "default": "aurora",
         },
     ]
 ```
@@ -403,22 +403,22 @@ def get_config_schema(self):
 Fields with `secret: True` and `env_var` go to `.env`. Non-secret fields are passed to `save_config()`.
 
 :::tip Minimal vs Full Schema
-Every field in `get_config_schema()` is prompted during `hermes memory setup`. Providers with many options should keep the schema minimal — only include fields the user **must** configure (API key, required credentials). Document optional settings in a config file reference (e.g. `$HERMES_HOME/myprovider.json`) rather than prompting for them all during setup. This keeps the setup wizard fast while still supporting advanced configuration. See the [Supermemory provider](https://github.com/supermemoryai/hermes-supermemory) (a plugin catalog entry) for an example — it only prompts for the API key; all other options live in `supermemory.json`.
+Every field in `get_config_schema()` is prompted during `aurora memory setup`. Providers with many options should keep the schema minimal — only include fields the user **must** configure (API key, required credentials). Document optional settings in a config file reference (e.g. `$AURORA_HOME/myprovider.json`) rather than prompting for them all during setup. This keeps the setup wizard fast while still supporting advanced configuration. See the [Supermemory provider](https://github.com/supermemoryai/hermes-supermemory) (a plugin catalog entry) for an example — it only prompts for the API key; all other options live in `supermemory.json`.
 :::
 
 ### Provider-owned storage
 
 `config_schema.py` defaults to `storage=STORAGE_FLAT_JSON`: core reads and writes
-`$HERMES_HOME/<name>/config.json` for the panel. A provider whose config has its own layout
+`$AURORA_HOME/<name>/config.json` for the panel. A provider whose config has its own layout
 (several profiles in one file, OAuth tokens beside settings) declares `storage=STORAGE_PROVIDER`
 and implements two methods; core never opens the file:
 
 ```python
-def read_config_fields(self, hermes_home: str) -> dict:
+def read_config_fields(self, aurora_home: str) -> dict:
     # Stored natives by field key (absent = unset), plus what a blank field resolves to.
-    return {"values": {"workspace": "ws1"}, "placeholders": {"aiPeer": "hermes_coder"}}
+    return {"values": {"workspace": "ws1"}, "placeholders": {"aiPeer": "aurora_coder"}}
 
-def write_config_fields(self, values: dict, hermes_home: str) -> None:
+def write_config_fields(self, values: dict, aurora_home: str) -> None:
     # Only submitted keys; None clears one. Non-blank secrets arrive here too; core saves them to
     # .env under env_key only after this returns. Raise ValueError (a subclass such as
     # json.JSONDecodeError counts) to refuse the save (shown as a 400), e.g. when your file does not parse.
@@ -431,11 +431,11 @@ provider that fails to load returns 503; an unknown `storage` value shows no pan
 ## Save Config
 
 ```python
-def save_config(self, values: dict, hermes_home: str) -> None:
+def save_config(self, values: dict, aurora_home: str) -> None:
     """Write non-secret config to your native location."""
     import json
     from pathlib import Path
-    config_path = Path(hermes_home) / "my-provider.json"
+    config_path = Path(aurora_home) / "my-provider.json"
     config_path.write_text(json.dumps(values, indent=2))
 ```
 
@@ -482,7 +482,7 @@ hooks:
 
 ## Threading Contract
 
-**`sync_turn()` MUST be non-blocking.** If your backend has latency (API calls, LLM processing), run the work in a daemon thread — spawned with `agent.memory_provider.spawn_context_thread`, never a bare `threading.Thread`. Profile isolation (the active `HERMES_HOME`, the per-turn secret scope) lives in `contextvars`, and a plain thread starts with an empty context: under multiplexed profiles it would silently write into the *default* profile's store, and `get_secret()` fails closed there.
+**`sync_turn()` MUST be non-blocking.** If your backend has latency (API calls, LLM processing), run the work in a daemon thread — spawned with `agent.memory_provider.spawn_context_thread`, never a bare `threading.Thread`. Profile isolation (the active `AURORA_HOME`, the per-turn secret scope) lives in `contextvars`, and a plain thread starts with an empty context: under multiplexed profiles it would silently write into the *default* profile's store, and `get_secret()` fails closed there.
 
 ```python
 from agent.memory_provider import spawn_context_thread
@@ -500,12 +500,12 @@ def sync_turn(self, user_content, assistant_content, *, session_id="", messages=
     self._sync_thread.start()
 ```
 
-The same applies to prefetch and writer threads. Small JSON config sidecars (`$HERMES_HOME/<provider>.json`) are read with `utils.read_json_or_empty` and written with `utils.atomic_json_write`; anything under `config.yaml` goes through `hermes_cli.config.save_config(..., merge_existing=True)`.
+The same applies to prefetch and writer threads. Small JSON config sidecars (`$AURORA_HOME/<provider>.json`) are read with `utils.read_json_or_empty` and written with `utils.atomic_json_write`; anything under `config.yaml` goes through `aurora_cli.config.save_config(..., merge_existing=True)`.
 
 `messages` is optional OpenAI-style conversation context as of the completed
 turn. When present, it includes user/assistant messages, assistant tool calls,
 and tool result messages. Providers that do not need raw turn context can omit
-the `messages` parameter; Hermes will continue calling them with the legacy
+the `messages` parameter; Aurora will continue calling them with the legacy
 signature.
 
 Cloud providers should document what parts of `messages` are sent off-device.
@@ -514,15 +514,15 @@ workspace data.
 
 ## Profile Isolation
 
-All storage paths **must** use the `hermes_home` kwarg from `initialize()`, not hardcoded `~/.hermes`:
+All storage paths **must** use the `aurora_home` kwarg from `initialize()`, not hardcoded `~/.aurora`:
 
 ```python
 # CORRECT — profile-scoped, bound on the instance
 def initialize(self, session_id, **kwargs):
-    self._data_dir = Path(kwargs["hermes_home"]) / "my-provider"
+    self._data_dir = Path(kwargs["aurora_home"]) / "my-provider"
 
 # WRONG — shared across all profiles
-data_dir = Path("~/.hermes/my-provider").expanduser()
+data_dir = Path("~/.aurora/my-provider").expanduser()
 ```
 
 ### Multiplexed gateways
@@ -530,12 +530,12 @@ data_dir = Path("~/.hermes/my-provider").expanduser()
 One gateway process can serve several profiles at once, and their turns run concurrently on different threads. Each agent gets its own `MemoryManager` and its own provider instance, initialized for one profile. Your provider must:
 
 - **Return a new instance per load.** `register(ctx)` should construct the provider (`ctx.register_memory_provider(MyProvider())`), not hand back a module-level singleton. The manager refuses to initialize an instance that another profile's manager already bound, and logs `memory_provider_instance_shared`.
-- **Bind from `initialize()`.** Derive every store, path, client, bank and tenant from the `hermes_home` keyword (and secrets read through `get_secret()` during `initialize`), and keep that binding on `self`.
+- **Bind from `initialize()`.** Derive every store, path, client, bank and tenant from the `aurora_home` keyword (and secrets read through `get_secret()` during `initialize`), and keep that binding on `self`.
 - **Keep nothing profile-specific at module or class level.** No global "current store", and no rebinding a shared binding on each call. Two profiles' calls interleave, so a per-call rebind races.
 
-The manager enforces the other half. It runs tool calls and every lifecycle hook (`prefetch`, `queue_prefetch`, `sync_turn`, `on_memory_write`, `on_session_end`, …) only from the profile the instance was initialized for. On a multiplexed gateway a caller that names no profile is refused, and the refusal is logged as `memory_caller_profile_unresolved` in the profile's `errors.log` (`hermes logs errors`) and in `gateway.log`. Background hooks run under the owning profile's `HERMES_HOME`. `handle_tool_call(..., **kwargs)` also receives `hermes_home`, `agent_identity` and `caller_gsk`. They name the profile your instance is already bound to, so you can assert on them, but don't rebind from them.
+The manager enforces the other half. It runs tool calls and every lifecycle hook (`prefetch`, `queue_prefetch`, `sync_turn`, `on_memory_write`, `on_session_end`, …) only from the profile the instance was initialized for. On a multiplexed gateway a caller that names no profile is refused, and the refusal is logged as `memory_caller_profile_unresolved` in the profile's `errors.log` (`aurora logs errors`) and in `gateway.log`. Background hooks run under the owning profile's `AURORA_HOME`. `handle_tool_call(..., **kwargs)` also receives `aurora_home`, `agent_identity` and `caller_gsk`. They name the profile your instance is already bound to, so you can assert on them, but don't rebind from them.
 
-Hermes can't verify a provider's internals. A provider that keeps a process-wide binding still mixes profiles' memories, even with these checks in place.
+Aurora can't verify a provider's internals. A provider that keeps a process-wide binding still mixes profiles' memories, even with these checks in place.
 
 ## Testing
 
@@ -559,16 +559,16 @@ mgr.shutdown_all()
 
 ## Adding CLI Commands
 
-Memory provider plugins can register their own CLI subcommand tree (e.g. `hermes my-provider status`, `hermes my-provider config`). This uses a convention-based discovery system — no changes to core files needed.
+Memory provider plugins can register their own CLI subcommand tree (e.g. `aurora my-provider status`, `aurora my-provider config`). This uses a convention-based discovery system — no changes to core files needed.
 
 ### How it works
 
 1. Add a `cli.py` file to your plugin directory
 2. Define a `register_cli(subparser)` function that builds the argparse tree
 3. The memory plugin system discovers it at startup via `discover_plugin_cli_commands()`
-4. Your commands appear under `hermes <provider-name> <subcommand>`
+4. Your commands appear under `aurora <provider-name> <subcommand>`
 
-**Active-provider gating:** Your CLI commands only appear when your provider is the active `memory.provider` in config. If a user hasn't configured your provider, your commands won't show in `hermes --help`.
+**Active-provider gating:** Your CLI commands only appear when your provider is the active `memory.provider` in config. If a user hasn't configured your provider, your commands won't show in `aurora --help`.
 
 ### Example
 
@@ -583,10 +583,10 @@ def my_command(args):
     elif sub == "config":
         print("Showing config...")
     else:
-        print("Usage: hermes my-provider <status|config>")
+        print("Usage: aurora my-provider <status|config>")
 
 def register_cli(subparser) -> None:
-    """Build the hermes my-provider argparse tree.
+    """Build the aurora my-provider argparse tree.
 
     Called by discover_plugin_cli_commands() at argparse setup time.
     """
@@ -614,12 +614,12 @@ plugins/memory/my-provider/
 
 Only **one** external memory provider can be active at a time. If a user tries to register a second, the MemoryManager rejects it with a warning. This prevents tool schema bloat and conflicting backends.
 
-## `HERMES_HOME` survival contract (what wrappers can rely on)
+## `AURORA_HOME` survival contract (what wrappers can rely on)
 
-For wrapper-style providers that keep their runtime in a sidecar venv outside Hermes-managed Python (no dependency surface — no `pyproject.toml`, `pip_dependencies`, or `python_dependencies` — at the scanned plugin root; a `pyproject.toml` belonging solely to an external or nested sidecar is not scanned):
+For wrapper-style providers that keep their runtime in a sidecar venv outside Aurora-managed Python (no dependency surface — no `pyproject.toml`, `pip_dependencies`, or `python_dependencies` — at the scanned plugin root; a `pyproject.toml` belonging solely to an external or nested sidecar is not scanned):
 
-- **Location.** `$HERMES_HOME/plugins/<name>/` is the profile-scoped plugin location, and `HERMES_HOME` follows the active context override, then `$HERMES_HOME`, then the platform default. Propagate `HERMES_HOME` when launching the wrapper or sidecar so profile isolation holds; `MemoryManager.initialize_all` injects the active `hermes_home` into every provider.
-- **Survival.** Ordinary Hermes updates — including managed-venv rebuild/replacement by pm — do not delete or rewrite `$HERMES_HOME/plugins/**`. An installed wrapper directory and its marker file (e.g. `mnemosyne-wrapper.json`) survive. Explicit plugin updates and deletion flows (`hermes uninstall`, `hermes plugins remove`, profile deletion, user deletion) are excluded from this guarantee.
+- **Location.** `$AURORA_HOME/plugins/<name>/` is the profile-scoped plugin location, and `AURORA_HOME` follows the active context override, then `$AURORA_HOME`, then the platform default. Propagate `AURORA_HOME` when launching the wrapper or sidecar so profile isolation holds; `MemoryManager.initialize_all` injects the active `aurora_home` into every provider.
+- **Survival.** Ordinary Aurora updates — including managed-venv rebuild/replacement by pm — do not delete or rewrite `$AURORA_HOME/plugins/**`. An installed wrapper directory and its marker file (e.g. `mnemosyne-wrapper.json`) survive. Explicit plugin updates and deletion flows (`aurora uninstall`, `aurora plugins remove`, profile deletion, user deletion) are excluded from this guarantee.
 - **Sidecar isolation.** A plugin root with no dependency surface never joins the pm workspace dependency union; a resync or venv rebuild neither provisions deps for it nor touches its tree.
 - **Conflicts.** For native shared-venv plugins, an unsatisfiable dependency union fails loudly: the candidate plugin stays unenabled and unimported (the admission authority refuses before publishing config, reporting the plugin identity plus the resolver's reason, with a re-enable/retry path and a machine-readable pm receipt). Dependency resolution does not automatically disable other plugins or run a bisect. Explicit plugin updates, removal, and independent security gates are separate operations.
 

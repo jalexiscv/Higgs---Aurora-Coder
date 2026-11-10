@@ -1,12 +1,12 @@
 ---
 sidebar_position: 18
 title: "Browser CDP Supervisor"
-description: "How Hermes detects and responds to native JS dialogs and interacts with cross-origin iframes via a persistent CDP connection."
+description: "How Aurora detects and responds to native JS dialogs and interacts with cross-origin iframes via a persistent CDP connection."
 ---
 
 # Browser CDP Supervisor
 
-The CDP supervisor closes two long-standing gaps in Hermes' browser tooling:
+The CDP supervisor closes two long-standing gaps in Aurora's browser tooling:
 
 1. **Native JS dialogs** (`alert`/`confirm`/`prompt`/`beforeunload`) block the
    page's JS thread. Without supervision, the agent has no way to know a
@@ -24,7 +24,7 @@ in its snapshot, and exposing a `browser_dialog` tool for explicit responses.
 
 | Backend | Dialog detect | Dialog respond | Frame tree | OOPIF `Runtime.evaluate` via `browser_cdp(frame_id=...)` |
 |---|---|---|---|---|
-| Local Chromium (launched by Hermes for `browser_exec`) / `/browser connect` | ✓ | ✓ full workflow | ✓ | ✓ |
+| Local Chromium (launched by Aurora for `browser_exec`) / `/browser connect` | ✓ | ✓ full workflow | ✓ | ✓ |
 | Browserbase | ✓ (via bridge) | ✓ full workflow (via bridge) | ✓ | ✓ |
 
 **Browserbase quirk.** Browserbase's CDP proxy uses Playwright internally and
@@ -32,7 +32,7 @@ auto-dismisses native dialogs within ~10ms, so `Page.handleJavaScriptDialog`
 can't keep up. The supervisor injects a bridge script via
 `Page.addScriptToEvaluateOnNewDocument` that overrides
 `window.alert`/`confirm`/`prompt` with a synchronous XHR to a magic host
-(`hermes-dialog-bridge.invalid`). `Fetch.enable` intercepts those XHRs before
+(`aurora-dialog-bridge.invalid`). `Fetch.enable` intercepts those XHRs before
 they touch the network — the dialog becomes a `Fetch.requestPaused` event the
 supervisor captures, and `respond_to_dialog` fulfills via
 `Fetch.fulfillRequest` with a JSON body the injected script decodes.
@@ -41,14 +41,14 @@ From the page's perspective, `prompt()` still returns the agent-supplied
 string. From the agent's perspective, it's the same `browser_dialog(action=...)`
 API either way.
 
-The Camofox catalog plugin (`hermes plugins install camofox`) drives a REST-only
+The Camofox catalog plugin (`aurora plugins install camofox`) drives a REST-only
 browser with no CDP surface, so the supervisor does not apply to it.
 
 ## Architecture
 
 ### CDPSupervisor
 
-One `asyncio.Task` running in a background daemon thread per Hermes `task_id`.
+One `asyncio.Task` running in a background daemon thread per Aurora `task_id`.
 Holds a persistent WebSocket to the backend's CDP endpoint. Maintains:
 
 - **Dialog queue** — `List[PendingDialog]` with `{id, type, message, default_prompt, session_id, opened_at}`
@@ -226,8 +226,8 @@ expiry, while the supervisor's long-lived connection keeps a valid session.
 - `tools/browser_dialog_tool.py` — `browser_dialog` tool handler
 - `tools/browser_session_cdp.py` — `ensure_cdp_supervisor` / `stop_cdp_supervisor`, `/browser connect` reattach, dialog-policy config
 - `tools/browser_session_lifecycle.py` — per-session teardown (supervisor stopped first)
-- `toolsets.py` — registers `browser_dialog` in `browser`, `hermes-acp`, `hermes-api-server`, and core toolsets (gated on CDP reachability)
-- `hermes_cli/config.py` — `browser.dialog_policy` and `browser.dialog_timeout_s` defaults
+- `toolsets.py` — registers `browser_dialog` in `browser`, `aurora-acp`, `aurora-api-server`, and core toolsets (gated on CDP reachability)
+- `aurora_cli/config.py` — `browser.dialog_policy` and `browser.dialog_timeout_s` defaults
 
 ## Non-goals
 

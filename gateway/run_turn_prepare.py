@@ -26,7 +26,7 @@ from gateway.session import (
 from gateway.session_transcript import TranscriptReadError
 from gateway.turn_context import TurnContext
 from gateway.turn_lease import DEFAULT_LEASE_WAIT, TurnLeaseTimeoutError
-from hermes_constants import get_hermes_home_override
+from aurora_constants import get_aurora_home_override
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from utils import base_url_hostname
@@ -57,7 +57,7 @@ def _resolve_policy_agent_runtime(runner, policy, *, fallback=True) -> tuple[str
     runtime, fallback_entry = route_runtime(policy, frozen, model, route_launch_key(authority, policy, frozen),
                                             fallback=fallback)
     if fallback_entry is not None:
-        from hermes_cli.fallback_config import pre_agent_fallback_notice
+        from aurora_cli.fallback_config import pre_agent_fallback_notice
         runner._pre_agent_fallback_notice = pre_agent_fallback_notice(
             provider or '', model or '',
             runtime.get('provider') or fallback_entry.get('provider') or 'unknown',
@@ -96,11 +96,11 @@ def _managed_oauth_env_host(provider: str) -> str:
     """The profile's documented host override for a managed OAuth provider, read through the
     secret scope like the resolver reads it: the process env holds the launch profile's value."""
     from agent.secret_scope import get_secret_str
-    from hermes_cli.auth_xai import DEFAULT_XAI_OAUTH_BASE_URL, _xai_validate_inference_base_url
+    from aurora_cli.auth_xai import DEFAULT_XAI_OAUTH_BASE_URL, _xai_validate_inference_base_url
 
     if provider == "openai-codex":
-        return get_secret_str("HERMES_CODEX_BASE_URL", "").strip()
-    raw = get_secret_str("HERMES_XAI_BASE_URL", "").strip() or get_secret_str("XAI_BASE_URL", "").strip()
+        return get_secret_str("AURORA_CODEX_BASE_URL", "").strip()
+    raw = get_secret_str("AURORA_XAI_BASE_URL", "").strip() or get_secret_str("XAI_BASE_URL", "").strip()
     return _xai_validate_inference_base_url(raw, fallback=DEFAULT_XAI_OAUTH_BASE_URL)
 
 
@@ -110,15 +110,15 @@ def _session_override_uses_managed_oauth(override: Optional[dict]) -> bool:
     A direct alias can retain the provider label but owns its endpoint/key. Never refresh a
     custom host's credential from the official provider's store (or the reverse).
     """
-    from hermes_cli.auth import PROVIDER_REGISTRY
+    from aurora_cli.auth import PROVIDER_REGISTRY
 
     if not override or override.get("owns_credentials"):
         return False
     provider = str(override.get("provider") or "")
     if provider not in ("openai-codex", "xai-oauth"):
         return False
-    # The managed host is the registry default OR its documented override (HERMES_CODEX_BASE_URL /
-    # HERMES_XAI_BASE_URL): the auth store still owns the bearer for either.
+    # The managed host is the registry default OR its documented override (AURORA_CODEX_BASE_URL /
+    # AURORA_XAI_BASE_URL): the auth store still owns the bearer for either.
     managed_hosts = {PROVIDER_REGISTRY[provider].inference_base_url.rstrip("/"),
                      _managed_oauth_env_host(provider).rstrip("/")} - {""}
     return (override.get("base_url") or "").rstrip("/") in managed_hosts
@@ -265,7 +265,7 @@ class GatewayTurnPrepareMixin:
             logger.info("Runtime provider supplied explicit model override: %s -> %s", model, runtime_model)
             model = runtime_model
         if unavailable_override and not self._pre_agent_fallback_notice:
-            from hermes_cli.fallback_config import pre_agent_fallback_notice
+            from aurora_cli.fallback_config import pre_agent_fallback_notice
             self._pre_agent_fallback_notice = pre_agent_fallback_notice(
                 unavailable_override["provider"], unavailable_override.get("model"), runtime_kwargs.get("provider"), model)
 
@@ -274,11 +274,11 @@ class GatewayTurnPrepareMixin:
         if override and skey:
             model, runtime_kwargs = self._apply_session_model_override(skey, model, runtime_kwargs)
 
-        # Provider resolved but no model.default (`hermes auth add` without `hermes model`): use the
+        # Provider resolved but no model.default (`aurora auth add` without `aurora model`): use the
         # provider's first catalog model.
         if not model and runtime_kwargs.get("provider"):
             with suppress(Exception):
-                from hermes_cli.models import get_default_model_for_provider
+                from aurora_cli.models import get_default_model_for_provider
                 model = get_default_model_for_provider(runtime_kwargs["provider"])
                 if model:
                     logger.info(
@@ -295,7 +295,7 @@ class GatewayTurnPrepareMixin:
         ``/review``) passes the session's own instead of writing that shared slot."""
         from gateway.run import _deep_merge_request_overrides
         from agent.fast_mode import STATIC_TIERS
-        from hermes_cli.models import resolve_fast_mode_overrides
+        from aurora_cli.models import resolve_fast_mode_overrides
         # Tests bind this method onto bare namespaces, so no class-level tables here.
         runtime = {
             k: runtime_kwargs.get(k) for k in (
@@ -339,7 +339,7 @@ class GatewayTurnPrepareMixin:
         model = getattr(agent, "model", None)
         if not model:
             return
-        from hermes_cli.runtime_provider_custom import session_provider_identity
+        from aurora_cli.runtime_provider_custom import session_provider_identity
         runtime = {
             "provider": session_provider_identity(getattr(agent, "provider", None),
                                                   getattr(agent, "requested_provider", None),
@@ -627,7 +627,7 @@ class GatewayTurnPrepareMixin:
         try:
             _lease_token = await _lease_registry.acquire(
                 session_entry.session_id, owner_key=_quick_key, generation=run_generation,
-                timeout=_float_env("HERMES_TURN_LEASE_TIMEOUT", DEFAULT_LEASE_WAIT),
+                timeout=_float_env("AURORA_TURN_LEASE_TIMEOUT", DEFAULT_LEASE_WAIT),
             )
         except TurnLeaseTimeoutError:
             # The cleanup finally starts later; restore the tokens here or this exit leaks identity.
@@ -688,8 +688,8 @@ class GatewayTurnPrepareMixin:
                 if prof and prof != "default" and _lgc().get_home_channel(source.platform):
                     home_env = "set"
         if not home_env:
-            # Slack routes every command through the parent `/hermes`; bare `/sethome` would fail.
-            sethome_cmd = "/hermes sethome" if source.platform == Platform.SLACK else "/sethome"
+            # Slack routes every command through the parent `/aurora`; bare `/sethome` would fail.
+            sethome_cmd = "/aurora sethome" if source.platform == Platform.SLACK else "/sethome"
             await self._deliver_platform_notice(
                 source, t("gateway.notify.no_home_channel", platform=platform_name.title(), sethome_cmd=sethome_cmd),
             )
@@ -704,7 +704,7 @@ class GatewayTurnPrepareMixin:
         persist_user_message = None
         persist_user_timestamp = None
         try:
-            from hermes_time import get_timezone as _get_evt_tz
+            from aurora_time import get_timezone as _get_evt_tz
             from gateway.message_timestamps import (
                 coerce_message_timestamp as _coerce_msg_ts,
                 render_user_content_with_timestamp as _render_msg_ts,

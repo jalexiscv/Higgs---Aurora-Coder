@@ -32,7 +32,7 @@ function bridge() {
     })
   }
 
-  vi.stubGlobal('hermesDesktop', { hudModifier: api })
+  vi.stubGlobal('auroraDesktop', { hudModifier: api })
 
   return { api, emit: (value: HudModifierStatus) => emit(value), unsubscribe }
 }

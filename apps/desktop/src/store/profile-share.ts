@@ -1,7 +1,7 @@
 /**
  * Profile share: export/import a profile as a portable bundle.
  *
- * The archive is the CLI's own `hermes profile export` tar.gz (config, skills,
+ * The archive is the CLI's own `aurora profile export` tar.gz (config, skills,
  * SOUL.md, cron — credentials always excluded), plus one desktop-only file at
  * the root: `desktop.json`, the appearance/interface overlay (skin + mode,
  * any user-theme definitions the skin needs, the profile rail color, and the
@@ -13,16 +13,16 @@
  * dialogs and the backend share the filesystem for local and pooled backends.
  */
 
+import { exportProfileArchive, importProfileArchive } from '@/aurora'
 import { isLayoutNode, normalize } from '@/components/pane-shell/tree/model'
 import { $layoutTree, markActivePreset, persistTree } from '@/components/pane-shell/tree/store'
-import { exportProfileArchive, importProfileArchive } from '@/hermes'
 import { translateNow } from '@/i18n'
 import { dropBrowserProfilePrefs } from '@/lib/browser-profile-prefs'
 import { modePref, skinPref, type ThemeMode } from '@/themes/context'
 import { BUILTIN_THEMES } from '@/themes/presets'
 import type { DesktopTheme } from '@/themes/types'
 import { $userThemes, installUserTheme, resolveTheme } from '@/themes/user-themes'
-import type { ProfileDesktopOverlay } from '@/types/hermes'
+import type { ProfileDesktopOverlay } from '@/types/aurora'
 
 import { notify, notifyError } from './notifications'
 import {
@@ -156,13 +156,13 @@ export function activeProfileKey(): string {
 // item all funnel here). Toasts via the shared notification store; strings via
 // translateNow so the flows stay callable from non-React surfaces.
 
-const ARCHIVE_FILTERS = [{ extensions: ['tar.gz', 'tgz'], name: 'Hermes profile' }]
+const ARCHIVE_FILTERS = [{ extensions: ['tar.gz', 'tgz'], name: 'Aurora profile' }]
 
 /** Pick a save location and export `profile` (default: the active one).
  *  Returns the archive path, or null when the user cancelled. */
 export async function runExportProfileFlow(profile?: string): Promise<null | string> {
   const target = normalizeProfileKey(profile ?? activeProfileKey())
-  const pick = window.hermesDesktop?.selectSavePath
+  const pick = window.auroraDesktop?.selectSavePath
 
   // The browser Webapp has no save dialog for a host-side archive. Say how to
   // export there instead of doing nothing.
@@ -197,7 +197,7 @@ export async function runExportProfileFlow(profile?: string): Promise<null | str
 /** Pick an archive and import it as a new profile; lands the user in it on a
  *  fresh chat. Returns the new profile name, or null when cancelled/failed. */
 export async function runImportProfileFlow(): Promise<null | string> {
-  const paths = await window.hermesDesktop?.selectPaths?.({
+  const paths = await window.auroraDesktop?.selectPaths?.({
     title: translateNow('profiles.importProfile'),
     multiple: false,
     filters: ARCHIVE_FILTERS

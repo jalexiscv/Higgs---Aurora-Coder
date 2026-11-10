@@ -144,8 +144,8 @@ describe('host.state turn flags', () => {
 })
 
 describe('host.connections', () => {
-  const desktopWindow = window as unknown as { hermesDesktop?: Window['hermesDesktop'] }
-  const originalDesktop = desktopWindow.hermesDesktop
+  const desktopWindow = window as unknown as { auroraDesktop?: Window['auroraDesktop'] }
+  const originalDesktop = desktopWindow.auroraDesktop
 
   const connection = (id: string, label: string) => ({
     id,
@@ -157,14 +157,14 @@ describe('host.connections', () => {
   })
 
   const stubBridge = (list: () => Promise<unknown>) => {
-    desktopWindow.hermesDesktop = {
+    desktopWindow.auroraDesktop = {
       ...originalDesktop,
       connections: { list }
-    } as unknown as Window['hermesDesktop']
+    } as unknown as Window['auroraDesktop']
   }
 
   afterEach(() => {
-    desktopWindow.hermesDesktop = originalDesktop
+    desktopWindow.auroraDesktop = originalDesktop
   })
 
   it('returns the registry rows, not the envelope that carries them (#89823)', async () => {
@@ -203,7 +203,7 @@ describe('host.connections', () => {
   })
 
   it('still rejects on a Desktop build without the connection registry', async () => {
-    desktopWindow.hermesDesktop = undefined
+    desktopWindow.auroraDesktop = undefined
 
     await expect(host.connections()).rejects.toThrow('This Desktop build has no connection registry')
   })
@@ -257,8 +257,8 @@ describe('host.composer draft facade', () => {
 
     const onFocus = (event: Event) => seen.push(`focus:${(event as CustomEvent<{ target: string }>).detail.target}`)
 
-    window.addEventListener('hermes:composer-insert', onInsert)
-    window.addEventListener('hermes:composer-focus', onFocus)
+    window.addEventListener('aurora:composer-insert', onInsert)
+    window.addEventListener('aurora:composer-focus', onFocus)
 
     const [tileOk, activeOk] = await Promise.all([
       host.composer.insertText('sess-1', ' snippet ', { mode: 'inline' }),
@@ -270,8 +270,8 @@ describe('host.composer draft facade', () => {
     // requestComposerFocus defers a plain focus request one macrotask.
     await new Promise(resolve => window.setTimeout(resolve, 0))
 
-    window.removeEventListener('hermes:composer-insert', onInsert)
-    window.removeEventListener('hermes:composer-focus', onFocus)
+    window.removeEventListener('aurora:composer-insert', onInsert)
+    window.removeEventListener('aurora:composer-focus', onFocus)
 
     expect([tileOk, activeOk]).toEqual([true, true])
     // A session id never resolves to the primary unless the primary shows it —
@@ -291,8 +291,8 @@ describe('host.composer draft facade', () => {
 
     const onFocus = (event: Event) => seen.push(`focus:${(event as CustomEvent<{ target: string }>).detail.target}`)
 
-    window.addEventListener('hermes:composer-insert', onInsert)
-    window.addEventListener('hermes:composer-focus', onFocus)
+    window.addEventListener('aurora:composer-insert', onInsert)
+    window.addEventListener('aurora:composer-focus', onFocus)
 
     // The primary shows a session → nothing hosts the new draft; the verbs
     // fail closed instead of landing in whatever composer the bus routes to.
@@ -311,8 +311,8 @@ describe('host.composer draft facade', () => {
     host.composer.focus('new')
     await new Promise(resolve => window.setTimeout(resolve, 5))
 
-    window.removeEventListener('hermes:composer-insert', onInsert)
-    window.removeEventListener('hermes:composer-focus', onFocus)
+    window.removeEventListener('aurora:composer-insert', onInsert)
+    window.removeEventListener('aurora:composer-focus', onFocus)
 
     expect(seen).toEqual(['insert:main', 'focus:main'])
   })

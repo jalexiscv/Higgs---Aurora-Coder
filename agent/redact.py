@@ -47,8 +47,8 @@ _VAULT_REDACTION_LOCK = threading.Lock()
 
 
 def _vault_scope() -> str:
-    from hermes_constants import get_hermes_home
-    return str(get_hermes_home())
+    from aurora_constants import get_aurora_home
+    return str(get_aurora_home())
 
 
 def register_vault_redaction_value(value) -> None:
@@ -101,22 +101,22 @@ _SENSITIVE_QUERY_PARAMS = frozenset({
 })
 
 # Snapshot at import time so runtime env mutations (e.g. an LLM-generated
-# `export HERMES_REDACT_SECRETS=false`) cannot disable redaction mid-session.
+# `export AURORA_REDACT_SECRETS=false`) cannot disable redaction mid-session.
 # ON by default; `security.redact_secrets: false` bridges to this env var.
 # ON by default — secure default per issue #17691. Users who need raw credential values in tool output (e.g.
 # working on the redactor itself) can opt out via `security.redact_secrets: false` in config.yaml (bridged
-# to this env var in hermes_cli/main.py, gateway/run.py, and cli.py) or `HERMES_REDACT_SECRETS=false` in
-# ~/.hermes/.env. An opt-out warning is logged at gateway and CLI startup so operators see the downgrade —
+# to this env var in aurora_cli/main.py, gateway/run.py, and cli.py) or `AURORA_REDACT_SECRETS=false` in
+# ~/.aurora/.env. An opt-out warning is logged at gateway and CLI startup so operators see the downgrade —
 # see `_log_redaction_status()` in gateway/run.py and cli.py.
-_REDACT_ENABLED = os.getenv("HERMES_REDACT_SECRETS", "true").lower() in {"1", "true", "yes", "on"}
+_REDACT_ENABLED = os.getenv("AURORA_REDACT_SECRETS", "true").lower() in {"1", "true", "yes", "on"}
 
 # Routed multiplex profiles: the import-time snapshot above is the LAUNCH profile's policy. A profile
-# served under a HERMES_HOME override follows its own ``security.redact_secrets`` (its ``.env`` value
-# first, like the standalone bridge in hermes_cli/main.py). The formatter never reads config or files
+# served under an AURORA_HOME override follows its own ``security.redact_secrets`` (its ``.env`` value
+# first, like the standalone bridge in aurora_cli/main.py). The formatter never reads config or files
 # for it (it runs under the logging handler's lock, per record): the values are recorded when that
 # profile's .env / config is loaded (``note_env_policy`` / ``note_config_policy``) or when log routing
 # is set up for it (``resolve_profile_policy``). Until then the profile redacts (the secure default).
-_ENV_POLICY_BY_HOME: dict = {}     # home key -> raw HERMES_REDACT_SECRETS from its .env, or None
+_ENV_POLICY_BY_HOME: dict = {}     # home key -> raw AURORA_REDACT_SECRETS from its .env, or None
 _CONFIG_POLICY_BY_HOME: dict = {}  # home key -> raw security.redact_secrets from its config, or None
 
 
@@ -130,29 +130,29 @@ def note_config_policy(home_key: str, raw) -> None:
 
 def resolve_profile_policy(home) -> None:
     """Record ``home``'s redaction policy now (log-routing setup), so its records never wait for it."""
-    from hermes_constants import hermes_home_key, reset_hermes_home_override, set_hermes_home_override
-    token = set_hermes_home_override(home)
+    from aurora_constants import aurora_home_key, reset_aurora_home_override, set_aurora_home_override
+    token = set_aurora_home_override(home)
     try:
-        key = hermes_home_key()
-        from hermes_cli.config import load_config_readonly, load_env
-        note_env_policy(key, load_env().get("HERMES_REDACT_SECRETS"))
+        key = aurora_home_key()
+        from aurora_cli.config import load_config_readonly, load_env
+        note_env_policy(key, load_env().get("AURORA_REDACT_SECRETS"))
         note_config_policy(key, (load_config_readonly().get("security") or {}).get("redact_secrets"))
     except (Exception, SystemExit) as exc:  # health: allow BLE001 -- unreadable now: stays unknown, which redacts
         logging.getLogger(__name__).debug("redaction policy for %s not read: %s", home, exc)
     finally:
-        reset_hermes_home_override(token)
+        reset_aurora_home_override(token)
 
 
 def _redact_enabled() -> bool:
     """Effective redaction switch for the active profile (launch snapshot when no override). Reads
     only in-memory state: the live secret scope and the recorded per-profile policy."""
-    from hermes_constants import get_hermes_home_override, hermes_home_key
-    if get_hermes_home_override() is None:
+    from aurora_constants import get_aurora_home_override, aurora_home_key
+    if get_aurora_home_override() is None:
         return _REDACT_ENABLED
-    home_key = hermes_home_key()
+    home_key = aurora_home_key()
     from agent.secret_scope import current_secret_scope
     scope = current_secret_scope()
-    raw = scope.get("HERMES_REDACT_SECRETS") if scope else None
+    raw = scope.get("AURORA_REDACT_SECRETS") if scope else None
     if raw is None and scope is None:
         # No live scope (the log listener thread formats routed records): the profile's own .env, as
         # its scope would have it. Not recorded yet: redact, since .env may opt the profile back in.
@@ -735,11 +735,11 @@ _URL_BARE_TOKEN_RE = re.compile(
 # JWTs always start with "eyJ" (base64 "{"); 1-, 2- and 3-part forms.
 _JWT_RE = re.compile(r"eyJ[A-Za-z0-9_-]{10,}(?:\.[A-Za-z0-9_=-]{4,}){0,2}")
 
-# Links ``hermes webapp`` prints that sign a browser in as the user: the gateway's browser credential
-# after ``hermes-session=`` and the one-use ticket of a ``/webapp/launch`` link. Both values are
+# Links ``aurora webapp`` prints that sign a browser in as the user: the gateway's browser credential
+# after ``aurora-session=`` and the one-use ticket of a ``/webapp/launch`` link. Both values are
 # URL-safe base64 (43 characters); the 20-character floor leaves placeholders and code (``${token}``).
 _WEBAPP_LINK_CREDENTIAL_RE = re.compile(
-    r"((?<![A-Za-z0-9_-])hermes-session=|/webapp/launch#(?:[^\s#]*?&)?ticket=)[A-Za-z0-9_-]{20,}")
+    r"((?<![A-Za-z0-9_-])aurora-session=|/webapp/launch#(?:[^\s#]*?&)?ticket=)[A-Za-z0-9_-]{20,}")
 
 # E.164 phone numbers, 7-15 digits; the lookahead rejects hex strings / identifiers.
 _SIGNAL_PHONE_RE = re.compile(r"(\+[1-9]\d{6,14})(?![A-Za-z0-9])")
@@ -921,7 +921,7 @@ _DISPLAY_CONTROL_RE = re.compile(r"[\x00-\x1f\x7f\x80-\x9f\u200b-\u200f\u202a-\u
 
 def mask_secret(value: str, *, head: int = 4, tail: int = 4, floor: int = 12,
                 placeholder: str = "***", empty: str = "") -> str:
-    """Mask a secret for display (``hermes config`` / ``status`` / ``dump``):
+    """Mask a secret for display (``aurora config`` / ``status`` / ``dump``):
     ``sk-p...7890``; shorter than ``floor`` (after control-byte stripping) →
     ``placeholder``; falsy → ``empty``."""
     value = _DISPLAY_CONTROL_RE.sub("", value) if value else value
@@ -1611,7 +1611,7 @@ def redact_sensitive_text(text: str, *, force: bool = False, code_file: bool = F
 
     # A Webapp sign-in link signs a browser in as the user, so its credential is masked whatever the
     # web-URL policy below.
-    if "hermes-session=" in text or "/webapp/launch#" in text:
+    if "aurora-session=" in text or "/webapp/launch#" in text:
         text = _WEBAPP_LINK_CREDENTIAL_RE.sub(lambda m: m.group(1) + "***", text)
 
     if redact_url_credentials:  # opt-in; known credential shapes in URLs are caught above
@@ -1646,7 +1646,7 @@ _ENV_DUMP_COMMANDS = frozenset({"env", "printenv", "set", "export", "declare"})
 
 # Commands that read file contents to stdout, plus the filter readers (``grep``/``awk``/``sed``)
 # the model reaches for on config files. A secret-bearing target (``.env`` per AGENTS.md,
-# a shell rc/profile, Hermes' own ``config.yaml`` where ``hermes mcp add --env`` writes
+# a shell rc/profile, Aurora's own ``config.yaml`` where ``aurora mcp add --env`` writes
 # tokens) is a credential dump, so the ENV/YAML assignment pass must run. Arbitrary
 # ``config.yaml`` / source files stay on the code_file path (``MAX_TOKENS: 100``).
 _FILE_READ_COMMANDS = frozenset({
@@ -1660,8 +1660,8 @@ _SHELL_RC_BASENAMES = frozenset({
 # Filter readers take a PATTERN/program as their first positional; only the operands after
 # it are files, so ``grep .bashrc app.py`` must not gate on the pattern.
 _PATTERN_FIRST_COMMANDS = frozenset({"grep", "awk", "sed"})
-_HERMES_HOME_PREFIXES = ("$HERMES_HOME/", "${HERMES_HOME}/")
-# ``$HOME/.hermes/config.yaml`` keeps the ``.hermes`` segment, so stripping the prefix is
+_AURORA_HOME_PREFIXES = ("$AURORA_HOME/", "${AURORA_HOME}/")
+# ``$HOME/.aurora/config.yaml`` keeps the ``.aurora`` segment, so stripping the prefix is
 # enough to gate it; ``~/`` already survives the ``$``-bearing-path bail-out.
 _HOME_PREFIXES = ("$HOME/", "${HOME}/")
 
@@ -1696,22 +1696,22 @@ def _command_segments(command: str) -> list[str]:
     return segments
 
 
-def _is_under_hermes_home(path: str) -> bool:
-    """True when an absolute ``config.yaml`` path sits under the active Hermes home or root.
+def _is_under_aurora_home(path: str) -> bool:
+    """True when an absolute ``config.yaml`` path sits under the active Aurora home or root.
 
-    The default home's basename is an installation detail — ``.hermes`` on POSIX, ``hermes``
-    under ``AppData/Local`` on Windows — and a resolved path never spells ``$HERMES_HOME``,
+    The default home's basename is an installation detail — ``.aurora`` on POSIX, ``aurora``
+    under ``AppData/Local`` on Windows — and a resolved path never spells ``$AURORA_HOME``,
     so the literal-segment test in ``_is_secret_file_arg`` cannot see a native Windows path.
     Compare against the resolved homes instead. Only reached for a ``config.yaml`` basename,
     so the resolve cost stays off the per-token command scan.
     """
-    from agent.file_safety import _hermes_dirs
+    from agent.file_safety import _aurora_dirs
 
     try:
         target = os.path.normcase(os.path.realpath(os.path.expanduser(path)))
     except (OSError, ValueError):
         return False
-    for home in _hermes_dirs():
+    for home in _aurora_dirs():
         try:
             base = os.path.normcase(os.path.realpath(str(home)))
         except (OSError, ValueError):
@@ -1723,15 +1723,15 @@ def _is_under_hermes_home(path: str) -> bool:
 
 def _is_secret_file_arg(arg: str) -> bool:
     """``.env``-style or shell rc basename anywhere; ``config.yaml`` only under a
-    ``.hermes`` directory, ``$HERMES_HOME``, or the resolved Hermes home (never arbitrary
+    ``.aurora`` directory, ``$AURORA_HOME``, or the resolved Aurora home (never arbitrary
     YAML). The resolved-home arm is what covers native Windows, where the home directory
-    is ``%LOCALAPPDATA%\\hermes`` and carries no ``.hermes`` segment."""
+    is ``%LOCALAPPDATA%\\aurora`` and carries no ``.aurora`` segment."""
     path = arg.strip("\"'").replace("\\", "/")
-    hermes_home = False
-    for prefix in _HERMES_HOME_PREFIXES:
+    aurora_home = False
+    for prefix in _AURORA_HOME_PREFIXES:
         if path.startswith(prefix):
             path = path[len(prefix):]
-            hermes_home = True
+            aurora_home = True
             break
     for prefix in _HOME_PREFIXES:
         if path.startswith(prefix):
@@ -1744,11 +1744,11 @@ def _is_secret_file_arg(arg: str) -> bool:
         return False
     if parts[-1] in _ENV_FILE_BASENAMES or parts[-1] in _SHELL_RC_BASENAMES:
         return True
-    # ``config.yaml`` plus the ``config.yaml.good.<stamp>`` / ``.corrupt.<stamp>`` copies Hermes
+    # ``config.yaml`` plus the ``config.yaml.good.<stamp>`` / ``.corrupt.<stamp>`` copies Aurora
     # writes under ``backups/config/`` — same contents, same secrets.
     if parts[-1] != "config.yaml" and not parts[-1].startswith(("config.yaml.good.", "config.yaml.corrupt.")):
         return False
-    return hermes_home or ".hermes" in parts[:-1] or _is_under_hermes_home(path)
+    return aurora_home or ".aurora" in parts[:-1] or _is_under_aurora_home(path)
 
 
 def _command_reads_secret_file(command: str | None) -> bool:
@@ -1812,7 +1812,7 @@ def redact_for_egress(text: str) -> str:
 def redact_terminal_output(output: str, command: str | None = None, *, force: bool = False) -> str:
     """Single redaction policy for ALL terminal-output surfaces: the ENV/YAML-assignment
     pass runs only when ``command`` is an env dump or reads a secret-bearing file (``.env``,
-    shell rc, Hermes ``config.yaml``); otherwise code_file=True avoids false positives on
+    shell rc, Aurora ``config.yaml``); otherwise code_file=True avoids false positives on
     source/config dumps."""
     if not output:
         return output

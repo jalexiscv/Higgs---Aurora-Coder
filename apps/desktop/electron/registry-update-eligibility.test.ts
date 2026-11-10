@@ -1,5 +1,5 @@
 /**
- * "Update all instances" never runs `hermes update` against a Hermes Cloud
+ * "Update all instances" never runs `aurora update` against an Aurora Cloud
  * agent, however it was saved: as a Cloud connection or as a plain URL remote.
  */
 

@@ -1,11 +1,11 @@
 /**
- * Shared E2E fixtures for the Hermes desktop Playwright suite.
+ * Shared E2E fixtures for the Aurora desktop Playwright suite.
  *
  * Two fixture modes:
  *
  *  1. `mockBackend` — starts a mock inference server, writes a config.yaml
  *     that points at it, and launches the desktop app so the full chain
- *     (electron → hermes serve → provider → inference → renderer) is
+ *     (electron → aurora serve → provider → inference → renderer) is
  *     exercised with a real backend but a fake LLM.
  *
  *  2. `noProvider` — launches the app with an empty config (no provider
@@ -14,7 +14,7 @@
  *
  * Both modes launch the *dev* Electron app (`electron .` against the built
  * `dist/`), not the packaged binary. This avoids the multi-minute
- * `electron-builder --dir` step and matches `hermes desktop --source`. The
+ * `electron-builder --dir` step and matches `aurora desktop --source`. The
  * packaged-binary path is already covered by `launch.spec.ts`.
  *
  * Prerequisite: `pnpm run build` must have been run so that `dist/` exists.
@@ -74,14 +74,14 @@ function isCredentialEnvVar(name: string): boolean {
   return CREDENTIAL_SUFFIXES.some((suffix) => name.endsWith(suffix))
 }
 
-// Runtime state of whatever Hermes launched this run. A spec driven from inside
-// an agent's terminal inherits HERMES_YOLO_MODE, HERMES_INTERACTIVE,
-// HERMES_SESSION_ID…, and the sandboxed backend then skips approvals or binds
+// Runtime state of whatever Aurora launched this run. A spec driven from inside
+// an agent's terminal inherits AURORA_YOLO_MODE, AURORA_INTERACTIVE,
+// AURORA_SESSION_ID…, and the sandboxed backend then skips approvals or binds
 // the caller's session — the approval spec failed locally on the leaked yolo
 // flag while CI (which never has these) stayed green. The fixtures set every
-// HERMES_* the app needs themselves; only the harness's own knobs pass.
-function isInheritedHermesRuntimeVar(name: string): boolean {
-  return name.startsWith('HERMES_') && !name.startsWith('HERMES_DESKTOP_') && !name.startsWith('HERMES_E2E_')
+// AURORA_* the app needs themselves; only the harness's own knobs pass.
+function isInheritedAuroraRuntimeVar(name: string): boolean {
+  return name.startsWith('AURORA_') && !name.startsWith('AURORA_DESKTOP_') && !name.startsWith('AURORA_E2E_')
 }
 
 function stripCredentials(env: Record<string, string | undefined>): Record<string, string> {
@@ -92,7 +92,7 @@ function stripCredentials(env: Record<string, string | undefined>): Record<strin
       continue
     }
 
-    if (isCredentialEnvVar(key) || isInheritedHermesRuntimeVar(key)) {
+    if (isCredentialEnvVar(key) || isInheritedAuroraRuntimeVar(key)) {
       continue
     }
 
@@ -106,19 +106,19 @@ function stripCredentials(env: Record<string, string | undefined>): Record<strin
 
 export interface Sandbox {
   root: string
-  hermesHome: string
+  auroraHome: string
   userDataDir: string
   cleanup: () => void
 }
 
 export function createSandbox(prefix: string): Sandbox {
-  // Canonical path: the backend resolves HERMES_HOME, so a symlinked tmpdir (macOS /var, a
-  // symlinked scratch dir) would otherwise make every HERMES_HOME match against the sandbox miss.
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), `hermes-e2e-${prefix}-${Math.random()}`)))
-  const hermesHome = path.join(root, 'hermes-home')
+  // Canonical path: the backend resolves AURORA_HOME, so a symlinked tmpdir (macOS /var, a
+  // symlinked scratch dir) would otherwise make every AURORA_HOME match against the sandbox miss.
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), `aurora-e2e-${prefix}-${Math.random()}`)))
+  const auroraHome = path.join(root, 'aurora-home')
   const userDataDir = path.join(root, 'electron-user-data')
 
-  fs.mkdirSync(hermesHome, { recursive: true })
+  fs.mkdirSync(auroraHome, { recursive: true })
   fs.mkdirSync(userDataDir, { recursive: true })
 
   // Write a fixed window-state.json so the Electron window opens at a
@@ -148,12 +148,12 @@ export function createSandbox(prefix: string): Sandbox {
 
   return {
     root,
-    hermesHome,
+    auroraHome,
     userDataDir,
     cleanup: () => {
       // `app.close()` leaves the detached gateway the app dialled; alive, it
       // would also rewrite this home right after the rmSync below.
-      stopSandboxGatewayDaemons(root, hermesHome)
+      stopSandboxGatewayDaemons(root, auroraHome)
 
       try {
         fs.rmSync(root, { recursive: true, force: true })
@@ -171,8 +171,8 @@ export function createSandbox(prefix: string): Sandbox {
  * Write an empty config (no providers). The desktop app should show the
  * onboarding overlay because no inference provider is configured.
  */
-function writeEmptyConfig(hermesHome: string): void {
-  const configPath = path.join(hermesHome, 'config.yaml')
+function writeEmptyConfig(auroraHome: string): void {
+  const configPath = path.join(auroraHome, 'config.yaml')
   fs.writeFileSync(configPath, '# Auto-generated by E2E test fixtures — no providers configured\n', 'utf8')
 }
 
@@ -182,12 +182,12 @@ function writeEmptyConfig(hermesHome: string): void {
  * Build the environment for the Electron app process.
  *
  * Key env vars:
- *  - HERMES_HOME → sandbox hermes-home (isolated config/sessions)
- *  - HERMES_DESKTOP_USER_DATA_DIR → sandbox electron-user-data
- *  - HERMES_DESKTOP_IGNORE_EXISTING=1 → skip the installed runtime
+ *  - AURORA_HOME → sandbox aurora-home (isolated config/sessions)
+ *  - AURORA_DESKTOP_USER_DATA_DIR → sandbox electron-user-data
+ *  - AURORA_DESKTOP_IGNORE_EXISTING=1 → skip the installed runtime
  *    (we want the dev checkout at REPO_ROOT)
- *  - HERMES_DESKTOP_HERMES_ROOT → REPO_ROOT (dev checkout resolution)
- *  - HERMES_DESKTOP_APP_NAME → unique-ish per test (avoids single-instance lock)
+ *  - AURORA_DESKTOP_AURORA_ROOT → REPO_ROOT (dev checkout resolution)
+ *  - AURORA_DESKTOP_APP_NAME → unique-ish per test (avoids single-instance lock)
  *  - XDG_RUNTIME_DIR → ensure Electron has a writable runtime dir on Linux
  */
 export function buildAppEnv(sandbox: Sandbox, extra: Record<string, string> = {}): Record<string, string> {
@@ -206,25 +206,25 @@ export function buildAppEnv(sandbox: Sandbox, extra: Record<string, string> = {}
 
   return {
     ...clean,
-    HERMES_HOME: sandbox.hermesHome,
-    HERMES_DESKTOP_USER_DATA_DIR: sandbox.userDataDir,
-    HERMES_DESKTOP_IGNORE_EXISTING: '1',
-    // One `hermes serve` per host, and profile roots are HOME-anchored
-    // (`~/.hermes/profiles`, the default profile's own home): without both of
+    AURORA_HOME: sandbox.auroraHome,
+    AURORA_DESKTOP_USER_DATA_DIR: sandbox.userDataDir,
+    AURORA_DESKTOP_IGNORE_EXISTING: '1',
+    // One `aurora serve` per host, and profile roots are HOME-anchored
+    // (`~/.aurora/profiles`, the default profile's own home): without both of
     // these a local e2e run attaches to the developer's running backend or
     // lists and writes their real profiles, and chats through their real
     // model and state.db instead of the sandbox + mock provider. CI never has
     // either, so only local runs ever took that path.
-    HERMES_DESKTOP_ISOLATED_BACKEND: '1',
+    AURORA_DESKTOP_ISOLATED_BACKEND: '1',
     HOME: sandbox.root,
-    HERMES_DESKTOP_HERMES_ROOT: REPO_ROOT,
-    HERMES_DESKTOP_APP_NAME: `HermesE2E-${Date.now()}`,
+    AURORA_DESKTOP_AURORA_ROOT: REPO_ROOT,
+    AURORA_DESKTOP_APP_NAME: `AuroraE2E-${Date.now()}`,
     // `app.close()` in teardown must exit even when a spec leaves a turn
     // mid-flight — otherwise the quit confirmation waits on a click that no
     // one is there to make, and the worker dies on a teardown timeout.
-    HERMES_DESKTOP_SKIP_QUIT_CONFIRM: '1',
-    // Never repoint the user's OS hermes:// handler (HKCU on Windows) at a test checkout.
-    HERMES_DESKTOP_SKIP_PROTOCOL_REGISTRATION: '1',
+    AURORA_DESKTOP_SKIP_QUIT_CONFIRM: '1',
+    // Never repoint the user's OS aurora:// handler (HKCU on Windows) at a test checkout.
+    AURORA_DESKTOP_SKIP_PROTOCOL_REGISTRATION: '1',
     // Clear dev-server override — we want the built dist/, not a vite server.
     // The dev-server check in main.ts looks for this env var; if it's set,
     // it loads from the vite URL instead of the local file.
@@ -277,8 +277,8 @@ export function findElectron(): string {
 /**
  * Launch the desktop app in dev mode.
  *
- * @param sandbox  - isolated HERMES_HOME + userData
- * @param env      - the process environment (already has HERMES_HOME etc.)
+ * @param sandbox  - isolated AURORA_HOME + userData
+ * @param env      - the process environment (already has AURORA_HOME etc.)
  * @returns the ElectronApplication + first Page
  */
 export async function launchDesktop(
@@ -353,13 +353,13 @@ export async function setupMockBackend(options: MockBackendOptions = {}): Promis
   // 2. Create sandbox + write config
   const sandbox = createSandbox('mock')
   writeMockProviderConfig(
-    sandbox.hermesHome,
+    sandbox.auroraHome,
     mock.url,
     options.extraDisplayConfig,
     options.extraConfig,
     options.modelContextLength,
   )
-  writeEnvFile(sandbox.hermesHome)
+  writeEnvFile(sandbox.auroraHome)
 
   // 3. Build env + launch
   const env = buildAppEnv(sandbox)
@@ -392,7 +392,7 @@ export interface NoProviderFixture {
  */
 export async function setupNoProvider(): Promise<NoProviderFixture> {
   const sandbox = createSandbox('noprovider')
-  writeEmptyConfig(sandbox.hermesHome)
+  writeEmptyConfig(sandbox.auroraHome)
 
   const env = buildAppEnv(sandbox)
   const { app, page } = await launchDesktop(env)
@@ -417,7 +417,7 @@ export interface DeadBackendFixture {
 
 export interface DeadBackendOptions {
   /**
-   * When true, inject a fake boot error via HERMES_DESKTOP_BOOT_FAKE_ERROR
+   * When true, inject a fake boot error via AURORA_DESKTOP_BOOT_FAKE_ERROR
    * so the backend resolution itself "fails" with a controlled error message.
    * This is the only reliable way to trigger BootFailureOverlay in dev mode
    * (the real backend always resolves via SOURCE_REPO_ROOT).
@@ -427,7 +427,7 @@ export interface DeadBackendOptions {
 
 /**
  * Launch the app with a provider pointing at a dead endpoint (port 1, which
- * nothing listens on). By default the backend still boots (`hermes serve`
+ * nothing listens on). By default the backend still boots (`aurora serve`
  * starts fine — the dead endpoint only matters at chat time). Pass
  * `{ fakeError: true }` to inject a fake boot failure, triggering the
  * BootFailureOverlay.
@@ -437,10 +437,10 @@ export async function setupDeadBackend(options: DeadBackendOptions = {}): Promis
   // Same writer the install-e2e harness uses, pointed at a dead endpoint: one
   // shape for "an external OpenAI-compatible provider", never a named 'mock'.
   const deadUrl = 'http://127.0.0.1:1'
-  writeMockProviderConfig(sandbox.hermesHome, deadUrl)
-  writeEnvFile(sandbox.hermesHome, 'e2e-mock-key', deadUrl)
+  writeMockProviderConfig(sandbox.auroraHome, deadUrl)
+  writeEnvFile(sandbox.auroraHome, 'e2e-mock-key', deadUrl)
 
-  const env = buildAppEnv(sandbox, options.fakeError ? { HERMES_DESKTOP_BOOT_FAKE_ERROR: 'Failed to connect to Hermes backend: connection refused' } : {})
+  const env = buildAppEnv(sandbox, options.fakeError ? { AURORA_DESKTOP_BOOT_FAKE_ERROR: 'Failed to connect to Aurora backend: connection refused' } : {})
   const { app, page } = await launchDesktop(env)
 
   return {
@@ -462,16 +462,16 @@ export async function setupDeadBackend(options: DeadBackendOptions = {}): Promis
  */
 function resolvePackagedBinaryPath(): string {
   if (process.platform === 'win32') {
-    return path.join(RELEASE_ROOT, 'win-unpacked', 'Hermes.exe')
+    return path.join(RELEASE_ROOT, 'win-unpacked', 'Aurora.exe')
   }
 
   if (process.platform === 'darwin') {
     const arch = process.arch === 'arm64' ? 'arm64' : 'x64'
 
-    return path.join(RELEASE_ROOT, `mac-${arch}`, 'Hermes.app', 'Contents', 'MacOS', 'Hermes')
+    return path.join(RELEASE_ROOT, `mac-${arch}`, 'Aurora.app', 'Contents', 'MacOS', 'Aurora')
   }
 
-  return path.join(RELEASE_ROOT, 'linux-unpacked', 'hermes')
+  return path.join(RELEASE_ROOT, 'linux-unpacked', 'aurora')
 }
 
 export const PACKAGED_BINARY_PATH = resolvePackagedBinaryPath()
@@ -490,10 +490,10 @@ export interface PackagedAppFixture {
 /**
  * Launch the *packaged* Electron binary (from `pnpm run pack` →
  * `electron-builder --dir`) with `BOOT_FAKE=1` so it simulates boot
- * progress without spawning a real Hermes backend.
+ * progress without spawning a real Aurora backend.
  *
  * Uses the same sandbox isolation (credential stripping, isolated
- * HERMES_HOME + userData, unique app name) as the dev-mode fixtures.
+ * AURORA_HOME + userData, unique app name) as the dev-mode fixtures.
  *
  * Skips if the packaged binary doesn't exist — run `pnpm run pack` first.
  */
@@ -510,15 +510,15 @@ export async function setupPackagedApp(): Promise<PackagedAppFixture> {
   // packaged-binary-specific overrides.
   const env = buildAppEnv(sandbox, {
     // Fake boot: simulates progress steps without spawning the real backend.
-    HERMES_DESKTOP_BOOT_FAKE: '1',
-    HERMES_DESKTOP_BOOT_FAKE_STEP_MS: '120',
+    AURORA_DESKTOP_BOOT_FAKE: '1',
+    AURORA_DESKTOP_BOOT_FAKE_STEP_MS: '120',
   })
 
-  // Clear dev-server + hermes-root overrides — the packaged binary
+  // Clear dev-server + aurora-root overrides — the packaged binary
   // should use its own bundled renderer, not the dev checkout.
-  delete (env as Record<string, string | undefined>).HERMES_DESKTOP_DEV_SERVER
-  delete (env as Record<string, string | undefined>).HERMES_DESKTOP_HERMES
-  delete (env as Record<string, string | undefined>).HERMES_DESKTOP_HERMES_ROOT
+  delete (env as Record<string, string | undefined>).AURORA_DESKTOP_DEV_SERVER
+  delete (env as Record<string, string | undefined>).AURORA_DESKTOP_AURORA
+  delete (env as Record<string, string | undefined>).AURORA_DESKTOP_AURORA_ROOT
 
   const app = await _electron.launch({
     executablePath: PACKAGED_BINARY_PATH,

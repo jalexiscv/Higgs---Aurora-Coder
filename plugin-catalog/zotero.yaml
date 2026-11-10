@@ -7,7 +7,7 @@ description: "Research with your own Zotero library: search it, read your PDF hi
 maintainer: suhas-svg
 tier: community
 category: tools
-requires_hermes: ">=0.22.5"
+requires_aurora: ">=0.22.5"
 docs_url: https://github.com/suhas-svg/hermes_zotero#readme
 readme: true
 platforms: []

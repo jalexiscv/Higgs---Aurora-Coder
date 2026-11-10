@@ -160,7 +160,7 @@ describe('PreviewVaultButton owner routing (#150283 P1-1)', () => {
       await Promise.resolve()
     })
 
-    const stale = { backend: 'hermes', id: 'STALE', kind: 'login', label: 'x', origin: 'https://x.example' }
+    const stale = { backend: 'aurora', id: 'STALE', kind: 'login', label: 'x', origin: 'https://x.example' }
 
     await act(async () => {
       resolvers[0]!({ items: [stale] })

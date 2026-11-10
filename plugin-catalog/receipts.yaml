@@ -6,7 +6,7 @@ description: "Verification receipts tied to Git content; gates terminal pushes a
 maintainer: cirwel
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_aurora: ">=0.22.0"
 docs_url: https://github.com/cirwel/hermes-receipts
 version: "0.1.0"
 platforms: [linux, macos]

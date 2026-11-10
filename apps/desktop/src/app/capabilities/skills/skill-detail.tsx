@@ -1,15 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 
+import { getSkillContent, type ProfileScope, profileScopeKey, setSkillLocked } from '@/aurora'
 import { PageLoader } from '@/components/page-loader'
 import { Button } from '@/components/ui/button'
-import { getSkillContent, type ProfileScope, profileScopeKey, setSkillLocked } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { Lock, LockOpen } from '@/lib/icons'
 import { queryClient } from '@/lib/query-client'
 import { cn } from '@/lib/utils'
 import { notifyError } from '@/store/notifications'
-import type { SkillInfo } from '@/types/hermes'
+import type { SkillInfo } from '@/types/aurora'
 
 import { parseFrontmatter } from './frontmatter'
 import { isEditableProvenance } from './skill-provenance'

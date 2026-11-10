@@ -6,7 +6,7 @@ author: FEUAZUR
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
-  hermes:
+  aurora:
     tags: [Web Scraping, Browser, Cloudflare, Stealth, Crawling, Spider]
     related_skills: [domain-intel]
     homepage: https://github.com/D4Vinci/Scrapling

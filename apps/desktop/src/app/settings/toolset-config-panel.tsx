@@ -2,8 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { SETTINGS_ROUTE } from '@/app/routes'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   deleteEnvVar,
   getActionStatus,
@@ -17,7 +15,9 @@ import {
   selectToolsetProvider,
   setEnvVar,
   startOAuthLogin
-} from '@/hermes'
+} from '@/aurora'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useI18n } from '@/i18n'
 import { Check, Loader2, Save, Terminal } from '@/lib/icons'
 import { cn } from '@/lib/utils'
@@ -31,7 +31,7 @@ import type {
   ToolProviderStatus,
   ToolsetConfig,
   ToolsetModelsResponse
-} from '@/types/hermes'
+} from '@/types/aurora'
 
 import { EnvVarActionsMenu, EnvVarActionsTrigger, EnvVarContextMenu } from './env-var-actions-menu'
 import { prettyName } from './helpers'
@@ -273,7 +273,7 @@ interface PostSetupRunnerProps {
 /**
  * Runs a provider's post-setup install hook (npm / pip / binary) via the
  * `/api/tools/toolsets/{name}/post-setup` spawn-action and tails the resulting
- * log inline — the GUI equivalent of the install step `hermes tools` runs
+ * log inline — the GUI equivalent of the install step `aurora tools` runs
  * after you pick a backend that needs extra dependencies.
  *
  * Idempotent UX: when the backend's readiness status says the install is
@@ -351,7 +351,7 @@ function PostSetupRunner({ toolset, postSetupKey, installed = false, onComplete,
                 message: copy.postSetupErrorMessage(prettyName(postSetupKey)),
                 action: {
                   label: copy.postSetupOpenLogs,
-                  onClick: () => void window.hermesDesktop?.revealLogs?.().catch(() => undefined)
+                  onClick: () => void window.auroraDesktop?.revealLogs?.().catch(() => undefined)
                 },
                 secondaryAction: { label: copy.postSetupRunAgain, onClick: () => void run() }
               }
@@ -419,7 +419,7 @@ interface ModelCatalogPickerProps {
 }
 
 /**
- * Backend model catalog — the GUI counterpart of the model picker `hermes
+ * Backend model catalog — the GUI counterpart of the model picker `aurora
  * tools` runs after you choose an image/video generation backend (e.g. FAL's
  * multi-model catalog). Renders speed / strengths / price per model as a
  * radio-card list and persists the choice to `image_gen.model` /
@@ -678,9 +678,9 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
 
       const url = start.verification_url
 
-      if (window.hermesDesktop?.openExternal) {
+      if (window.auroraDesktop?.openExternal) {
         try {
-          await window.hermesDesktop.openExternal(url)
+          await window.auroraDesktop.openExternal(url)
         } catch {
           window.open(url, '_blank', 'noopener,noreferrer')
         }

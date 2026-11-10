@@ -16,7 +16,7 @@ const remote = {
   token: 'placeholder'
 }
 
-// main.ts's hermes:connection → ensureBackend path, minus the IPC: a renderer
+// main.ts's aurora:connection → ensureBackend path, minus the IPC: a renderer
 // asking with no profile, against a global remote primary whose inherited
 // profile ('windows-only') that gateway does not serve.
 function rendererRequest(profile: string | undefined, pin: PrimaryProfilePin) {
@@ -63,7 +63,7 @@ test('a renderer retry after a failed remote boot still restores a served profil
   const request = rendererRequest(undefined, pin)
   assert.deepEqual(request, { key: 'windows-only', inheritsPrimary: true })
 
-  // startHermes(request.key, { inheritsPrimary }) gates restoration on this.
+  // startAurora(request.key, { inheritsPrimary }) gates restoration on this.
   const restorable = () => primaryProfileRestorable(request.key, request.inheritsPrimary, null, {})
 
   pin.pin(request.key)

@@ -218,8 +218,8 @@ def _hosted(engine, home):
     from typing import Any, cast
 
     from agent.context_engine import ContextEngine
-    from hermes_cli.plugin_host import PluginHost
-    from hermes_cli.plugin_host_child import HostRuntime
+    from aurora_cli.plugin_host import PluginHost
+    from aurora_cli.plugin_host_child import HostRuntime
 
     runtime = HostRuntime.__new__(HostRuntime)
     runtime.refs, runtime.owners = {}, {}

@@ -4,7 +4,7 @@ import logging
 import sqlite3
 
 from gateway.session_producer_lifecycle import drop_producer_turn
-from hermes_state_runtime import RuntimeStoreError, _admission, _epoch, get_session_admission, settle_steer_transfers
+from aurora_state_runtime import RuntimeStoreError, _admission, _epoch, get_session_admission, settle_steer_transfers
 
 logger = logging.getLogger(__name__)
 
@@ -123,9 +123,9 @@ def _publish_completion(authority, live, ref, row, settled, response, captured):
 
 
 RESTART_INTERRUPT_NOTICE = ('Gateway restarting: this turn was interrupted and will not be run again. '
-                            'Send your message again once Hermes reconnects.')
+                            'Send your message again once Aurora reconnects.')
 SHUTDOWN_INTERRUPT_NOTICE = ('Gateway shutting down: this turn was interrupted and will not be run again. '
-                             'Send your message again once Hermes is back.')
+                             'Send your message again once Aurora is back.')
 
 
 def owner_stop_notice(captured, outcome, row=None):

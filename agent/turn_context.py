@@ -379,7 +379,7 @@ def export_current_turn_boundary(agent: Any, result: Any, user_message: Any) -> 
     """Stamp ``{turn_id, current_turn_user_idx}`` on a result envelope, proven against the
     exact ``result["messages"]`` projection it travels with.
 
-    Hosts that settle their own transcript by index (hermes-webui) must never guess which
+    Hosts that settle their own transcript by index (aurora-webui) must never guess which
     row is the current user turn after this loop rewrote history (alternation repair,
     compaction, post-turn micro-compaction): a guessed index or a text match can relabel an
     identical historical prompt and claim its old answer as this turn's. So the producer
@@ -916,7 +916,7 @@ def _collect_pre_llm_call_context(
     if getattr(agent, "_persist_disabled", False):
         return ""
     try:
-        from hermes_cli.lifecycle import invoke_hook as _invoke_hook
+        from aurora_cli.lifecycle import invoke_hook as _invoke_hook
         _pre_results = _invoke_hook(
             "pre_llm_call",
             session_id=agent.session_id,
@@ -1225,7 +1225,7 @@ def build_turn_context(
     from agent.bot_chain import on_turn_start as _bot_chain_turn_start
     _bot_chain_turn_start(agent, turn_author, persist_user_display_kind, persist_user_message or user_message)
 
-    # Tag log records on this thread with the session ID for ``hermes logs``; bind the
+    # Tag log records on this thread with the session ID for ``aurora logs``; bind the
     # skill write-origin ContextVar; restore the primary runtime after a fallback turn.
     # NOTE: the DB session row is created later, AFTER the system prompt is restored/built (see
     # _ensure_db_session() below the system-prompt block). Creating it here — before _cached_system_prompt
@@ -1302,7 +1302,7 @@ def build_turn_context(
         )
 
     # System prompt is cached per session for prefix caching. A warm agent (kept across turns)
-    # first adopts any `hermes sessions refresh-prompts` request recorded since it set its prompt.
+    # first adopts any `aurora sessions refresh-prompts` request recorded since it set its prompt.
     refresh_warm_prompt(agent, system_message, conversation_history)
     if agent._cached_system_prompt is None:
         restore_or_build_system_prompt(agent, system_message, conversation_history)

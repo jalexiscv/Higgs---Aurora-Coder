@@ -19,7 +19,7 @@ description: >-
 maintainer: explorelifehus-eng
 tier: community
 category: tools
-requires_hermes: ">=0.19"
+requires_aurora: ">=0.19"
 docs_url: https://github.com/explorelifehus-eng/factledger
 readme: true
 platforms: [linux, macos, windows]

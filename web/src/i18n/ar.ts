@@ -50,7 +50,7 @@ export const ar = defineLocale({
   },
 
   app: {
-    brand: "Hermes Agent",
+    brand: "Aurora Agent",
     brandShort: "HA",
     closeNavigation: "إغلاق التنقل",
     closeModelTools: "إغلاق النموذج والأدوات",
@@ -97,13 +97,13 @@ export const ar = defineLocale({
     activeProvider: "مزوّد الذاكرة النشط",
     noProvider: "لا يوجد — المدمجة فقط",
     builtinLayer: "الطبقة المدمجة",
-    builtinNote: "MEMORY.md وUSER.md هما ذاكرة Hermes الخاصة، مستقلتان عن أي مزوّد خارجي. يُحمَّل كلاهما في الجلسات افتراضيًا؛ ويعطّل مفتاحا الإعداد (memory.memory_enabled / memory.user_profile_enabled) كلًّا منهما. يضيف المزوّد إليهما ولا يستبدلهما أبدًا.",
+    builtinNote: "MEMORY.md وUSER.md هما ذاكرة Aurora الخاصة، مستقلتان عن أي مزوّد خارجي. يُحمَّل كلاهما في الجلسات افتراضيًا؛ ويعطّل مفتاحا الإعداد (memory.memory_enabled / memory.user_profile_enabled) كلًّا منهما. يضيف المزوّد إليهما ولا يستبدلهما أبدًا.",
   },
 
   status: {
     actionFailed: "فشلت الإجراء",
     actionFinished: "انتهى",
-    actionFinishedOwed: "تم التحديث، لكن لا تزال هناك خطوات معلّقة (أعد تشغيل `hermes update` لإكمالها)",
+    actionFinishedOwed: "تم التحديث، لكن لا تزال هناك خطوات معلّقة (أعد تشغيل `aurora update` لإكمالها)",
     actions: "إجراءات",
     agent: "العامل",
     activeSessions: "الجلسات النشطة",
@@ -129,8 +129,8 @@ export const ar = defineLocale({
     starting: "قيد البدء",
     startedInBackground: "بدء في الخلفية — تحقق من السجلات للتقدم",
     stopped: "متوقف",
-    updateHermes: "تحديث Hermes",
-    updatingHermes: "جاري تحديث Hermes…",
+    updateAurora: "تحديث Aurora",
+    updatingAurora: "جاري تحديث Aurora…",
     waitingForOutput: "في انتظار الناتج…",
   },
 
@@ -282,7 +282,7 @@ export const ar = defineLocale({
       "تم الحفظ — أعد تشغيل البوابة لتطبيق التغيير.",
     forceReinstall: "إعادة تثبيت إجباري (حذف المجلد الموجود أولاً)",
     headline:
-      "اكتشف وثبِّت وفعِّل وحدِّث مكوِّنات Hermes الإضافية (مطابقة `hermes plugins`).",
+      "اكتشف وثبِّت وفعِّل وحدِّث مكوِّنات Aurora الإضافية (مطابقة `aurora plugins`).",
     identifierLabel: "رابط Git أو owner/repo",
     inactive: "غير نشط",
     installBtn: "تثبيت من Git",
@@ -299,8 +299,8 @@ export const ar = defineLocale({
     providersHint:
       "يكتب memory.provider (فارغ = مدمج) و context.engine إلى config.yaml. يسري في الجلسة التالية.",
     refreshDashboard: "إعادة فحص امتدادات لوحة التحكم",
-    removeConfirm: "إزالة هذا المكوِّن الإضافي من ~/.hermes/plugins/؟",
-    removeHint: "يمكن إزالة المكوِّنات المثبتة من المستخدم تحت ~/.hermes/plugins فقط.",
+    removeConfirm: "إزالة هذا المكوِّن الإضافي من ~/.aurora/plugins/؟",
+    removeHint: "يمكن إزالة المكوِّنات المثبتة من المستخدم تحت ~/.aurora/plugins فقط.",
     rescanHeading: "سجل مكوِّنات SPA",
     rescanHint: "أعد الفحص بعد إضافة ملفات على القرص لتمكن الشريط الجانبي من التقاط المخطوطات الجديدة.",
     runtimeHeading: "وقت تشغيل البوابة (مكوِّنات YAML)",
@@ -329,7 +329,7 @@ export const ar = defineLocale({
     all: "الكل",
     categories: "الفئات",
     filters: "الفلاتر",
-    noSkills: "لم يُعثر على مهارات. يتم تحميل المهارات من ~/.hermes/skills/",
+    noSkills: "لم يُعثر على مهارات. يتم تحميل المهارات من ~/.aurora/skills/",
     noSkillsMatch: "لا توجد مهارات تطابق بحثك أو الفلاتر.",
     skillCount: "{count} مهارة{s}",
     resultCount: "{count} نتيجة{s}",
@@ -343,7 +343,7 @@ export const ar = defineLocale({
   },
 
   config: {
-    configPath: "~/.hermes/config.yaml",
+    configPath: "~/.aurora/config.yaml",
     filters: "الفلاتر",
     sections: "الأقسام",
     exportConfig: "تصدير الإعدادات كـ JSON",
@@ -455,11 +455,11 @@ export const ar = defineLocale({
   achievements: {
     hero: {
       kicker: "Agentic Gamerscore",
-      title: "إنجازات Hermes",
+      title: "إنجازات Aurora",
       subtitle:
-        "شارات Hermes قابلة للجمع مكتسبة من سجل الجلسات الفعلي. الإنجازات غير المكتملة المعروفة تُعرض كـ Discovered؛ تبقى الإنجازات السرية مخفية حتى يظهر السلوك المطابق لأول مرة.",
+        "شارات Aurora قابلة للجمع مكتسبة من سجل الجلسات الفعلي. الإنجازات غير المكتملة المعروفة تُعرض كـ Discovered؛ تبقى الإنجازات السرية مخفية حتى يظهر السلوك المطابق لأول مرة.",
       scan_subtitle:
-        "فحص سجل جلسات Hermes. يمكن أن يستغرق الفحص الأول 5–10 ثوانٍ على السجلات الكبيرة.",
+        "فحص سجل جلسات Aurora. يمكن أن يستغرق الفحص الأول 5–10 ثوانٍ على السجلات الكبيرة.",
     },
     actions: {
       rescan: "إعادة الفحص",
@@ -474,7 +474,7 @@ export const ar = defineLocale({
       highest_tier: "أعلى مستوى",
       highest_tier_hint: "نحاس → فضة → ذهب ← ماس → أوليمبي",
       latest: "الأحدث",
-      latest_hint_empty: "شغِّل Hermes أكثر",
+      latest_hint_empty: "شغِّل Aurora أكثر",
       none_yet: "لا توجد بعد",
     },
     state: {
@@ -505,10 +505,10 @@ export const ar = defineLocale({
       tiers_header: "المستويات",
       secret_header: "الإنجازات السرية",
       secret_body:
-        "تخفى الأسرار محددها الدقيق. بمجرد أن ترى Hermes إشارة ذات صلة، تصبح البطاقة مكتشفة وتعرض متطلباتها.",
+        "تخفى الأسرار محددها الدقيق. بمجرد أن ترى Aurora إشارة ذات صلة، تصبح البطاقة مكتشفة وتعرض متطلباتها.",
       scan_status_header: "حالة الفحص",
       scan_status_body:
-        "تُفحص Hermes السجل المحلي مرة واحدة، ثم تظهر البطاقات تلقائيًا. لا يوجد توقف إذا استغرق هذا بضع ثوانٍ.",
+        "تُفحص Aurora السجل المحلي مرة واحدة، ثم تظهر البطاقات تلقائيًا. لا يوجد توقف إذا استغرق هذا بضع ثوانٍ.",
       what_scanned_header: "ما يتم فحصه",
       what_scanned_body:
         "الجلسات، استدعاءات الأدوات، بيانات تعريف النموذج، الأخطاء، الإنجازات، وحالة الفتح المحلية.",
@@ -555,7 +555,7 @@ export const ar = defineLocale({
         "المشاركة على X تفتح منشورًا معدَّلاً مسبقًا في تبويب جديد. انقر نسخ الصورة أولاً إذا أردت شارة الإنجاز 1200×630 مرفقة — يسمح X باللصق مباشرة في مؤلف التغريد. تنزيل PNG يحفظ الملف للاستخدام anywhere.",
       clipboard_unsupported:
         "نسخ صورة الحافظة غير مدعوم في هذا المتصفح — استخدم التنزيل بدلاً من ذلك.",
-      tweet_text: "فتحت للتو {tier_part}\"{name}\" في Hermes Agent ☤"
+      tweet_text: "فتحت للتو {tier_part}\"{name}\" في Aurora Agent ☤"
     },
   },
 

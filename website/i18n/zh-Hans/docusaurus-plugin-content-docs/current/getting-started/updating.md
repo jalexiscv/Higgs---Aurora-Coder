@@ -1,7 +1,7 @@
 ---
 sidebar_position: 3
 title: "更新与卸载"
-description: "如何将 Hermes Agent 更新至最新版本或将其卸载"
+description: "如何将 Aurora Agent 更新至最新版本或将其卸载"
 ---
 
 # 更新与卸载
@@ -11,48 +11,48 @@ description: "如何将 Hermes Agent 更新至最新版本或将其卸载"
 使用单条命令更新至最新版本：
 
 ```bash
-hermes update
+aurora update
 ```
 
-官方仓库的源码安装默认跟踪 **stable** 渠道：最新正式发布的 `vX.Y.Z` GitHub 版本（不含草稿、预发布或 canary 标签），并检出其确切提交。`hermes update` 和桌面应用的更新按钮只会在正式版本之间升级，不再逐个提交跟进。Fork 和镜像仍跟踪各自的 `main` 分支。此命令还会更新依赖项，并提示你配置自上次更新以来新增的选项。
+官方仓库的源码安装默认跟踪 **stable** 渠道：最新正式发布的 `vX.Y.Z` GitHub 版本（不含草稿、预发布或 canary 标签），并检出其确切提交。`aurora update` 和桌面应用的更新按钮只会在正式版本之间升级，不再逐个提交跟进。Fork 和镜像仍跟踪各自的 `main` 分支。此命令还会更新依赖项，并提示你配置自上次更新以来新增的选项。
 
 ```bash
-hermes update --set-channel main     # 改为跟踪 main 上的每个提交
-hermes update --set-channel stable   # 恢复为仅正式版本
+aurora update --set-channel main     # 改为跟踪 main 上的每个提交
+aurora update --set-channel stable   # 恢复为仅正式版本
 ```
 
 从未选择渠道的安装只会向前更新：已经比最新正式版本更新的检出（例如此前跟踪 `main` 的安装）会保持不动，直到发布更新的版本。显式运行 `--set-channel stable` 会把检出固定到该版本的确切提交，即使它更旧。Windows 应用商店、MSIX 和捆绑桌面安装不受影响。
 
 :::tip
-`hermes update` 会自动检测新的配置选项并提示你添加。如果跳过了该提示，可手动运行 `hermes config check` 查看缺失的选项，再运行 `hermes config migrate` 以交互方式添加。
+`aurora update` 会自动检测新的配置选项并提示你添加。如果跳过了该提示，可手动运行 `aurora config check` 查看缺失的选项，再运行 `aurora config migrate` 以交互方式添加。
 :::
 
 ### 更新过程
 
-运行 `hermes update` 时，将依次执行以下步骤：
+运行 `aurora update` 时，将依次执行以下步骤：
 
-1. **更新前快照** — Hermes 在每个 profile 的 `state-snapshots/` 目录中保存指定的状态文件，包括配对数据、cron 任务、`config.yaml`、`.env` 和 `auth.json`。自动快速快照会跳过单个大于 1 GiB 的文件。`updates.pre_update_backup` 可选择 `quick`、`full` 或 `off`。完整归档遵循[备份排除规则](../reference/faq.md#hermes-backup-vs-hermes-profile-export)。恢复方法见[快照与回滚](../user-guide/checkpoints-and-rollback.md)。快速快照恢复的是状态文件，不是应用程序代码。
+1. **更新前快照** — Aurora 在每个 profile 的 `state-snapshots/` 目录中保存指定的状态文件，包括配对数据、cron 任务、`config.yaml`、`.env` 和 `auth.json`。自动快速快照会跳过单个大于 1 GiB 的文件。`updates.pre_update_backup` 可选择 `quick`、`full` 或 `off`。完整归档遵循[备份排除规则](../reference/faq.md#aurora-backup-vs-aurora-profile-export)。恢复方法见[快照与回滚](../user-guide/checkpoints-and-rollback.md)。快速快照恢复的是状态文件，不是应用程序代码。
 2. **代码更新** — 检出所选渠道的目标（默认最新 stable 版本）并更新子模块
 3. **依赖安装** — 运行 `python -m pm.cli install` 以获取新增或变更的依赖项
 4. **配置迁移** — 检测自当前版本以来新增的配置选项并提示设置
-5. **Gateway 自动重启** — 更新完成后刷新正在运行的 gateway，使新代码立即生效。由服务管理的 gateway（Linux 上的 systemd、macOS 上的 launchd）通过服务管理器重启；手动启动的 gateway 在 Hermes 能将运行中的 PID 映射回某个 profile 时会自动重新启动。
+5. **Gateway 自动重启** — 更新完成后刷新正在运行的 gateway，使新代码立即生效。由服务管理的 gateway（Linux 上的 systemd、macOS 上的 launchd）通过服务管理器重启；手动启动的 gateway 在 Aurora 能将运行中的 PID 映射回某个 profile 时会自动重新启动。
 
-### 仅预览：`hermes update --check`
+### 仅预览：`aurora update --check`
 
-想在拉取前确认是否有更新？运行 `hermes update --check` — 它会与所选渠道的目标（默认最新 stable 版本，main 渠道为 `origin/main`）比较。不修改任何文件，不重启 gateway。适合在以"是否有更新"为条件的脚本和 cron 任务中使用。
+想在拉取前确认是否有更新？运行 `aurora update --check` — 它会与所选渠道的目标（默认最新 stable 版本，main 渠道为 `origin/main`）比较。不修改任何文件，不重启 gateway。适合在以"是否有更新"为条件的脚本和 cron 任务中使用。
 
 ### 完整更新前备份：`--backup`
 
-对于高价值 profile（生产环境 gateway、团队共享安装），可选择在拉取前对 `HERMES_HOME`（配置、认证、会话、技能、配对数据）进行完整备份：
+对于高价值 profile（生产环境 gateway、团队共享安装），可选择在拉取前对 `AURORA_HOME`（配置、认证、会话、技能、配对数据）进行完整备份：
 
 ```bash
-hermes update --backup
+aurora update --backup
 ```
 
 或将其设为每次运行的默认行为：
 
 ```yaml
-# ~/.hermes/config.yaml
+# ~/.aurora/config.yaml
 updates:
   pre_update_backup: full
 ```
@@ -60,26 +60,26 @@ updates:
 `updates.pre_update_backup` 有三种模式：
 
 - `quick` 保存上述指定的状态文件。这是默认模式。
-- `full` 另加一份遵循[备份排除规则](../reference/faq.md#hermes-backup-vs-hermes-profile-export)的 zip 归档。大型数据目录可能需要几分钟。
+- `full` 另加一份遵循[备份排除规则](../reference/faq.md#aurora-backup-vs-aurora-profile-export)的 zip 归档。大型数据目录可能需要几分钟。
 - `off` 禁用更新前备份。`--no-backup` 为单次运行选择此模式。
 
 旧版布尔值仍然有效：`true` 等同于 `full`，`false` 等同于 `off`。
 
-### Windows：另一个 `hermes.exe` 正在运行
+### Windows：另一个 `aurora.exe` 正在运行
 
-在 Windows 上，如果 `hermes update` 检测到另一个 `hermes.exe` 进程持有 venv 入口点可执行文件的句柄，它将拒绝运行 — 最常见的情况是 Hermes Desktop 应用启动的后端进程、另一个终端中打开的 `hermes` REPL，或正在运行的 gateway：
+在 Windows 上，如果 `aurora update` 检测到另一个 `aurora.exe` 进程持有 venv 入口点可执行文件的句柄，它将拒绝运行 — 最常见的情况是 Aurora Desktop 应用启动的后端进程、另一个终端中打开的 `aurora` REPL，或正在运行的 gateway：
 
 ```
-$ hermes update
-✗ Another hermes.exe is running:
-    PID 12345  hermes.exe
+$ aurora update
+✗ Another aurora.exe is running:
+    PID 12345  aurora.exe
 
-  Updating now would fail to overwrite ...\venv\Scripts\hermes.exe because
+  Updating now would fail to overwrite ...\venv\Scripts\aurora.exe because
   Windows blocks REPLACE on a running executable.
 
-  Close Hermes Desktop, exit any open `hermes` REPLs, and
-  stop the gateway (`hermes gateway stop`) before retrying.
-  Override with `hermes update --force` if you've already
+  Close Aurora Desktop, exit any open `aurora` REPLs, and
+  stop the gateway (`aurora gateway stop`) before retrying.
+  Override with `aurora update --force` if you've already
   confirmed those processes will not write to the venv.
 ```
 
@@ -88,8 +88,8 @@ $ hermes update
 预期输出如下：
 
 ```
-$ hermes update
-Updating Hermes Agent...
+$ aurora update
+Updating Aurora Agent...
 📥 Pulling latest code...
 Already up to date.  (or: Updating abc1234..def5678)
 📦 Updating dependencies...
@@ -98,42 +98,42 @@ Already up to date.  (or: Updating abc1234..def5678)
 ✅ Config is up to date  (or: Found 2 new options — running migration...)
 🔄 Restarting gateways...
 ✅ Gateway restarted
-✅ Hermes Agent updated successfully!
+✅ Aurora Agent updated successfully!
 ```
 
 ### 更新后建议的验证步骤
 
-`hermes update` 处理主要的更新流程，但快速验证可确认一切正常落地：
+`aurora update` 处理主要的更新流程，但快速验证可确认一切正常落地：
 
 1. `git status --short` — 若工作树出现意外的脏状态，请在继续前检查
-2. `hermes doctor` — 检查配置、依赖项和服务健康状态
-3. `hermes --version` — 确认版本已按预期更新
-4. 如果使用 gateway：`hermes gateway status`
+2. `aurora doctor` — 检查配置、依赖项和服务健康状态
+3. `aurora --version` — 确认版本已按预期更新
+4. 如果使用 gateway：`aurora gateway status`
 5. 如果 `doctor` 报告 npm audit 问题：在标记的目录中运行 `npm audit fix`
 
 :::warning 更新后工作树出现脏状态
-如果 `hermes update` 后 `git status --short` 显示意外变更，请在继续前停下来检查。这通常意味着本地修改被重新应用到了更新后的代码之上，或依赖步骤刷新了锁文件。
+如果 `aurora update` 后 `git status --short` 显示意外变更，请在继续前停下来检查。这通常意味着本地修改被重新应用到了更新后的代码之上，或依赖步骤刷新了锁文件。
 :::
 
 ### 终端在更新中途断开连接
 
-`hermes update` 针对意外终端断开进行了保护：
+`aurora update` 针对意外终端断开进行了保护：
 
 - 更新会忽略 `SIGHUP`，因此关闭 SSH 会话或终端窗口不再会在安装中途终止它。`pip` 和 `git` 子进程继承此保护，因此 Python 环境不会因连接断开而处于半安装状态。
-- 更新运行期间，所有输出会同步镜像到 `~/.hermes/logs/update.log`。如果终端消失，重新连接后检查日志，确认更新是否完成以及 gateway 重启是否成功：
+- 更新运行期间，所有输出会同步镜像到 `~/.aurora/logs/update.log`。如果终端消失，重新连接后检查日志，确认更新是否完成以及 gateway 重启是否成功：
 
 ```bash
-tail -f ~/.hermes/logs/update.log
+tail -f ~/.aurora/logs/update.log
 ```
 
 - `Ctrl-C`（SIGINT）和系统关机（SIGTERM）仍会被响应 — 这些是主动取消操作，而非意外中断。
 
-你不再需要将 `hermes update` 包裹在 `screen` 或 `tmux` 中来应对终端断开。
+你不再需要将 `aurora update` 包裹在 `screen` 或 `tmux` 中来应对终端断开。
 
 ### 查看当前版本
 
 ```bash
-hermes --version
+aurora --version
 ```
 
 与 [GitHub releases 页面](https://github.com/NousResearch/hermes-agent/releases) 上的最新版本进行比较。
@@ -153,7 +153,7 @@ hermes --version
 如果你是手动安装的（未使用快速安装脚本）：
 
 ```bash
-cd /path/to/hermes-agent
+cd /path/to/aurora-agent
 export VIRTUAL_ENV="$(pwd)/venv"
 
 # Pull latest code
@@ -163,8 +163,8 @@ git pull origin main
 python -m pm.cli install
 
 # Check for new config options
-hermes config check
-hermes config migrate   # Interactively add any missing options
+aurora config check
+aurora config migrate   # Interactively add any missing options
 ```
 
 ### 回滚说明
@@ -172,7 +172,7 @@ hermes config migrate   # Interactively add any missing options
 如果更新引入了问题，可以回滚到之前的版本：
 
 ```bash
-cd /path/to/hermes-agent
+cd /path/to/aurora-agent
 
 # List recent versions
 git log --oneline -10
@@ -182,7 +182,7 @@ git checkout <commit-hash>
 python -m pm.cli install
 
 # Restart the gateway if running
-hermes gateway restart
+aurora gateway restart
 ```
 
 回滚到特定发布标签：
@@ -193,7 +193,7 @@ python -m pm.cli install
 ```
 
 :::warning
-如果新增了配置选项，回滚可能导致配置不兼容。回滚后运行 `hermes config check`，如果遇到错误，请从 `config.yaml` 中删除无法识别的选项。
+如果新增了配置选项，回滚可能导致配置不兼容。回滚后运行 `aurora config check`，如果遇到错误，请从 `config.yaml` 中删除无法识别的选项。
 :::
 
 ### Nix 用户注意事项
@@ -202,10 +202,10 @@ python -m pm.cli install
 
 ```bash
 # Update the flake input
-nix flake update hermes-agent
+nix flake update aurora-agent
 
 # Or rebuild with the latest
-nix profile upgrade hermes-agent
+nix profile upgrade aurora-agent
 ```
 
 Nix 安装是不可变的 — 回滚由 Nix 的 generation 系统处理：
@@ -221,24 +221,24 @@ nix profile rollback
 ## 卸载
 
 ```bash
-hermes uninstall
+aurora uninstall
 ```
 
-卸载程序会提供选项，让你保留配置文件（`~/.hermes/`）以便将来重新安装。
+卸载程序会提供选项，让你保留配置文件（`~/.aurora/`）以便将来重新安装。
 
 ### 手动卸载
 
 ```bash
-rm -f ~/.local/bin/hermes
-rm -rf /path/to/hermes-agent
-rm -rf ~/.hermes            # 可选 — 如计划重新安装则保留
+rm -f ~/.local/bin/aurora
+rm -rf /path/to/aurora-agent
+rm -rf ~/.aurora            # 可选 — 如计划重新安装则保留
 ```
 
 :::info
 如果你将 gateway 安装为系统服务，请先停止并禁用它：
 ```bash
-hermes gateway stop
-# Linux: systemctl --user disable hermes-gateway
-# macOS: launchctl remove ai.hermes.gateway
+aurora gateway stop
+# Linux: systemctl --user disable aurora-gateway
+# macOS: launchctl remove ai.aurora.gateway
 ```
 :::

@@ -11,7 +11,7 @@ from aiohttp.test_utils import TestServer
 from gateway.session_api_turn import admit_api_turn
 from gateway.session_controls import AuthorityConnection
 from gateway.session_hosted_service import CanonicalHostedRoomService
-from hermes_state_runtime import claim_session_input, settle_session_input
+from aurora_state_runtime import claim_session_input, settle_session_input
 from tests.tui_gateway.test_hosted_room_two_gateway_peer import _target_app
 from tui_gateway.hosted_room_peer_http import PeerRunsHTTPClient, PeerRunsHTTPError
 
@@ -44,7 +44,7 @@ async def lender(api, owner, tmp_path, monkeypatch):
         _, ref, _ = admit_api_turn(api, session_id='approval-session', request_id='run_approval',
                                   user_message='run', conversation_history=[])
         row = claim_session_input(owner.db, epoch=owner.epoch, session_id=ref.session_id)
-        scope = SimpleNamespace(headers={'Authorization': 'HermesRoom ' + grant},
+        scope = SimpleNamespace(headers={'Authorization': 'AuroraRoom ' + grant},
                                 path='/v1/runs/run_approval', method='GET')
         api._run_owners['run_approval'] = api._run_idempotency_scope(scope)
         live = owner.sessions[ref.session_id]

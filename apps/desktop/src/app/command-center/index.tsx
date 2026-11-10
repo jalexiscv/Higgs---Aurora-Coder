@@ -1,7 +1,9 @@
-import { compactNumber } from '@hermes/shared'
+import { compactNumber } from '@aurora/shared'
 import { useStore } from '@nanostores/react'
 import { type MouseEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { getActionStatus, getLogs, getStatus, getUsageAnalytics, restartGateway, updateAurora } from '@/aurora'
+import type { ActionStatusResponse, AnalyticsResponse, SessionInfo, StatusResponse } from '@/aurora'
 import { LogSearchField, useLogSearch } from '@/components/chat/log-search'
 import { LogTail } from '@/components/chat/log-tail'
 import { PageLoader } from '@/components/page-loader'
@@ -11,8 +13,6 @@ import { SearchField } from '@/components/ui/search-field'
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import { ResponsiveTabs } from '@/components/ui/tab-dropdown'
 import { Tip } from '@/components/ui/tooltip'
-import { getActionStatus, getLogs, getStatus, getUsageAnalytics, restartGateway, updateHermes } from '@/hermes'
-import type { ActionStatusResponse, AnalyticsResponse, SessionInfo, StatusResponse } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { sessionTitle } from '@/lib/chat-runtime'
 import {
@@ -131,8 +131,8 @@ function RowIconButton({
   )
 }
 
-/** The System card's Update button. Hermes Cloud updates its agents itself, so it has none there. */
-function UpdateHermesButton({ label, onClick }: { label: string; onClick: () => void }) {
+/** The System card's Update button. Aurora Cloud updates its agents itself, so it has none there. */
+function UpdateAuroraButton({ label, onClick }: { label: string; onClick: () => void }) {
   if (useStore($cloudOwnsUpdates).backend) {
     return null
   }
@@ -329,7 +329,7 @@ export function CommandCenterView({
       }
 
       try {
-        const started = kind === 'restart' ? await restartGateway() : await updateHermes()
+        const started = kind === 'restart' ? await restartGateway() : await updateAurora()
         let nextStatus: ActionStatusResponse | null = null
 
         for (let attempt = 0; attempt < 18; attempt += 1) {
@@ -515,14 +515,14 @@ export function CommandCenterView({
                             </span>
                           </div>
                           <div className="mt-1 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
-                            {cc.hermesActiveSessions(status.version, status.active_sessions)}
+                            {cc.auroraActiveSessions(status.version, status.active_sessions)}
                           </div>
                         </div>
                         <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 whitespace-nowrap max-[47.5rem]:whitespace-normal">
                           <Button onClick={() => void runSystemAction('restart')} size="xs" variant="text">
                             {cc.restartGateway}
                           </Button>
-                          <UpdateHermesButton label={cc.updateHermes} onClick={() => void runSystemAction('update')} />
+                          <UpdateAuroraButton label={cc.updateAurora} onClick={() => void runSystemAction('update')} />
                         </div>
                       </div>
                       {systemAction && (

@@ -1,6 +1,6 @@
-import { LOCAL_CONNECTION_ID } from '@hermes/shared'
+import { LOCAL_CONNECTION_ID } from '@aurora/shared'
 
-import type { DesktopOauthLoginOptions, HermesApiRequest, HermesConnection } from '@/global'
+import type { AuroraApiRequest, AuroraConnection, DesktopOauthLoginOptions } from '@/global'
 import { webappSignInRequired } from '@/lib/browser-launch-session'
 import { signInSavedConnection, signOutSavedConnection } from '@/lib/browser-saved-connection-oauth'
 import type { BrowserSavedConnections } from '@/lib/browser-saved-connections'
@@ -39,7 +39,7 @@ function connectionFor(
   bootstrap: BrowserBootstrap,
   profile: null | string | undefined,
   servedHere: boolean
-): HermesConnection {
+): AuroraConnection {
   if (!bootstrap.authRequired && !bootstrap.token) {
     throw webappSignInRequired()
   }
@@ -82,14 +82,14 @@ function browserConnectionConfig(bootstrap: BrowserBootstrap, profile?: null | s
     sshHost: '',
     sshKeyPath: '',
     sshPort: null,
-    sshRemoteHermesPath: '',
+    sshRemoteAuroraPath: '',
     sshRemoteProfile: '',
     sshUser: ''
   }
 }
 
 interface BrowserConnectionOptions {
-  api: <T>(request: HermesApiRequest) => Promise<T>
+  api: <T>(request: AuroraApiRequest) => Promise<T>
   bootstrap: BrowserBootstrap
   /** This machine's saved gateway connections, reached through the serving gateway
    *  (`browser-saved-connections.ts`). Absent: only the serving gateway. */
@@ -115,7 +115,7 @@ export function createBrowserConnectionBridge({
   bootstrap,
   relays
 }: BrowserConnectionOptions): Pick<
-  Window['hermesDesktop'],
+  Window['auroraDesktop'],
   | 'getAgentRoster'
   | 'getAudioWsUrl'
   | 'getConnection'
@@ -248,8 +248,8 @@ export function createBrowserConnectionBridge({
             connectionId: LOCAL_CONNECTION_ID,
             connectionKind: 'local' as const,
             connectionLabel,
-            // A real 'hermes' profile keeps @hermes; the default answers to @default then.
-            handle: profile === 'default' && !profiles.includes('hermes') ? 'hermes' : profile,
+            // A real 'aurora' profile keeps @aurora; the default answers to @default then.
+            handle: profile === 'default' && !profiles.includes('aurora') ? 'aurora' : profile,
             profile,
             targetProfile: profile,
             // Installed here, so listed, but served elsewhere or nowhere.

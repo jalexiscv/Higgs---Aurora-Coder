@@ -1,6 +1,6 @@
 # Trajectory Format
 
-Hermes Agent saves conversation trajectories in ShareGPT-compatible JSONL format
+Aurora Agent saves conversation trajectories in ShareGPT-compatible JSONL format
 for use as training data, debugging artifacts, and reinforcement learning datasets.
 
 Source files: `agent/trajectory.py`, `agent/session_persistence.py` (search for `_save_trajectory`), `batch_runner.py`
@@ -215,7 +215,7 @@ preventing Arrow schema mismatch errors during dataset loading.
 
 ## Controlling Trajectory Saving
 
-Trajectory saving is a `run_agent.py` / library-level switch — the `hermes` CLI
+Trajectory saving is a `run_agent.py` / library-level switch — the `aurora` CLI
 does not expose a config key or flag for it:
 
 ```bash

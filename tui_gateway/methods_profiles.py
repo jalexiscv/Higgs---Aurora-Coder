@@ -1,5 +1,5 @@
 """Profile JSON-RPC handlers — the ws twin of the dashboard's /api/profiles (desktop plugins
-only have the ws door), on the same `hermes_cli.profiles` primitives. Bodies are rebound onto
+only have the ws door), on the same `aurora_cli.profiles` primitives. Bodies are rebound onto
 server.py's globals (method_ctx.bind_module) and use them bare; module-level names are published
 onto server.py, so they must not collide with its globals.
 """
@@ -38,7 +38,7 @@ def _lazy(module, name):
 
 
 def _pin_profile_model(profile_dir, provider, model, base_url="") -> None:
-    _lazy("hermes_cli.profile_provision", "write_profile_model")(
+    _lazy("aurora_cli.profile_provision", "write_profile_model")(
         profile_dir, provider, model, base_url=base_url)
 
 
@@ -58,7 +58,7 @@ def _best_effort(fn) -> bool:
     return _try(lambda: (fn(), True)[1], False)
 
 
-def _hermes_home_scope(path):
+def _aurora_home_scope(path):
     from tui_gateway.launch_profile_policy import profile_config_scope
     return profile_config_scope(path, launch_home=_launch_home())
 
@@ -68,7 +68,7 @@ def _resolve_profile(rid, params):
     name = str(params.get("name") or "").strip()
     if not name:
         return name, None, _err(rid, 4063, "name required")
-    from hermes_cli.profiles import get_profile_dir
+    from aurora_cli.profiles import get_profile_dir
     try:
         profile_dir = Path(get_profile_dir(name))
     except ValueError:
@@ -81,7 +81,7 @@ def _resolve_profile(rid, params):
 def _read_profile_yaml(profile_dir) -> dict:
     """profile.yaml as a mapping; ``{}`` when missing, unreadable, unparseable, or not a mapping."""
     def load():
-        import hermes_yaml as yaml
+        import aurora_yaml as yaml
         meta_path = profile_dir / "profile.yaml"
         return (yaml.safe_load(meta_path.read_text(encoding="utf-8")) or {}) if meta_path.is_file() else {}
     loaded = _try(load, {})
@@ -128,15 +128,15 @@ def _resurrect_recoverable_canonical(db, profile_path, session_id):
             return False
         tip_id = _try(lambda: db.get_compression_tip(session_id), None) or session_id
         tip = (_try(lambda: db.get_session(tip_id), None) or row) if tip_id != session_id else row
-        from hermes_state import SessionDB
-        from hermes_state_registry import acquire
+        from aurora_state import SessionDB
+        from aurora_state_registry import acquire
         if (tip.get("end_reason") or "") not in SessionDB.RECOVERABLE_END_REASONS:
             return False
         wdb = acquire(Path(profile_path) / "state.db")
         try:
             return bool(wdb.unarchive_recoverable_session(session_id))
         finally:
-            _best_effort(lambda: _lazy("hermes_state_registry", "release_or_close")(wdb))
+            _best_effort(lambda: _lazy("aurora_state_registry", "release_or_close")(wdb))
     except Exception:
         return False
 
@@ -160,7 +160,7 @@ def _canonical_session_row(db, profile_path):
     The canonical chat's identity is the NAME: the session titled exactly "Bot Chat" on this profile (core
     UNIQUE(title) makes it a registry of at most one row). Complements ``last_session``: that field answers
     "what is the newest conversation", this answers "where is the forever-chat" — so a roster row's preview
-    and its click target describe the same session (hermes-agent#88200) with no client-side pointer
+    and its click target describe the same session (aurora-agent#88200) with no client-side pointer
     involved.
     """
     try:
@@ -196,7 +196,7 @@ def _latest_profile_session_rows(db):
     First element mirrors session.list's deny-list (drops ``tool`` sub-agent rows and ``kanban`` dispatcher
     workers). Second element is the newest DENIED row — the freshest kanban/tool worker — so roster UIs can
     show that a profile is actively working even though worker sessions never surface in conversation lists
-    (hermes-agent#90268). Workers heartbeat ``last_activity_at`` every ≤60s while running (#72016), so a
+    (aurora-agent#90268). Workers heartbeat ``last_activity_at`` every ≤60s while running (#72016), so a
     live worker's ``last_active`` stays fresh and the client can apply its own liveness window. Best-effort:
     any failure (missing state.db, locked db, older schema) degrades to (None, None) rather than failing the
     whole profiles.list call.
@@ -230,7 +230,7 @@ def _profile_session_fields(row, profile_path):
         db_path = Path(profile_path) / "state.db"
         db = None
         if _try(db_path.exists, False):
-            db = _try(lambda: _lazy("hermes_state", "SessionDB")(db_path=db_path, read_only=True), None)
+            db = _try(lambda: _lazy("aurora_state", "SessionDB")(db_path=db_path, read_only=True), None)
         try:
             last, worker = _latest_profile_session_rows(db)
             # Resolved server-side on every listing so no client carries a session pointer.
@@ -274,9 +274,9 @@ def _profile_ui_meta_fields(row: dict, profile_dir) -> None:
 
 @_profile_handler("profiles.list", 5061)
 def _(rid, params: dict) -> dict:
-    """List Hermes profiles. ``include_sessions`` (default true) adds ``last_session`` /
+    """List Aurora profiles. ``include_sessions`` (default true) adds ``last_session`` /
     ``worker_session`` / ``canonical_session`` so a roster paints previews without N calls."""
-    from hermes_cli.profiles import list_profiles
+    from aurora_cli.profiles import list_profiles
     include_sessions = is_truthy_value(params.get("include_sessions", True))
     out = []
     # Roster polls this every 5s: ``skill_count`` is the last known value, refreshed off-request.
@@ -292,7 +292,7 @@ def _(rid, params: dict) -> dict:
     # bot_mode_protocol: this backend injects the Bot Mode teammate-messaging protocol into every
     # session, so clients must not append it to SOUL.md. install_id (same value as /api/status)
     # lets a multi-connection client prove WHICH machine answered a routed list.
-    from hermes_cli.install_identity import get_install_id
+    from aurora_cli.install_identity import get_install_id
     return _ok(rid, {"profiles": out, "bot_mode_protocol": True, "install_id": _try(lambda: get_install_id() or "", "")})
 
 
@@ -306,7 +306,7 @@ def _(rid, params: dict) -> dict:
     name = str(params.get("name") or "").strip()
     if not name:
         return _err(rid, 4061, "name required")
-    from hermes_cli.profile_provision import ProfileCreateRequest, provision_profile
+    from aurora_cli.profile_provision import ProfileCreateRequest, provision_profile
     clone_from = str(params.get("clone_from") or "").strip() or None
     clone_all = is_truthy_value(params.get("clone_all", False))
     soul = params.get("soul")
@@ -338,10 +338,10 @@ def _(rid, params: dict) -> dict:
     name, profile_dir, err = _resolve_profile(rid, params)
     if err is not None:
         return err
-    with _hermes_home_scope(profile_dir):
+    with _aurora_home_scope(profile_dir):
         from agent.skill_utils import iter_skill_index_files
-        from hermes_cli.config import load_config
-        from hermes_cli.skills_config import get_disabled_skills
+        from aurora_cli.config import load_config
+        from aurora_cli.skills_config import get_disabled_skills
         cfg = load_config() or {}
         disabled = {s.lower() for s in get_disabled_skills(cfg)}
         skills_root = profile_dir / "skills"
@@ -359,7 +359,7 @@ def _(rid, params: dict) -> dict:
             if isinstance(entry, dict)
         ], []) if isinstance(mcp_cfg, dict) else []
         model_cfg = cfg.get("model") if isinstance(cfg.get("model"), dict) else {}
-        meta = _try(lambda: _lazy("hermes_cli.profiles", "read_profile_meta")(profile_dir), {})
+        meta = _try(lambda: _lazy("aurora_cli.profiles", "read_profile_meta")(profile_dir), {})
         return _ok(rid, {
             "name": name, "description": str(meta.get("description") or ""), "soul": soul,
             "model": {"provider": str(model_cfg.get("provider") or ""),
@@ -382,7 +382,7 @@ def _(rid, params: dict) -> dict:
     if isinstance(params.get("soul"), str):
         applied["soul"] = _best_effort(lambda: (profile_dir / "SOUL.md").write_text(params["soul"], encoding="utf-8"))
     if isinstance(params.get("description"), str):
-        write_meta = _lazy("hermes_cli.profiles", "write_profile_meta")
+        write_meta = _lazy("aurora_cli.profiles", "write_profile_meta")
         applied["description"] = _best_effort(lambda: write_meta(
             profile_dir, description=params["description"].strip(), description_auto=False))
     confirm_message = _configure_model(profile_dir, params, applied)
@@ -450,16 +450,16 @@ def _(rid, params: dict) -> dict:
 
 
 def _describe_toolsets(cfg):
-    """``(toolsets, pinned_set)`` as the `hermes tools` checklist presents them (the raw registry
+    """``(toolsets, pinned_set)`` as the `aurora tools` checklist presents them (the raw registry
     leaks platform composites and reports everything enabled without a pin)."""
-    from hermes_cli.tools_config import (
+    from aurora_cli.tools_config import (
         _coerce_platform_toolsets_value, _get_effective_configurable_toolsets, _get_platform_tools,
         _toolset_allowed_for_platform)
     from toolsets import resolve_toolset
     pinned = _coerce_platform_toolsets_value((cfg.get("platform_toolsets") or {}).get("cli"), "cli")
     pinned_set = _clean_names(pinned) if isinstance(pinned, list) else None
     platform_enabled = _try(lambda: set(_get_platform_tools(cfg, "cli", include_default_mcp_servers=False)), set())
-    default_off = _try(lambda: _lazy("hermes_cli.tools_config", "_DEFAULT_OFF_TOOLSETS"), set())
+    default_off = _try(lambda: _lazy("aurora_cli.tools_config", "_DEFAULT_OFF_TOOLSETS"), set())
     toolsets_out = []
     for ts_name, ts_label, ts_desc in _get_effective_configurable_toolsets():
         enabled = ts_name in (pinned_set if pinned_set is not None else platform_enabled)
@@ -473,7 +473,7 @@ def _describe_toolsets(cfg):
 
 
 def _bots_title(ui_meta: dict):
-    bots = ui_meta.get("hermes-bots")
+    bots = ui_meta.get("aurora-bots")
     return bots.get("title") if isinstance(bots, dict) else None
 
 
@@ -524,9 +524,9 @@ def _configure_ui_meta(profile_dir, params, applied) -> None:
                 # A client writing another machine's bot title lands here; the Desktop's
                 # `[bot-meta win=…]` desktop.log line at the same time names the window.
                 logging.getLogger(__name__).info(
-                    "ui_meta hermes-bots title for profile %s: %r -> %r (revision %s)",
+                    "ui_meta aurora-bots title for profile %s: %r -> %r (revision %s)",
                     params.get("name") or profile_dir.name, old_title, _bots_title(current),
-                    revisions.get("hermes-bots"))
+                    revisions.get("aurora-bots"))
     except Exception:
         applied["ui_meta"] = False
 
@@ -546,7 +546,7 @@ def _configure_model(profile_dir, params, applied):
     # misbehaving guard must never break the save (treated as "no warning"), matching
     # ``_apply_model_switch``.
     if not is_truthy_value(params.get("confirm_expensive_model", False)):
-        warn = _lazy("hermes_cli.model_selection_guards", "combined_selection_warning")
+        warn = _lazy("aurora_cli.model_selection_guards", "combined_selection_warning")
         confirm_message = _try(lambda: getattr(warn(model, provider=provider or None), "message", None), None)
     if confirm_message is None:
         applied["model"] = _best_effort(lambda: _pin_profile_model(profile_dir, provider, model))
@@ -558,9 +558,9 @@ def _clean_names(values) -> set:
 
 
 def _save_toolset_pin(cfg, enabled, save_config) -> None:
-    """Pin ``platform_toolsets.cli``: the key ``_load_enabled_toolsets`` reads and ``hermes tools`` writes.
+    """Pin ``platform_toolsets.cli``: the key ``_load_enabled_toolsets`` reads and ``aurora tools`` writes.
     An empty selection clears the pin so the platform default applies again."""
-    from hermes_cli.tools_config import _save_platform_tools
+    from aurora_cli.tools_config import _save_platform_tools
 
     wanted = _clean_names(enabled)
     if wanted:
@@ -573,7 +573,7 @@ def _save_toolset_pin(cfg, enabled, save_config) -> None:
 def _mcp_entry_enabled(entry: dict) -> bool:
     """The runtime's ``enabled`` reader; a legacy ``disabled: true`` (what older editors wrote,
     migrated by config v46) still reads as off."""
-    from hermes_cli.tools_config import _parse_enabled_flag
+    from aurora_cli.tools_config import _parse_enabled_flag
     from tools.mcp_tool_common import mcp_server_enabled
     return mcp_server_enabled(entry) and not _parse_enabled_flag(entry.get("disabled", False), default=False)
 
@@ -603,15 +603,15 @@ def _configure_cfg_sections(profile_dir, params, applied) -> None:
     launch_mcp = {}
     if want_mcp:  # launch catalog read BEFORE the home override flips config resolution
         # RAW: a copied entry keeps its ${VAR} refs instead of the launch profile's expanded secrets.
-        load_launch = _lazy("hermes_cli.config", "read_user_config_raw")
+        load_launch = _lazy("aurora_cli.config", "read_user_config_raw")
         launch_mcp = _try(lambda: (load_launch() or {}).get("mcp_servers"), {})
         launch_mcp = launch_mcp if isinstance(launch_mcp, dict) else {}
-    with _hermes_home_scope(profile_dir):
-        from hermes_cli.config import load_config, save_config
+    with _aurora_home_scope(profile_dir):
+        from aurora_cli.config import load_config, save_config
         cfg = load_config() or {}
         if isinstance(params.get("disabled_skills"), list):
             try:
-                from hermes_cli.skills_config import save_disabled_skills
+                from aurora_cli.skills_config import save_disabled_skills
                 save_disabled_skills(cfg, _clean_names(params["disabled_skills"]))
                 applied["skills"] = _landed(cfg, ("skills", "disabled"))
                 cfg = load_config() or {}
@@ -644,7 +644,7 @@ def _landed(cfg: dict, path: tuple, key=lambda v: v) -> bool:
     Under Remote Config a bulk save omits a locked key (with a stderr note) instead of raising, so
     an editor that reported success after the save would acknowledge an edit the plane refused.
     Compared on the user layer as read back (the effective doc in remote mode), absent == absent."""
-    from hermes_cli.config import read_user_config_raw
+    from aurora_cli.config import read_user_config_raw
 
     def at(doc):
         node = doc

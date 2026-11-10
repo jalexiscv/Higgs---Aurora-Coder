@@ -1,18 +1,18 @@
 ---
 title: "Windows (Native) Guide"
-description: "Run Hermes Agent natively on Windows 10 / 11 — install, feature matrix, UTF-8 console, Git Bash, gateway as a Scheduled Task, editor handling, PATH, uninstall, and common pitfalls"
+description: "Run Aurora Agent natively on Windows 10 / 11 — install, feature matrix, UTF-8 console, Git Bash, gateway as a Scheduled Task, editor handling, PATH, uninstall, and common pitfalls"
 sidebar_label: "Windows (Native)"
 sidebar_position: 3
 ---
 
 # Windows (Native) Guide
 
-Hermes runs natively on Windows 10 and Windows 11 — no WSL, no Cygwin, no Docker. This page is the deep dive: what works natively, what's WSL-only, what the installer actually does, and the Windows-specific knobs you might need to touch.
+Aurora runs natively on Windows 10 and Windows 11 — no WSL, no Cygwin, no Docker. This page is the deep dive: what works natively, what's WSL-only, what the installer actually does, and the Windows-specific knobs you might need to touch.
 
 If you just want to install, the one-liner on the [landing page](../index.mdx) or [Installation page](../getting-started/installation#windows-native) is all you need. Come back here when something surprises you.
 
 :::tip Want WSL instead?
-If you prefer a POSIX environment for `fork` semantics or Linux-style file watchers, see the **[Windows (WSL2) Guide](./windows-wsl-quickstart.md)**. Both coexist cleanly: native data lives under `%LOCALAPPDATA%\hermes`, WSL data lives under `~/.hermes`.
+If you prefer a POSIX environment for `fork` semantics or Linux-style file watchers, see the **[Windows (WSL2) Guide](./windows-wsl-quickstart.md)**. Both coexist cleanly: native data lives under `%LOCALAPPDATA%\aurora`, WSL data lives under `~/.aurora`.
 :::
 
 ## Quick install
@@ -23,7 +23,7 @@ Open **PowerShell** (or Windows Terminal) and run:
 iex (irm https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.ps1)
 ```
 
-No admin rights required. The installer goes to `%LOCALAPPDATA%\hermes\` and adds `hermes` to your **User PATH** — open a new terminal after it finishes.
+No admin rights required. The installer goes to `%LOCALAPPDATA%\aurora\` and adds `aurora` to your **User PATH** — open a new terminal after it finishes.
 
 **Installer options** use a scriptblock:
 
@@ -33,10 +33,10 @@ No admin rights required. The installer goes to `%LOCALAPPDATA%\hermes\` and add
 
 | Parameter | Purpose |
 |---|---|
-| `-Channel stable\|main` | `stable` (default): the latest published release. `main`: every commit, saved like `hermes update --set-channel main`. `$env:HERMES_INSTALL_CHANNEL` sets it for a plain `irm \| iex`. |
+| `-Channel stable\|main` | `stable` (default): the latest published release. `main`: every commit, saved like `aurora update --set-channel main`. `$env:AURORA_INSTALL_CHANNEL` sets it for a plain `irm \| iex`. |
 | `-Branch NAME` | Select the source branch; default `main`. Another branch is installed at its tip. |
 | `-Commit SHA` | Select a commit after the branch checkout. |
-| `-HermesHome PATH` | Select the data directory. |
+| `-AuroraHome PATH` | Select the data directory. |
 | `-InstallDir PATH` | Select the source checkout directory. |
 | `-NonInteractive` | Skip setup and gateway stages that need input. |
 | `-IncludeDesktop` | Build the desktop app and create shortcuts. |
@@ -59,21 +59,21 @@ a signed universal bundle and records the update source. The package includes
 Python, Node, supported dependencies, and prebuilt interfaces. It does not clone
 a checkout or build the base runtime on first launch.
 
-The MSIX execution aliases expose `hermes`, `hermes-agent`, and `hermes-acp`.
-If another installation shadows an alias, inspect `Get-Command hermes -All`.
+The MSIX execution aliases expose `aurora`, `aurora-agent`, and `aurora-acp`.
+If another installation shadows an alias, inspect `Get-Command aurora -All`.
 Windows Settings → Apps → Advanced app settings → App execution aliases
 controls the aliases.
 
 Sideload updates use the app's Update control and Windows App Installer.
-Hermes downloads a local descriptor before teardown and registers automatic
+Aurora downloads a local descriptor before teardown and registers automatic
 relaunch. It does not require the `ms-appinstaller:` URL protocol. An unknown
 update-check result is not a claim that the package is current.
 
 The Microsoft Store variant uses its Partner Center package identity and Store
-updates. It does not use the sideload feed. `hermes update` inside either
+updates. It does not use the sideload feed. `aurora update` inside either
 bundled runtime does not run Git against package files.
 
-`Hermes-Setup.exe` is a different, bootstrap installer. It provisions a source
+`Aurora-Setup.exe` is a different, bootstrap installer. It provisions a source
 checkout through the scripts. Do not confuse it with the self-contained MSIX
 package. See [Updating & Uninstalling](../getting-started/updating.md).
 
@@ -87,8 +87,8 @@ recorded state; a missing optional tool is fetched on demand only when
 permits it. `install.ps1` has no `-Ensure` mode.
 
 ```powershell
-hermes pm doctor
-hermes pm install
+aurora pm doctor
+aurora pm install
 ```
 
 ## What the source installer does
@@ -108,7 +108,7 @@ replacing libraries already loaded by a running process. There is no tiered
 pip fallback to silently reduce the installed feature set.
 
 :::tip Skip provider hunting on Windows
-On Windows, per-tool API key setup (Firecrawl, FAL, Browser Use, OpenAI TTS) is the highest-friction part of getting a useful agent. A [Nous Portal](./features/tool-gateway.md) subscription covers the model **and** all of those tools through one OAuth login. After the installer finishes, run `hermes setup --portal` to wire everything up.
+On Windows, per-tool API key setup (Firecrawl, FAL, Browser Use, OpenAI TTS) is the highest-friction part of getting a useful agent. A [Nous Portal](./features/tool-gateway.md) subscription covers the model **and** all of those tools through one OAuth login. After the installer finishes, run `aurora setup --portal` to wire everything up.
 :::
 
 ## Feature matrix
@@ -118,8 +118,8 @@ natively, but some optional SDKs are excluded from particular targets.
 
 | Feature | Native Windows | WSL2 |
 |---|---|---|
-| CLI (`hermes chat`, `hermes setup`, `hermes gateway`, …) | ✓ | ✓ |
-| Interactive TUI (`hermes --tui`) | ✓ | ✓ |
+| CLI (`aurora chat`, `aurora setup`, `aurora gateway`, …) | ✓ | ✓ |
+| Interactive TUI (`aurora --tui`) | ✓ | ✓ |
 | Messaging gateway (Telegram, Discord, Slack, WhatsApp, 15+ platforms) | ✓ | ✓ |
 | Cron scheduler | ✓ | ✓ |
 | Browser tool (Chromium via Node) | ✓ | ✓ |
@@ -146,9 +146,9 @@ unavailable; WSL is an alternative, not a requirement of the current design.
 The platform markers in `pyproject.toml` define the packaged dependency set.
 A general gateway or voice feature claim does not override those markers.
 
-## How Hermes runs shell commands on Windows
+## How Aurora runs shell commands on Windows
 
-Hermes's terminal tool runs commands through **Git Bash**, same strategy Claude Code uses. This sidesteps the POSIX-vs-Windows gap without rewriting every tool.
+Aurora's terminal tool runs commands through **Git Bash**, same strategy Claude Code uses. This sidesteps the POSIX-vs-Windows gap without rewriting every tool.
 
 `pm.shell()` owns Bash resolution. It first checks the Git package recorded in
 PM facts, then the provisioned `PATH`. If a PATH candidate belongs to a WindowsApps
@@ -159,14 +159,14 @@ process can fail to start a WindowsApps payload executable with `WinError 5`.
 Use the package's own launcher, or use conventional tools for a source checkout.
 Do not disable Windows security controls to work around that boundary.
 
-The current installer does not set `HERMES_GIT_BASH_PATH`. MinGit is not a
+The current installer does not set `AURORA_GIT_BASH_PATH`. MinGit is not a
 replacement for Git for Windows with Bash.
 
 ## UTF-8 console on Windows
 
-Python's default stdio on Windows uses the console's active code page (usually cp1252 or cp437). Hermes's banner, slash-command list, tool feed, Rich panels, and skill descriptions all contain Unicode. Without intervention, any of that crashes with `UnicodeEncodeError: 'charmap' codec can't encode character…`.
+Python's default stdio on Windows uses the console's active code page (usually cp1252 or cp437). Aurora's banner, slash-command list, tool feed, Rich panels, and skill descriptions all contain Unicode. Without intervention, any of that crashes with `UnicodeEncodeError: 'charmap' codec can't encode character…`.
 
-The fix is in `hermes_cli/stdio.py::configure_windows_stdio()`, called early in every entry point (`cli.py::main`, `hermes_cli/main.py::main`, `gateway/run.py::main`). It:
+The fix is in `aurora_cli/stdio.py::configure_windows_stdio()`, called early in every entry point (`cli.py::main`, `aurora_cli/main.py::main`, `gateway/run.py::main`). It:
 
 1. Flips the console code page to CP_UTF8 (65001) via `kernel32.SetConsoleCP` / `SetConsoleOutputCP`.
 2. Reconfigures `sys.stdout` / `sys.stderr` / `sys.stdin` to UTF-8 with `errors='replace'`.
@@ -175,13 +175,13 @@ The fix is in `hermes_cli/stdio.py::configure_windows_stdio()`, called early in 
 
 Idempotent. No-op on non-Windows.
 
-**Opt out:** `HERMES_DISABLE_WINDOWS_UTF8=1` in the environment falls back to the legacy cp1252 stdio path. Useful for bisecting an encoding bug; unlikely to be the right setting in normal operation.
+**Opt out:** `AURORA_DISABLE_WINDOWS_UTF8=1` in the environment falls back to the legacy cp1252 stdio path. Useful for bisecting an encoding bug; unlikely to be the right setting in normal operation.
 
 ## The editor (`Ctrl-X Ctrl-E`, `/edit`)
 
 Pre-#21561, pressing `Ctrl-X Ctrl-E` or typing `/edit` silently did nothing on Windows. prompt_toolkit has a hardcoded POSIX-absolute fallback list (`/usr/bin/nano`, `/usr/bin/pico`, `/usr/bin/vi`, …) that never resolves on Windows — even with full Git for Windows installed.
 
-Hermes's Windows stdio shim now sets `EDITOR=notepad` as a default. Notepad ships with every Windows install and works as a blocking editor — `subprocess.call(["notepad", file])` blocks until the window closes.
+Aurora's Windows stdio shim now sets `EDITOR=notepad` as a default. Notepad ships with every Windows install and works as a blocking editor — `subprocess.call(["notepad", file])` blocks until the window closes.
 
 **User overrides still win** (they're checked before the setdefault):
 
@@ -192,7 +192,7 @@ Hermes's Windows stdio shim now sets `EDITOR=notepad` as a default. Notepad ship
 | Neovim | `$env:EDITOR = "nvim"` |
 | Helix | `$env:EDITOR = "hx"` |
 
-The `--wait` flag on VS Code is critical — without it the editor returns immediately and Hermes gets a blank buffer back.
+The `--wait` flag on VS Code is critical — without it the editor returns immediately and Aurora gets a blank buffer back.
 
 Set it permanently in your PowerShell profile:
 
@@ -205,25 +205,25 @@ Or as a User environment variable in System Settings so every new shell picks it
 
 ## `Ctrl+Enter` for newline in the CLI
 
-Windows Terminal passes `Ctrl+Enter` through as a dedicated key sequence. Hermes binds it to "insert newline" so you can compose multi-line prompts in the CLI without falling back to `Esc`-then-`Enter`. Works in Windows Terminal, VS Code integrated terminal, and any modern Windows console host that honors VT escape sequences.
+Windows Terminal passes `Ctrl+Enter` through as a dedicated key sequence. Aurora binds it to "insert newline" so you can compose multi-line prompts in the CLI without falling back to `Esc`-then-`Enter`. Works in Windows Terminal, VS Code integrated terminal, and any modern Windows console host that honors VT escape sequences.
 
 On legacy `cmd.exe` consoles `Ctrl+Enter` collapses to plain `Enter` — use `Esc Enter` instead, or upgrade to Windows Terminal (it's free and installed by default on Windows 11).
 
 ## Running the gateway at Windows login
 
-`hermes gateway install` on Windows uses **Scheduled Tasks** with a Startup-folder fallback — no admin required.
+`aurora gateway install` on Windows uses **Scheduled Tasks** with a Startup-folder fallback — no admin required.
 
 ### Install
 
 ```powershell
-hermes gateway install
+aurora gateway install
 ```
 
 What happens under the hood:
 
-1. `schtasks /Create /SC ONLOGON /RL LIMITED /TN Hermes_Gateway` — registers a task that runs at your login with standard (non-elevated) permissions. No UAC prompt.
-2. If schtasks is blocked by group policy, falls back to writing a small `Hermes_Gateway.vbs` launcher (run hidden via `wscript.exe`) into `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup`. Same effect, slightly cruder. A VBScript is used rather than a `cmd.exe` shortcut because a console allocated at logon can receive a close event that kills the gateway before it finishes starting.
-   Only one of the two is ever kept: a successful task install removes any Startup-folder entry (including a legacy `Hermes_Gateway.cmd`), the fallback is skipped while a task is still registered, and `hermes update` / `hermes doctor --fix` clean up older installs that have both, since both would launch the gateway at logon.
+1. `schtasks /Create /SC ONLOGON /RL LIMITED /TN Aurora_Gateway` — registers a task that runs at your login with standard (non-elevated) permissions. No UAC prompt.
+2. If schtasks is blocked by group policy, falls back to writing a small `Aurora_Gateway.vbs` launcher (run hidden via `wscript.exe`) into `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup`. Same effect, slightly cruder. A VBScript is used rather than a `cmd.exe` shortcut because a console allocated at logon can receive a close event that kills the gateway before it finishes starting.
+   Only one of the two is ever kept: a successful task install removes any Startup-folder entry (including a legacy `Aurora_Gateway.cmd`), the fallback is skipped while a task is still registered, and `aurora update` / `aurora doctor --fix` clean up older installs that have both, since both would launch the gateway at logon.
 3. Spawns the gateway **detached via `pythonw.exe`** — not `python.exe`. `pythonw.exe` has no console attached, which immunizes it against `CTRL_C_EVENT` broadcasts from sibling processes (a real issue that used to kill the gateway when you Ctrl+C'd anything in the same process group).
 
 Flags used when spawning: `DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW | CREATE_BREAKAWAY_FROM_JOB`.
@@ -231,64 +231,64 @@ Flags used when spawning: `DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_
 ### Manage
 
 ```powershell
-hermes gateway status      # Merged view: schtasks + Startup folder + running PID
-hermes gateway start       # Starts the gateway in the background (asks about login auto-start only on a TTY when nothing is installed)
-hermes gateway stop        # Writes the planned-stop marker, waits for the gateway to drain (≤ agent.restart_drain_timeout, capped at 30 s), then force-kills only if it is still alive
-hermes gateway restart     # Same drain-first stop, then a fresh start
-hermes gateway uninstall   # Removes schtasks entry, Startup shortcut, pid file
+aurora gateway status      # Merged view: schtasks + Startup folder + running PID
+aurora gateway start       # Starts the gateway in the background (asks about login auto-start only on a TTY when nothing is installed)
+aurora gateway stop        # Writes the planned-stop marker, waits for the gateway to drain (≤ agent.restart_drain_timeout, capped at 30 s), then force-kills only if it is still alive
+aurora gateway restart     # Same drain-first stop, then a fresh start
+aurora gateway uninstall   # Removes schtasks entry, Startup shortcut, pid file
 ```
 
-`hermes gateway status` is idempotent — call it a thousand times in a row and it will never accidentally kill the gateway. (Pre-PR #21561 it silently did, via `os.kill(pid, 0)` colliding with `CTRL_C_EVENT` at the C level — see "process management internals" below if you care about the story.)
+`aurora gateway status` is idempotent — call it a thousand times in a row and it will never accidentally kill the gateway. (Pre-PR #21561 it silently did, via `os.kill(pid, 0)` colliding with `CTRL_C_EVENT` at the C level — see "process management internals" below if you care about the story.)
 
-Login auto-start is only ever installed on an explicit answer: `hermes gateway install`, a `Y` on a real terminal, or `HERMES_GATEWAY_INSTALL_START_ON_LOGIN=1`. A scripted or piped `hermes gateway start` (no TTY, or `HERMES_NONINTERACTIVE=1`) starts the gateway without touching the Scheduled Task or the Startup folder; set `HERMES_GATEWAY_INSTALL_START_ON_LOGIN=0` to skip the question on a terminal too.
+Login auto-start is only ever installed on an explicit answer: `aurora gateway install`, a `Y` on a real terminal, or `AURORA_GATEWAY_INSTALL_START_ON_LOGIN=1`. A scripted or piped `aurora gateway start` (no TTY, or `AURORA_NONINTERACTIVE=1`) starts the gateway without touching the Scheduled Task or the Startup folder; set `AURORA_GATEWAY_INSTALL_START_ON_LOGIN=0` to skip the question on a terminal too.
 
 ### Why not a Windows Service?
 
-Services require admin rights to install and tie the gateway's lifecycle to machine boot, not user login. The typical Hermes user wants: log in → gateway available, log out → gateway gone. Scheduled Tasks do exactly that without elevation. If you genuinely want a service, use `nssm` or `sc create` manually — but you probably don't. If you do, name it `Hermes*` or point its binary path inside the Hermes install (`venv\Scripts\hermes.exe`, the checkout, or `gateway-service\`): `hermes update` stops and restarts only services it can positively identify as Hermes-owned through the Service Control Manager, and pauses a Scheduled-Task-launched gateway by PID (Task Scheduler itself is never touched).
+Services require admin rights to install and tie the gateway's lifecycle to machine boot, not user login. The typical Aurora user wants: log in → gateway available, log out → gateway gone. Scheduled Tasks do exactly that without elevation. If you genuinely want a service, use `nssm` or `sc create` manually — but you probably don't. If you do, name it `Aurora*` or point its binary path inside the Aurora install (`venv\Scripts\aurora.exe`, the checkout, or `gateway-service\`): `aurora update` stops and restarts only services it can positively identify as Aurora-owned through the Service Control Manager, and pauses a Scheduled-Task-launched gateway by PID (Task Scheduler itself is never touched).
 
 ## Data layout
 
 | Path | Contents |
 |---|---|
-| `%LOCALAPPDATA%\hermes\hermes-agent\` | Source checkout for the script installation; absent from an MSIX-only install. |
-| `%LOCALAPPDATA%\hermes\tools\` | Writable managed-tool store. MSIX base tools remain inside the package. |
-| `%LOCALAPPDATA%\hermes\installs\` | Per-install runtime selection, journals, and Python generations. |
-| `%LOCALAPPDATA%\hermes\bin\` | Source-install CLI launchers. MSIX instead provides execution aliases. |
-| `%LOCALAPPDATA%\hermes\` | User configuration, credentials, sessions, plugins, skills, and logs. |
+| `%LOCALAPPDATA%\aurora\aurora-agent\` | Source checkout for the script installation; absent from an MSIX-only install. |
+| `%LOCALAPPDATA%\aurora\tools\` | Writable managed-tool store. MSIX base tools remain inside the package. |
+| `%LOCALAPPDATA%\aurora\installs\` | Per-install runtime selection, journals, and Python generations. |
+| `%LOCALAPPDATA%\aurora\bin\` | Source-install CLI launchers. MSIX instead provides execution aliases. |
+| `%LOCALAPPDATA%\aurora\` | User configuration, credentials, sessions, plugins, skills, and logs. |
 
-These are default paths. `HERMES_HOME` and installer path arguments can change
-them. A full deletion of `%LOCALAPPDATA%\hermes` also deletes user data and
+These are default paths. `AURORA_HOME` and installer path arguments can change
+them. A full deletion of `%LOCALAPPDATA%\aurora` also deletes user data and
 can affect other installations that share it. Use the uninstall command or
 Windows package removal instead of deleting that root to repair an app.
 
 ## Browser tool
 
-The browser tool (`browser_exec`) is part of Hermes's Python environment.
-For local browsing, Hermes launches the pinned Chromium that PM installs
-(`hermes pm install chromium` if it is missing); set `browser.executable_path`
+The browser tool (`browser_exec`) is part of Aurora's Python environment.
+For local browsing, Aurora launches the pinned Chromium that PM installs
+(`aurora pm install chromium` if it is missing); set `browser.executable_path`
 to use another Chromium-family binary. Cloud browsers are selected in
-`hermes tools`. A self-contained MSIX includes the browser tools in its payload.
+`aurora tools`. A self-contained MSIX includes the browser tools in its payload.
 
 On Windows ARM64, the pinned Chromium is the x64 build and runs under
 Windows' x64 emulation. This differs from the native ARM64 Python runtime.
 See [Browser automation](./features/browser.md) for browser sources.
 
-## Running Hermes on Windows — practical notes
+## Running Aurora on Windows — practical notes
 
 ### PATH after install
 
-The installer adds `%LOCALAPPDATA%\hermes\bin` to your **User PATH** via `[Environment]::SetEnvironmentVariable`. Existing terminals don't pick this up — open a new PowerShell window (or Windows Terminal tab) after installation. Close-and-reopen, don't `$env:PATH += …` by hand unless you know what you're doing.
+The installer adds `%LOCALAPPDATA%\aurora\bin` to your **User PATH** via `[Environment]::SetEnvironmentVariable`. Existing terminals don't pick this up — open a new PowerShell window (or Windows Terminal tab) after installation. Close-and-reopen, don't `$env:PATH += …` by hand unless you know what you're doing.
 
 Verify:
 
 ```powershell
-Get-Command hermes        # should print C:\Users\<you>\AppData\Local\hermes\bin\hermes.exe
-hermes --version
+Get-Command aurora        # should print C:\Users\<you>\AppData\Local\aurora\bin\aurora.exe
+aurora --version
 ```
 
 ### Environment variables
 
-Hermes honors both `$env:X` (process-scope) and User environment variables (permanent, set in System Properties → Environment Variables). Setting API keys in `%LOCALAPPDATA%\hermes\.env` (your `HERMES_HOME`) is the normal path — same as Linux:
+Aurora honors both `$env:X` (process-scope) and User environment variables (permanent, set in System Properties → Environment Variables). Setting API keys in `%LOCALAPPDATA%\aurora\.env` (your `AURORA_HOME`) is the normal path — same as Linux:
 
 ```
 OPENROUTER_API_KEY=sk-or-...
@@ -303,31 +303,31 @@ These only affect native Windows installs:
 
 | Variable | Effect |
 |---|---|
-| `HERMES_DISABLE_WINDOWS_UTF8` | Set to `1` to disable the UTF-8 stdio shim and fall back to the locale code page. Useful for bisecting an encoding bug. |
-| `EDITOR` / `VISUAL` | Your editor for `/edit` and `Ctrl-X Ctrl-E`. Hermes defaults to `notepad` if both are unset. |
+| `AURORA_DISABLE_WINDOWS_UTF8` | Set to `1` to disable the UTF-8 stdio shim and fall back to the locale code page. Useful for bisecting an encoding bug. |
+| `EDITOR` / `VISUAL` | Your editor for `/edit` and `Ctrl-X Ctrl-E`. Aurora defaults to `notepad` if both are unset. |
 
 ## Uninstall
 
 From PowerShell:
 
 ```powershell
-hermes uninstall
+aurora uninstall
 ```
 
 For source installs, the uninstaller removes owned launchers, service entries,
-and application files. Review `hermes uninstall --dry-run` before removal.
+and application files. Review `aurora uninstall --dry-run` before removal.
 `--full` also removes data; `--data` removes data without removing packaged code.
 For MSIX or Store installations, remove the app through Windows Settings →
 Apps → Installed apps. The CLI refuses to delete package-owned code.
 
 :::caution User-data deletion
-Before deleting data, stop every Hermes process that uses the selected `HERMES_HOME` and make a backup.
-Review `hermes uninstall --dry-run` before choosing a data-removal mode.
+Before deleting data, stop every Aurora process that uses the selected `AURORA_HOME` and make a backup.
+Review `aurora uninstall --dry-run` before choosing a data-removal mode.
 Do not recursively delete the default data root to repair one application or profile.
-A custom `HERMES_HOME` can be elsewhere, and package removal does not remove that data.
+A custom `AURORA_HOME` can be elsewhere, and package removal does not remove that data.
 :::
 
-The `hermes uninstall` CLI subcommand also handles the case where the schtasks entry was registered under a different task name (older installs) — it searches by install path rather than by hardcoded task name.
+The `aurora uninstall` CLI subcommand also handles the case where the schtasks entry was registered under a different task name (older installs) — it searches by install path rather than by hardcoded task name.
 
 ## Process management internals
 
@@ -335,46 +335,46 @@ This is background material — skip unless you're debugging an "it's killing it
 
 On Linux and macOS, the POSIX idiom `os.kill(pid, 0)` is a no-op permission check: "is this PID alive and can I signal it?" On Windows, Python's `os.kill` maps `sig=0` to `CTRL_C_EVENT` — they collide at integer value 0 — and routes it through `GenerateConsoleCtrlEvent(0, pid)`, which broadcasts Ctrl+C to the **entire console process group** containing the target PID. That's [bpo-14484](https://bugs.python.org/issue14484), open since 2012. It won't be fixed because changing it would break scripts that depend on the current behavior.
 
-Consequence: any codepath that said "check if this PID is alive" via `os.kill(pid, 0)` on Windows was silently killing the target. Hermes migrated every such site (14 across 11 files) to `gateway.status._pid_exists()`, which uses `psutil.pid_exists()` (which in turn uses `OpenProcess + GetExitCodeProcess` on Windows — no signals). If you're writing a plugin or patch, use `psutil.pid_exists()` directly or `gateway.status._pid_exists()` — never `os.kill(pid, 0)`.
+Consequence: any codepath that said "check if this PID is alive" via `os.kill(pid, 0)` on Windows was silently killing the target. Aurora migrated every such site (14 across 11 files) to `gateway.status._pid_exists()`, which uses `psutil.pid_exists()` (which in turn uses `OpenProcess + GetExitCodeProcess` on Windows — no signals). If you're writing a plugin or patch, use `psutil.pid_exists()` directly or `gateway.status._pid_exists()` — never `os.kill(pid, 0)`.
 
 `scripts/check-windows-footguns.py` enforces this in CI: any new `os.kill(pid, 0)` call fails the `Windows footguns (blocking)` check unless the line carries a `# windows-footgun: ok — <reason>` marker.
 
 ## Common pitfalls
 
-**`hermes: command not found` right after install.**
-Open a new PowerShell window. The installer added `%LOCALAPPDATA%\hermes\bin` to User PATH, but existing shells need to be restarted to pick it up. In the meantime you can run `& "$env:LOCALAPPDATA\hermes\bin\hermes.exe"`.
+**`aurora: command not found` right after install.**
+Open a new PowerShell window. The installer added `%LOCALAPPDATA%\aurora\bin` to User PATH, but existing shells need to be restarted to pick it up. In the meantime you can run `& "$env:LOCALAPPDATA\aurora\bin\aurora.exe"`.
 
 **`WinError 193: %1 is not a valid Win32 application` when running a tool.**
-You hit a shebang-script invocation that bypassed the `.cmd` shim. Hermes resolves commands through `shutil.which(cmd, path=local_bin)` so PATHEXT picks up `.CMD` — if you're invoking the tool via a hardcoded path instead, switch to the `.cmd` variant (e.g., `npx.cmd`, not `npx`).
+You hit a shebang-script invocation that bypassed the `.cmd` shim. Aurora resolves commands through `shutil.which(cmd, path=local_bin)` so PATHEXT picks up `.CMD` — if you're invoking the tool via a hardcoded path instead, switch to the `.cmd` variant (e.g., `npx.cmd`, not `npx`).
 
 **`[scriptblock]::Create(...)` fails with `The assignment expression is not valid`.**
 Your download of `install.ps1` picked up a UTF-8 BOM. The `irm | iex` form strips BOMs automatically; `[scriptblock]::Create((irm ...))` does not. Re-run with the simple `irm | iex` form, or download the script manually and save it without a BOM via `[IO.File]::WriteAllText($path, $text, (New-Object Text.UTF8Encoding $false))`.
 
 **Gateway won't stay running after restart.**
-Check `hermes gateway status` — it merges the schtasks entry, the Startup-folder shortcut (if used), and the live PID. If schtasks is registered but not running, group policy may be blocking `ONLOGON` triggers. Run `schtasks /Query /TN Hermes_Gateway /V /FO LIST` (`Hermes_Gateway_<profile>` for a named profile) to see the task's failure reason. The Startup-folder fallback engages automatically only when `schtasks` itself fails to register the task; there is no environment variable or flag to force it.
+Check `aurora gateway status` — it merges the schtasks entry, the Startup-folder shortcut (if used), and the live PID. If schtasks is registered but not running, group policy may be blocking `ONLOGON` triggers. Run `schtasks /Query /TN Aurora_Gateway /V /FO LIST` (`Aurora_Gateway_<profile>` for a named profile) to see the task's failure reason. The Startup-folder fallback engages automatically only when `schtasks` itself fails to register the task; there is no environment variable or flag to force it.
 
 **`/edit` still does nothing after setting `$env:EDITOR`.**
 You set it in the current process only; close and reopen the shell, or set it at User scope in System Properties → Environment Variables. Verify with `echo $env:EDITOR` in a new PowerShell window.
 
 **Browser tool launches but tools time out.**
-Run `hermes doctor` and `hermes pm doctor`. Use `hermes tools` to inspect the
+Run `aurora doctor` and `aurora pm doctor`. Use `aurora tools` to inspect the
 selected browser provider. A slow first Chromium start can be given more time
 with `browser.command_timeout` (the launch timeout floor, in seconds). Do not
 install an unrelated Playwright revision into a signed app payload.
 
 **Chinese / Japanese / Arabic characters show as `?` in the CLI.**
-The UTF-8 stdio shim didn't activate. Check that `HERMES_DISABLE_WINDOWS_UTF8` is NOT set (`Get-ChildItem env:HERMES_DISABLE_WINDOWS_UTF8`). If it's empty and you still see `?`, the console host (very old `cmd.exe`) may not support UTF-8 at all — switch to Windows Terminal.
+The UTF-8 stdio shim didn't activate. Check that `AURORA_DISABLE_WINDOWS_UTF8` is NOT set (`Get-ChildItem env:AURORA_DISABLE_WINDOWS_UTF8`). If it's empty and you still see `?`, the console host (very old `cmd.exe`) may not support UTF-8 at all — switch to Windows Terminal.
 
 **Gateway can't send Telegram photos — "`BadRequest: payload contains invalid characters`".**
-This is unrelated to Windows but sometimes surfaces first there. Usually it means your file path contains unescaped backslashes in a JSON body. Telegram should be receiving paths Hermes normalizes, not raw Windows paths — if you're seeing this inside a custom plugin, make sure you're passing the Hermes-provided path, not `str(Path(...))` from user input.
+This is unrelated to Windows but sometimes surfaces first there. Usually it means your file path contains unescaped backslashes in a JSON body. Telegram should be receiving paths Aurora normalizes, not raw Windows paths — if you're seeing this inside a custom plugin, make sure you're passing the Aurora-provided path, not `str(Path(...))` from user input.
 
 **"Works on my other machine" encoding weirdness after `git pull`.**
-If you edited Hermes config or a skill on Windows using a non-UTF-8 editor (Notepad on older Windows versions, some Chinese IMEs), the file may have been saved with a BOM. Hermes tolerates `utf-8-sig` on most config reads, but a BOM inside a folded YAML scalar (`description: >`) silently breaks YAML parsing. Re-save the file as plain UTF-8 without BOM.
+If you edited Aurora config or a skill on Windows using a non-UTF-8 editor (Notepad on older Windows versions, some Chinese IMEs), the file may have been saved with a BOM. Aurora tolerates `utf-8-sig` on most config reads, but a BOM inside a folded YAML scalar (`description: >`) silently breaks YAML parsing. Re-save the file as plain UTF-8 without BOM.
 
 ## Where to go next
 
 - **[Installation](../getting-started/installation.md)** — the full install page, including Linux/macOS/WSL2.
 - **[Windows (WSL2) Guide](./windows-wsl-quickstart.md)** — if you want POSIX semantics or the dashboard terminal pane.
-- **[CLI Reference](../reference/cli-commands.md)** — every `hermes` subcommand.
+- **[CLI Reference](../reference/cli-commands.md)** — every `aurora` subcommand.
 - **[FAQ](../reference/faq.md)** — common non-Windows-specific questions.
 - **[Messaging Gateway](./messaging/index.md)** — running Telegram/Discord/Slack on Windows.

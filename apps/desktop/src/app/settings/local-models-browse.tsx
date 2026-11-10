@@ -1,8 +1,6 @@
 import { type QueryClient, useQueryClient } from '@tanstack/react-query'
 import { type ReactElement, useCallback, useEffect, useRef, useState } from 'react'
 
-import { Button } from '@/components/ui/button'
-import { SearchField } from '@/components/ui/search-field'
 import {
   downloadBrowsedModel,
   type HFFileGroup,
@@ -10,7 +8,9 @@ import {
   listHFRepoFiles,
   searchHFModels,
   sideloadLocalModel
-} from '@/hermes'
+} from '@/aurora'
+import { Button } from '@/components/ui/button'
+import { SearchField } from '@/components/ui/search-field'
 import { useI18n } from '@/i18n'
 import { Cpu, Download, FolderOpen, Loader2, Search } from '@/lib/icons'
 import { cn } from '@/lib/utils'
@@ -25,7 +25,7 @@ import {
   watchLocalRuntimeJobs
 } from '@/store/local-runtime-jobs'
 import { notify, notifyError } from '@/store/notifications'
-import type { LocalRuntimeJob } from '@/types/hermes'
+import type { LocalRuntimeJob } from '@/types/aurora'
 
 import { downloadStatusText, gbLabel, LocalModelDownloadActions, ProgressBar } from './local-model-download-progress'
 import { useScopedLocalModelsOwner } from './local-models-owner'
@@ -164,7 +164,7 @@ export function LocalModelsBrowseSection(): ReactElement {
   )
 
   const sideload = useCallback((): void => {
-    window.hermesDesktop
+    window.auroraDesktop
       .selectPaths({ filters: [{ extensions: ['gguf'], name: 'GGUF models' }], title: copy.sideloadTitle })
       .then((paths: string[]): Promise<void> | undefined => {
         if (!paths.length) {

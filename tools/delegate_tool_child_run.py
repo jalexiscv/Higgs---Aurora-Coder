@@ -235,12 +235,12 @@ def _dump_subagent_timeout_diagnostic(
     worker_thread: Optional[threading.Thread], goal: str,
 ) -> Optional[str]:
     """Structured diagnostic for a subagent that timed out before any API call (otherwise "timed out with no
-    response", 0 API calls, nothing to inspect): ``~/.hermes/logs/subagent-timeout-<sid>-<ts>.log`` with the
+    response", 0 API calls, nothing to inspect): ``~/.aurora/logs/subagent-timeout-<sid>-<ts>.log`` with the
     child's config, prompt/schema sizes, activity snapshot and worker stack. Path, or None on failure."""
     try:
-        from hermes_constants import get_hermes_home
+        from aurora_constants import get_aurora_home
         import datetime as _dt
-        logs_dir = get_hermes_home() / "logs"
+        logs_dir = get_aurora_home() / "logs"
         try:
             logs_dir.mkdir(parents=True, exist_ok=True)
         except Exception:
@@ -420,7 +420,7 @@ def _register_child(
     if owner_session_id is None:
         with _quiet(None):
             from gateway.session_context import get_session_env
-            owner_session_id = get_session_env("HERMES_UI_SESSION_ID", "") or None
+            owner_session_id = get_session_env("AURORA_UI_SESSION_ID", "") or None
     if owner_session_id and (owner_transport is None or owner_session_record is None):
         owner_transport, owner_session_record = _capture_gateway_steer_authority(owner_session_id)
     _raw_depth = getattr(child, "_delegate_depth", 1)
@@ -563,7 +563,7 @@ def _validate_child_output_schema(
     _retry_result = None
     try:
         # Same identity as the main child turn: this runs on the parent worker's thread, and an
-        # unmarked turn is misread as the dispatcher-owned worker by every HERMES_KANBAN_* gate.
+        # unmarked turn is misread as the dispatcher-owned worker by every AURORA_KANBAN_* gate.
         from agent.delegation_context import delegated_child_context
         from tools.delegate_tool_routes import child_profile_scope
         with child_profile_scope(child), delegated_child_context(str(getattr(child, "session_id", "") or "")):
@@ -743,7 +743,7 @@ def _build_child_goal_message(goal: str, images: list[str], child) -> Any:
         from agent.image_routing import build_native_content_parts, decide_image_input_mode
         cfg = None
         with _quiet(None):
-            from hermes_cli.config import load_config_readonly
+            from aurora_cli.config import load_config_readonly
             cfg = load_config_readonly()
         mode = decide_image_input_mode(
             str(getattr(child, "provider", "") or ""), str(getattr(child, "model", "") or ""), cfg,

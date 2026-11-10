@@ -94,14 +94,14 @@ def _member_activity(task: Mapping[str, Any]) -> dict[str, Any]:
 def _discussion_limits(root: Path) -> discussion.DiscussionLimits:
     """Read the room owner's config, never the current member's profile scope. A malformed value
     keeps today's defaults (logged) rather than taking every room on this store offline."""
-    from hermes_cli.config_effective import load_user_config_effective
-    from hermes_constants import reset_hermes_home_override, set_hermes_home_override
+    from aurora_cli.config_effective import load_user_config_effective
+    from aurora_constants import reset_aurora_home_override, set_aurora_home_override
 
-    token = set_hermes_home_override(str(root))
+    token = set_aurora_home_override(str(root))
     try:
         config = load_user_config_effective(root / "config.yaml")
     finally:
-        reset_hermes_home_override(token)
+        reset_aurora_home_override(token)
     try:
         rooms = config.get("hosted_rooms", {})
         if not isinstance(rooms, Mapping):
@@ -119,7 +119,7 @@ def _discussion_limits(root: Path) -> discussion.DiscussionLimits:
 
 def _hosted_room_turn_timeout_seconds() -> float:
     try:
-        agent_timeout = float(os.getenv("HERMES_AGENT_TIMEOUT", "1800"))
+        agent_timeout = float(os.getenv("AURORA_AGENT_TIMEOUT", "1800"))
     except (TypeError, ValueError):
         agent_timeout = 0.0
     return (agent_timeout if agent_timeout > 0 else 1800.0) + _HOSTED_ROOM_TERMINAL_GRACE_SECONDS
@@ -256,11 +256,11 @@ class HostedRoomService:
         return self.db_path.parent
 
     def local_profiles(self) -> tuple[str, ...]:
-        from hermes_constants import named_profile_has_identity, named_profile_is_deleted
+        from aurora_constants import named_profile_has_identity, named_profile_is_deleted
 
         profiles, profiles_dir = {"default"}, self.root / "profiles"
         if profiles_dir.is_dir():
-            # ``profiles/.deleted/`` is the tombstone dir `hermes profile delete` leaves behind, not a
+            # ``profiles/.deleted/`` is the tombstone dir `aurora profile delete` leaves behind, not a
             # profile: feeding it to validate_roster failed plan_next_task on every cycle (#106847).
             # Marker-less dirs (cron/log side-effect shells) are not profiles either.
             profiles.update(
@@ -613,7 +613,7 @@ class HostedRoomService:
     def route_authority(self, room_id: str) -> tuple[str, int]:
         """Check publication authority under peer_route_lock, including an in-progress Disband."""
         if room_id in self._disbanding_rooms:
-            from hermes_state_runtime import RuntimeStoreError
+            from aurora_state_runtime import RuntimeStoreError
             # Stop can still fail: this temporary refusal must not owe a surviving route's revoke.
             raise RuntimeStoreError("room_disbanding_retry")
         return self._owned_authority(room_id)

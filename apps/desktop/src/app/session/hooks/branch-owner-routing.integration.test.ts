@@ -20,7 +20,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const dialed: { connectionId: string; profile: string }[] = []
 const sent: { method: string; params: Record<string, unknown>; url: string }[] = []
 
-class FakeHermesGateway {
+class FakeAuroraGateway {
   connectionState = 'closed'
   private url = ''
 
@@ -65,16 +65,16 @@ class FakeHermesGateway {
   removeEventListener() {}
 }
 
-vi.mock('@/hermes', async importOriginal => ({
+vi.mock('@/aurora', async importOriginal => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  HermesGateway: FakeHermesGateway,
+  AuroraGateway: FakeAuroraGateway,
   setApiRequestConnection: vi.fn()
 }))
 
 // Loaded once at collection, outside every test's budget: vi.resetModules() keeps each module's
 // transformed code, so the fresh copy a test imports only re-evaluates it. session-states is the
 // graph a reopened secondary imports lazily (store/gateway.ts). Top-level await rather than a static
-// import: the mock above reads FakeHermesGateway, which a hoisted import would reach before it exists.
+// import: the mock above reads FakeAuroraGateway, which a hoisted import would reach before it exists.
 await import('@/store/gateway')
 await import('@/store/session-states')
 
@@ -86,7 +86,7 @@ describe('branch owner routing (real router, faked transport)', () => {
 
     // A registry with two backends exposing the SAME profile name — the exact
     // ambiguity that makes profile-only routing wrong.
-    ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = {
+    ;(window as unknown as { auroraDesktop: unknown }).auroraDesktop = {
       getConnection: async () => ({ mode: 'local' }),
       getConnectionFor: async ({ connectionId, profile }: { connectionId: string; profile: string }) => {
         dialed.push({ connectionId, profile })

@@ -5,7 +5,7 @@ description: "Checks an agent's completion claims against local read-only probes
 maintainer: MikeGibbsOnyx
 tier: community
 category: tools
-requires_hermes: ">=0.22.5"
+requires_aurora: ">=0.22.5"
 docs_url: https://github.com/MikeGibbsOnyx/hermes-prove-it
 version: "0.1.2"
 title: prove-it

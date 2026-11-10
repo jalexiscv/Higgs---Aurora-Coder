@@ -6,9 +6,9 @@ import time
 import pytest
 import psutil
 
-from hermes_cli.process_identity import worker_birth
-from hermes_state import SessionDB
-from hermes_state_runtime import RuntimeStoreError
+from aurora_cli.process_identity import worker_birth
+from aurora_state import SessionDB
+from aurora_state_runtime import RuntimeStoreError
 from tools import async_delegation as ledger
 
 

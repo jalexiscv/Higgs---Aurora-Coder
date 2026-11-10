@@ -1,4 +1,4 @@
-import type { DelegationStatusResponse } from '@hermes/shared/gateway-types'
+import type { DelegationStatusResponse } from '@aurora/shared/gateway-types'
 import { atom } from 'nanostores'
 
 export interface DelegationState {

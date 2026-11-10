@@ -1,21 +1,21 @@
 ---
 sidebar_position: 15
-title: "Hermes Web Dashboard"
+title: "Aurora Web Dashboard"
 description: "Browser-based administration panel for managing configuration, API keys, MCP servers, messaging pairing, webhooks, the gateway, memory, credentials, sessions, logs, analytics, cron jobs, and skills"
 ---
 
-# Hermes Web Dashboard
+# Aurora Web Dashboard
 
-The web dashboard is a browser-based UI for managing your Hermes Agent installation. Instead of editing YAML files or running CLI commands, you can configure settings, manage API keys, and monitor sessions from a clean web interface.
+The web dashboard is a browser-based UI for managing your Aurora Agent installation. Instead of editing YAML files or running CLI commands, you can configure settings, manage API keys, and monitor sessions from a clean web interface.
 
 :::tip
-Hosted-mode auth uses Nous Portal OAuth; if you also want the dashboard to talk to a real backend, `hermes setup --portal` wires up the model and tool gateway too. See [Nous Portal](../../integrations/nous-portal.md).
+Hosted-mode auth uses Nous Portal OAuth; if you also want the dashboard to talk to a real backend, `aurora setup --portal` wires up the model and tool gateway too. See [Nous Portal](../../integrations/nous-portal.md).
 :::
 
 ## Quick Start
 
 ```bash
-hermes dashboard
+aurora dashboard
 ```
 
 This starts a local web server and opens `http://127.0.0.1:9119` in your browser. The dashboard runs entirely on your machine — no data leaves localhost.
@@ -32,13 +32,13 @@ This starts a local web server and opens `http://127.0.0.1:9119` in your browser
 
 ```bash
 # Custom port
-hermes dashboard --port 8080
+aurora dashboard --port 8080
 
 # Bind to all interfaces (use with caution on shared networks)
-hermes dashboard --host 0.0.0.0
+aurora dashboard --host 0.0.0.0
 
 # Start without opening browser
-hermes dashboard --no-open
+aurora dashboard --no-open
 ```
 
 ## Managing multiple profiles
@@ -75,7 +75,7 @@ profile (the pre-unification behavior — useful if you deliberately expose
 different profiles' dashboards with different auth).
 
 The **Chat** tab follows the switcher too: a scoped chat spawns its PTY
-child with the selected profile's `HERMES_HOME`, so the conversation runs
+child with the selected profile's `AURORA_HOME`, so the conversation runs
 with that profile's model, skills, memory, and session history. Switching
 profiles starts a fresh terminal session.
 
@@ -85,24 +85,24 @@ secret sources — not the dashboard process's environment; this includes
 actions targeting the `default` profile from the machine dashboard.
 
 What stays per-profile and is *not* absorbed by the switcher: gateway
-processes (manage them via `hermes -p <name> gateway …`), each profile's
+processes (manage them via `aurora -p <name> gateway …`), each profile's
 session database, and cron schedulers (the Cron page already aggregates
 across profiles with its own filter).
 
 ## Prerequisites
 
-FastAPI, Uvicorn, and the platform PTY helper are core Hermes dependencies.
+FastAPI, Uvicorn, and the platform PTY helper are core Aurora dependencies.
 The `web` extra adds exact constraints for the HTTP stack. The `pty` extra is
 empty because its dependencies are already core. Standard PM setup includes
 `web` through `all`.
 
-If these dependencies are damaged, run `hermes pm repair` and restart Hermes.
+If these dependencies are damaged, run `aurora pm repair` and restart Aurora.
 For source setup, use the [PM developer workflow](../../reference/package-management.md#developer-workflow).
 Messaging and voice extras are separate requests, not implied by `all`.
 
-When you run `hermes dashboard` without the dependencies, it will tell you what to install. If the frontend hasn't been built yet, it builds automatically on first launch with the Node and pnpm Hermes provisions.
+When you run `aurora dashboard` without the dependencies, it will tell you what to install. If the frontend hasn't been built yet, it builds automatically on first launch with the Node and pnpm Aurora provisions.
 
-The Chat tab is part of every `hermes dashboard` launch — the embedded browser chat pane (running the TUI over PTY/WebSocket) is always available, with no extra flag required.
+The Chat tab is part of every `aurora dashboard` launch — the embedded browser chat pane (running the TUI over PTY/WebSocket) is always available, with no extra flag required.
 
 ## Pages
 
@@ -128,7 +128,7 @@ the dashboard (fed by the same status poll — no extra requests):
 - **"Your agent restarted unexpectedly, most likely because it ran out of
   memory"** — the lifecycle ledger recorded an unclean exit under memory
   pressure on the previous boot (a suspected OOM kill).
-- **Disk warnings** — the volume holding `~/.hermes` is nearly full
+- **Disk warnings** — the volume holding `~/.aurora` is nearly full
   (*elevated* below 512 MB free, *critical* below 256 MB free).
 
 Only the most severe active warning shows at a time (disk critical > memory
@@ -139,12 +139,12 @@ it, and a stale heartbeat renders nothing rather than a spurious alert.
 
 ### Chat
 
-The **Chat** tab embeds the full Hermes TUI (the same interface you get from `hermes --tui`) directly in the browser. Everything you can do in the terminal TUI — slash commands, model picker, tool-call cards, markdown streaming, clarify/sudo/approval prompts, skin theming — works identically here, because the dashboard is running the real TUI binary and rendering its ANSI output through [xterm.js](https://xtermjs.org/) with its WebGL renderer for pixel-perfect cell layout.
+The **Chat** tab embeds the full Aurora TUI (the same interface you get from `aurora --tui`) directly in the browser. Everything you can do in the terminal TUI — slash commands, model picker, tool-call cards, markdown streaming, clarify/sudo/approval prompts, skin theming — works identically here, because the dashboard is running the real TUI binary and rendering its ANSI output through [xterm.js](https://xtermjs.org/) with its WebGL renderer for pixel-perfect cell layout.
 
 **How it works:**
 
 - `/api/pty` opens a WebSocket authenticated with the dashboard's session token
-- The server spawns `hermes --tui` behind a POSIX pseudo-terminal
+- The server spawns `aurora --tui` behind a POSIX pseudo-terminal
 - Keystrokes travel to the PTY; ANSI output streams back to the browser
 - xterm.js's WebGL renderer paints each cell to an integer-pixel grid; mouse tracking (SGR 1006), wide characters (Unicode 11), and box-drawing glyphs all render natively
 - Resizing the browser window resizes the TUI via the `@xterm/addon-fit` addon
@@ -154,24 +154,24 @@ The **Chat** tab embeds the full Hermes TUI (the same interface you get from `he
 
 **Session switcher (right rail):** the Chat tab carries its own ChatGPT-style conversation list in a thin right rail beside the terminal, so you can swap conversations without leaving the page. The rail stacks the model picker on top and the session list directly below it; the terminal takes up most of the screen. The list shows your most recent sessions for the active profile — title (falling back to a message preview), relative last-active time, message count, and the source channel for non-CLI sessions. Click any row to resume it in place (the terminal respawns with that conversation's history); the active session is highlighted. **New chat** starts a fresh session, and a refresh control re-pulls the list. The rail is read-only for switching — delete, rename, export, and bulk cleanup still live on the **Sessions** tab. On narrow screens it folds into a slide-over panel.
 
-**Workspace picker:** a fresh chat starts wherever the dashboard process was launched — useless when you are driving Hermes from a phone and want it in `~/code/foo`. The rail's **workspace** selector lists the same directories the Desktop sidebar knows: your explicit projects (`hermes projects`) and every discovered git repository (session-derived plus the `desktop.repo_scan_roots` scan), most recently active first, with an **Other path…** entry for anything else. The choice is remembered per profile and applies to the next **New chat** (a resumed session keeps its own working directory); the rescan button re-walks the discovery roots on the host, so a repo you just cloned over SSH shows up without a restart. A path that no longer exists is refused with an error instead of silently starting in the launch directory. Backed by `GET /api/chat/workspaces` and the `cwd` parameter of the `/api/pty` WebSocket.
+**Workspace picker:** a fresh chat starts wherever the dashboard process was launched — useless when you are driving Aurora from a phone and want it in `~/code/foo`. The rail's **workspace** selector lists the same directories the Desktop sidebar knows: your explicit projects (`aurora projects`) and every discovered git repository (session-derived plus the `desktop.repo_scan_roots` scan), most recently active first, with an **Other path…** entry for anything else. The choice is remembered per profile and applies to the next **New chat** (a resumed session keeps its own working directory); the rescan button re-walks the discovery roots on the host, so a repo you just cloned over SSH shows up without a restart. A path that no longer exists is refused with an error instead of silently starting in the launch directory. Backed by `GET /api/chat/workspaces` and the `cwd` parameter of the `/api/pty` WebSocket.
 
 **Prerequisites:**
 
-- Node.js (same requirement as `hermes --tui`; the TUI bundle is built on first launch)
+- Node.js (same requirement as `aurora --tui`; the TUI bundle is built on first launch)
 - `ptyprocess` — a core dependency on POSIX
 - POSIX kernel (Linux, macOS, or WSL2).  The `/chat` terminal pane specifically needs a POSIX PTY — native Windows Python has no equivalent, so on a native Windows install the rest of the dashboard (sessions, jobs, metrics, config editor) works but the `/chat` tab will show a banner telling you to use WSL2 for that feature.
 
 Close the browser tab and the PTY is reaped cleanly on the server. Re-opening spawns a fresh session.
 
-To point [Hermes Desktop](#connecting-hermes-desktop-to-a-remote-backend) at a dashboard running on another machine instead of its own bundled backend, see the remote-backend section below.
+To point [Aurora Desktop](#connecting-aurora-desktop-to-a-remote-backend) at a dashboard running on another machine instead of its own bundled backend, see the remote-backend section below.
 
-### Connecting Hermes Desktop to a remote backend
+### Connecting Aurora Desktop to a remote backend
 
-Hermes Desktop normally launches its own local backend, but it can also attach to a dashboard running on a remote machine (a VM, a homelab box, etc.) via **Settings → Gateways → Remote gateway**. This is the most common source of "Desktop says the backend is ready but chat never works" reports, because Desktop's readiness check verifies less than the live chat connection actually needs.
+Aurora Desktop normally launches its own local backend, but it can also attach to a dashboard running on a remote machine (a VM, a homelab box, etc.) via **Settings → Gateways → Remote gateway**. This is the most common source of "Desktop says the backend is ready but chat never works" reports, because Desktop's readiness check verifies less than the live chat connection actually needs.
 
-:::info Prerequisite: a `hermes dashboard` must be running on the remote host
-The "remote backend" Desktop connects to **is** a `hermes dashboard` process running on the remote machine — the same server this page documents. It has to be up and reachable before any of the steps below matter; Desktop attaches to it, it doesn't start it for you. Keep it running under `systemd`/`tmux`/etc. so it survives logout and reboots. The **gateway** (Telegram/Discord/Slack/etc.) is a *separate* long-running process — start it independently if you rely on messaging channels; it is not the thing the desktop app connects to.
+:::info Prerequisite: an `aurora dashboard` must be running on the remote host
+The "remote backend" Desktop connects to **is** an `aurora dashboard` process running on the remote machine — the same server this page documents. It has to be up and reachable before any of the steps below matter; Desktop attaches to it, it doesn't start it for you. Keep it running under `systemd`/`tmux`/etc. so it survives logout and reboots. The **gateway** (Telegram/Discord/Slack/etc.) is a *separate* long-running process — start it independently if you rely on messaging channels; it is not the thing the desktop app connects to.
 :::
 
 Desktop's "remote backend is ready" probe only hits `GET /api/status`, which is a public endpoint — it answers as soon as *any* dashboard is running on the host. The live chat connection is a **separate** WebSocket to `/api/ws` (and `/api/pty`), and that socket is gated by two more checks the status probe never touches:
@@ -185,8 +185,8 @@ Set a username and password, then run the dashboard bound to a reachable address
 
 ```ini
 [Service]
-EnvironmentFile=%h/.hermes/.env
-ExecStart=/path/to/venv/bin/python -m hermes_cli.main dashboard \
+EnvironmentFile=%h/.aurora/.env
+ExecStart=/path/to/venv/bin/python -m aurora_cli.main dashboard \
     --host 0.0.0.0 --port 9119 --no-open
 Restart=always
 RestartSec=10
@@ -195,17 +195,17 @@ RestartSec=10
 RestartPreventExitStatus=78
 ```
 
-One backend serves a whole host, so when `hermes dashboard` finds a live backend it cannot
+One backend serves a whole host, so when `aurora dashboard` finds a live backend it cannot
 serve your typed `--host`/`--port` with, it refuses with exit 78 and names the owner. Stop that
 backend, or give the service its own dedicated server with `--isolated`. The Desktop app's own
 loopback backends never claim host ownership, so the two can coexist without either flag.
 
-with `~/.hermes/.env` containing:
+with `~/.aurora/.env` containing:
 
 ```bash
-HERMES_DASHBOARD_BASIC_AUTH_USERNAME=admin
-HERMES_DASHBOARD_BASIC_AUTH_PASSWORD=choose-a-strong-password
-HERMES_DASHBOARD_BASIC_AUTH_SECRET=<32+ random bytes; openssl rand -base64 32>
+AURORA_DASHBOARD_BASIC_AUTH_USERNAME=admin
+AURORA_DASHBOARD_BASIC_AUTH_PASSWORD=choose-a-strong-password
+AURORA_DASHBOARD_BASIC_AUTH_SECRET=<32+ random bytes; openssl rand -base64 32>
 ```
 
 Then in Desktop enter the **Remote URL** (e.g. `http://VM_IP:9119`) and **Sign in** with that username and password. See the [username/password provider](#usernamepassword-provider-no-oauth-idp) section for the full configuration surface.
@@ -252,7 +252,7 @@ Fields with known valid values (terminal backend, skin, approval mode, etc.) ren
 - **Import** — uploads a JSON config file to replace the current values
 
 :::tip
-Config changes take effect on the next agent session or gateway restart. The web dashboard edits the same `config.yaml` file that `hermes config set` and the gateway read from.
+Config changes take effect on the next agent session or gateway restart. The web dashboard edits the same `config.yaml` file that `aurora config set` and the gateway read from.
 :::
 
 ### API Keys
@@ -322,31 +322,31 @@ Create and manage scheduled cron jobs that run agent prompts on a recurring sche
 
 ### Profiles
 
-Create and manage [profiles](../profiles.md) — isolated Hermes instances with their own config, skills, and sessions.
+Create and manage [profiles](../profiles.md) — isolated Aurora instances with their own config, skills, and sessions.
 
 - **Profile cards** — each shows its model/provider, skill count, gateway state, description, and badges (active, default, alias)
 - **Create** — name + optional clone-from-default / clone-everything / no-bundled-skills, description, and model; the dedicated Profile Builder page (`/profiles/new`) offers the full flow (model, MCPs, skills)
 - **Manage skills & tools** — jumps to the Skills page scoped to that profile (sets the sidebar profile switcher)
-- **Set as active** — flips the sticky default that **future CLI/gateway runs** pick up (same as `hermes profile use`). This does *not* change what the dashboard manages — that's the profile switcher's job
+- **Set as active** — flips the sticky default that **future CLI/gateway runs** pick up (same as `aurora profile use`). This does *not* change what the dashboard manages — that's the profile switcher's job
 - **Edit model / description / SOUL** — inline editors writing into that profile
 - **Rename / Delete** — named profiles only
 
 ### Skills
 
-Browse, search, and toggle installed skills and toolsets, and install new ones from the hub. Skills are loaded from `~/.hermes/skills/` and grouped by category.
+Browse, search, and toggle installed skills and toolsets, and install new ones from the hub. Skills are loaded from `~/.aurora/skills/` and grouped by category.
 
 - **Search** — filter installed skills and toolsets by name, description, or category
 - **Category filter** — click category pills to narrow the list (e.g. MLOps, MCP, Red Teaming, AI)
 - **Toggle** — enable or disable individual skills with a switch. Changes take effect on the next session.
 - **Toolsets** — a separate view shows built-in toolsets (file operations, web browsing, etc.) with their active/inactive status, setup requirements, and list of included tools
-- **Browse hub** — a third view searches the skill hub across all sources (the same as `hermes skills search`), installs any result by identifier with a live install log, and offers an "Update all" button to refresh installed skills.
+- **Browse hub** — a third view searches the skill hub across all sources (the same as `aurora skills search`), installs any result by identifier with a live install log, and offers an "Update all" button to refresh installed skills.
 
 ![Skills admin page — the Browse hub view: search, install, and update](/img/dashboard/admin-skills-hub.png)
 
 ### MCP
 
 Manage [MCP](./mcp) servers without the CLI. The same `mcp_servers`
-block in `config.yaml` that `hermes mcp` reads from.
+block in `config.yaml` that `aurora mcp` reads from.
 
 **Your MCP servers:**
 
@@ -359,7 +359,7 @@ block in `config.yaml` that `hermes mcp` reads from.
 **Catalog:** browse the Nous-approved MCP servers (the bundled `optional-mcps/`
 catalog) and install any of them with one click. Entries that need API keys
 prompt for them inline; the values go to `.env`. This is the same catalog
-`hermes mcp catalog` / `hermes mcp install` use.
+`aurora mcp catalog` / `aurora mcp install` use.
 
 ![MCP admin page — your servers with enable/disable toggles, plus the install catalog](/img/dashboard/admin-mcp.png)
 
@@ -380,7 +380,7 @@ hint when it isn't.
 
 Approve and revoke messaging users without the CLI — how a remote admin
 onboards Telegram/Discord/etc. users to a paired gateway. Full parity with
-`hermes pairing`.
+`aurora pairing`.
 
 - **Pending requests** — each shows platform, code, user, and age, with an Approve button
 - **Approved users** — each shows platform and user, with a Revoke button
@@ -390,8 +390,8 @@ onboards Telegram/Discord/etc. users to a paired gateway. Full parity with
 
 ### Channels
 
-Connect Hermes to any messaging platform from the browser — full parity with
-`hermes setup gateway`. The page lists every supported channel (Telegram,
+Connect Aurora to any messaging platform from the browser — full parity with
+`aurora setup gateway`. The page lists every supported channel (Telegram,
 Discord, Slack, Matrix, Mattermost, WhatsApp, Signal, BlueBubbles/iMessage,
 Email, SMS/Twilio, DingTalk, Feishu/Lark, WeCom, WeChat, QQ Bot, plus
 the API server and webhook endpoints) with its live connection status; platforms from installed plugins (Yuanbao, Home Assistant, ...) appear too.
@@ -399,7 +399,7 @@ the API server and webhook endpoints) with its live connection status; platforms
 - **Configure** — open a per-platform form with exactly the fields that channel needs (bot token, app token, server URL, allowlist, etc.). Secrets render as password inputs and are stored redacted; leaving a field blank keeps the existing value. Required fields are marked and validated. A "Setup guide" link points to the platform's credential docs.
 - **Enable / disable** — toggle a channel on or off. The credential stays on disk; only the active state changes.
 - **Test** — check whether the channel is configured, enabled, and reporting a live connection from the gateway.
-- **Restart gateway** — credentials are written to `~/.hermes/.env` and the enabled flag to `config.yaml`; the gateway connects each enabled channel on its next restart, which you can trigger right from the page. On a system-scope install (`hermes gateway install --system`) the dashboard runs the restart under `sudo -n`, so the dashboard user needs passwordless sudo; without it the request fails immediately instead of reporting a restart that the CLI then refuses.
+- **Restart gateway** — credentials are written to `~/.aurora/.env` and the enabled flag to `config.yaml`; the gateway connects each enabled channel on its next restart, which you can trigger right from the page. On a system-scope install (`aurora gateway install --system`) the dashboard runs the restart under `sudo -n`, so the dashboard user needs passwordless sudo; without it the request fails immediately instead of reporting a restart that the CLI then refuses.
 
 ![Channels admin page — every messaging platform with status, enable toggles, and per-platform setup forms](/img/dashboard/admin-channels.png)
 
@@ -407,9 +407,9 @@ the API server and webhook endpoints) with its live connection status; platforms
 
 A consolidated administration panel for installation-wide operations:
 
-- **Host** — live system stats: OS / kernel, architecture, hostname, Python and Hermes versions, CPU core count + utilization, memory, disk usage of the Hermes home, uptime, and load average. (CPU/memory/disk come from `psutil` when installed; identity fields are always shown.) The Hermes version shows an **update-status badge** (up to date / N commits behind) and a **Check for updates** button. When an update is available on a git install, an **Update now** button opens a confirmation dialog — showing how many commits you'll pull — before running `hermes update` in the background. On Docker/Nix installs the dashboard can't apply the update in place, so it shows the correct out-of-band command instead.
-- **Nous Portal** — login status, the active inference provider, and the Tool Gateway routing table (which tools run via the Portal vs. locally), with a link to manage your subscription. Read-only mirror of `hermes portal`.
-- **Skill curator** — the background skill-maintenance status (active / paused, interval, last run) with pause/resume and a run-now button. Mirrors `hermes curator`.
+- **Host** — live system stats: OS / kernel, architecture, hostname, Python and Aurora versions, CPU core count + utilization, memory, disk usage of the Aurora home, uptime, and load average. (CPU/memory/disk come from `psutil` when installed; identity fields are always shown.) The Aurora version shows an **update-status badge** (up to date / N commits behind) and a **Check for updates** button. When an update is available on a git install, an **Update now** button opens a confirmation dialog — showing how many commits you'll pull — before running `aurora update` in the background. On Docker/Nix installs the dashboard can't apply the update in place, so it shows the correct out-of-band command instead.
+- **Nous Portal** — login status, the active inference provider, and the Tool Gateway routing table (which tools run via the Portal vs. locally), with a link to manage your subscription. Read-only mirror of `aurora portal`.
+- **Skill curator** — the background skill-maintenance status (active / paused, interval, last run) with pause/resume and a run-now button. Mirrors `aurora curator`.
 - **Gateway** — start, stop, and restart the messaging gateway, with live status (running/stopped, PID, state)
 - **Memory** — pick the external memory provider (or built-in only), and reset the built-in `MEMORY.md` / `USER.md` stores
 - **Credential pool** — add and remove the rotating API keys the agent round-robins through (per provider). Keys are redacted in the list; the raw value only ever reaches the agent.
@@ -440,7 +440,7 @@ You → /reload
   Reloaded .env (3 var(s) updated)
 ```
 
-This re-reads `~/.hermes/.env` into the running process's environment. Useful when you've added a new provider key via the dashboard and want to use it immediately.
+This re-reads `~/.aurora/.env` into the running process's environment. Useful when you've added a new provider key via the dashboard and want to use it immediately.
 
 ## REST API
 
@@ -454,7 +454,7 @@ The management endpoint families — `/api/config`, `/api/env`, `/api/skills`,
 `/api/ops/debug-share`, `/api/learning/{graph,node}`, and `/api/dashboard/plugins/hub` —
 accept an optional `?profile=<name>` query parameter (or `"profile"` in the
 JSON body for writes) that scopes the read/write to that profile's
-`HERMES_HOME`. Omitted = the dashboard's own profile. Unknown profile names
+`AURORA_HOME`. Omitted = the dashboard's own profile. Unknown profile names
 return `404`. The `/api/pty` WebSocket accepts the same parameter to spawn
 a chat under the selected profile.
 :::
@@ -477,7 +477,7 @@ The response also carries two advisory resource blocks (they never affect the
   numbers but degrade `pressure` to `unknown`, so a dead gateway's last
   sample can't masquerade as a live reading.
 - **`disk`** — a live `shutil.disk_usage()` sample of the volume holding
-  `~/.hermes`. Fields: `pressure`, `free_mb`, `total_mb`, `used_percent`,
+  `~/.aurora`. Fields: `pressure`, `free_mb`, `total_mb`, `used_percent`,
   `sampled_at`. Pressure is `elevated` below 512 MB free (or ≥85% used with
   under 4 GB headroom) and `critical` below 256 MB free (or ≥95% used with
   under 1 GB headroom).
@@ -558,7 +558,7 @@ bypass the per-session revision fence, so they are **offline maintenance**: they
 profile's exclusive `gateway.lock`. While that profile's gateway is running they return
 `409` with `Exclusive maintenance refused: Gateway runtime already owns profile <home>.
 Drain and stop the gateway, then retry.` and change nothing. Stop the gateway
-(`hermes gateway stop`), run the maintenance call, then start it again. `dry_run` prune
+(`aurora gateway stop`), run the maintenance call, then start it again. `dry_run` prune
 and every read endpoint keep working against a live gateway. The Desktop's one-shot legacy
 owner backfill treats this `409` as the steady state of an attached gateway (like a backend
 without the route) and does not retry it on every sidebar refresh.
@@ -643,7 +643,7 @@ same auth gate as the rest of `/api/`.
 | `GET /api/ops/checkpoints` · `POST .../prune` | Inspect / prune the `/rollback` store |
 | `POST /api/ops/hooks` · `DELETE /api/ops/hooks` | Create / remove a shell hook (consent-gated) |
 | `GET /api/system/stats` | Host stats — OS, CPU, memory, disk, uptime |
-| `GET /api/hermes/update/check` | Report update availability (commits behind, install method) without applying. For git installs that are behind, also returns a `commits` list (`sha`, `summary`, `author`, `at`) of what's changed. `?force=1` busts the 24h cache (the check goes through the GitHub API, never `git fetch`) |
+| `GET /api/aurora/update/check` | Report update availability (commits behind, install method) without applying. For git installs that are behind, also returns a `commits` list (`sha`, `summary`, `author`, `at`) of what's changed. `?force=1` busts the 24h cache (the check goes through the GitHub API, never `git fetch`) |
 | `GET /api/curator` · `PUT .../paused` · `POST .../run` | Skill-curator status + pause/resume + run |
 | `GET /api/portal` | Nous Portal auth + Tool Gateway routing (read-only) |
 | `POST /api/ops/prompt-size` · `/dump` · `/config-migrate` | Diagnostics (backgrounded) |
@@ -658,10 +658,10 @@ same auth gate as the rest of `/api/`.
 
 ## Authentication (gated mode)
 
-When the dashboard is bound to a public or non-loopback address — anything other than `127.0.0.1` / `localhost` — Hermes Agent engages an auth gate. Every request must carry a verified session cookie or it's bounced to the login page. Three providers ship in the box:
+When the dashboard is bound to a public or non-loopback address — anything other than `127.0.0.1` / `localhost` — Aurora Agent engages an auth gate. Every request must carry a verified session cookie or it's bounced to the login page. Three providers ship in the box:
 
 - **[Username/password](#usernamepassword-provider-no-oauth-idp)** — the simplest way to put auth on a self-hosted / on-prem / homelab dashboard. No external identity provider. **Use it only on a trusted network or behind a VPN — not for public-internet exposure.**
-- **[OAuth (Nous Portal)](#default-provider-nous-research)** — for hosted deployments and any dashboard reachable over the public internet, and the recommended path for a [remote Hermes Desktop connection](#connecting-hermes-desktop-to-a-remote-backend). Every login is verified against your Nous account, so this is the provider suitable for internet-facing use.
+- **[OAuth (Nous Portal)](#default-provider-nous-research)** — for hosted deployments and any dashboard reachable over the public internet, and the recommended path for a [remote Aurora Desktop connection](#connecting-aurora-desktop-to-a-remote-backend). Every login is verified against your Nous account, so this is the provider suitable for internet-facing use.
 - **[Self-hosted OIDC](#self-hosted-oidc-provider)** — for bringing your own identity provider via standard OpenID Connect (Keycloak, Auth0, Okta, Google, GitHub via an OIDC bridge, etc.). No Nous Portal involved; suitable for public-internet exposure when fronted by a conformant OIDC server.
 
 Operator-owned dashboards bound to loopback are unaffected — no auth, no login page.
@@ -670,8 +670,8 @@ Operator-owned dashboards bound to loopback are unaffected — no auth, no login
 
 | Flags | Auth gate | Use case |
 |-------|-----------|----------|
-| `hermes dashboard` (default — binds to `127.0.0.1`) | OFF | Local development |
-| `hermes dashboard --host 0.0.0.0` | **ON** | Remote / production — protect with the username/password provider or OAuth |
+| `aurora dashboard` (default — binds to `127.0.0.1`) | OFF | Local development |
+| `aurora dashboard --host 0.0.0.0` | **ON** | Remote / production — protect with the username/password provider or OAuth |
 
 The gate is on if and only if the bind host is not `127.0.0.1`, `::1`, or `localhost`. Binding to `0.0.0.0` (or any RFC1918 / LAN address) engages the gate. The legacy `--insecure` flag **no longer disables it** — it's accepted for backward compatibility but ignored, with a warning.
 
@@ -681,9 +681,9 @@ Since the June 2026 hardening, `--insecure` no longer bypasses dashboard authent
 
 ### Fail-closed semantics
 
-If the gate would engage but **no** `DashboardAuthProvider` is registered (no Nous plugin, no custom plugin), `hermes dashboard` refuses to bind with an explicit error message. There is no "default-deny but accept everything" fallback — a misconfigured gated dashboard never starts.
+If the gate would engage but **no** `DashboardAuthProvider` is registered (no Nous plugin, no custom plugin), `aurora dashboard` refuses to bind with an explicit error message. There is no "default-deny but accept everything" fallback — a misconfigured gated dashboard never starts.
 
-When you run `hermes dashboard --host 0.0.0.0` **interactively** (a real terminal) and no provider is configured yet, Hermes doesn't just fail — it offers to set one up on the spot: pick **username & password** (writes `dashboard.basic_auth` to `config.yaml` and you're running in seconds) or **OAuth** (points you at `hermes dashboard register`). Non-interactive callers — Docker/s6, CI, piped runs — skip the prompt and hit the fail-closed error above, so an unattended deploy still never starts without auth.
+When you run `aurora dashboard --host 0.0.0.0` **interactively** (a real terminal) and no provider is configured yet, Aurora doesn't just fail — it offers to set one up on the spot: pick **username & password** (writes `dashboard.basic_auth` to `config.yaml` and you're running in seconds) or **OAuth** (points you at `aurora dashboard register`). Non-interactive callers — Docker/s6, CI, piped runs — skip the prompt and hit the fail-closed error above, so an unattended deploy still never starts without auth.
 
 ### Default provider: Nous Research
 
@@ -695,15 +695,15 @@ Because every login is verified against Nous Portal and protected by your Nous a
 
 To use the Nous provider you need an OAuth client ID (shape `agent:{id}`). There are two ways to get one:
 
-- **CLI — `hermes dashboard register`.** Run it on the host where the dashboard lives. It resolves your existing Nous login (run `hermes setup` first if you're not logged in), registers a self-hosted OAuth client with the Portal, and writes `HERMES_DASHBOARD_OAUTH_CLIENT_ID` into `~/.hermes/.env` for you. Optional flags: `--name` (a human-readable label, otherwise auto-generated) and `--redirect-uri` (a public HTTPS callback URL for an internet-facing host).
+- **CLI — `aurora dashboard register`.** Run it on the host where the dashboard lives. It resolves your existing Nous login (run `aurora setup` first if you're not logged in), registers a self-hosted OAuth client with the Portal, and writes `AURORA_DASHBOARD_OAUTH_CLIENT_ID` into `~/.aurora/.env` for you. Optional flags: `--name` (a human-readable label, otherwise auto-generated) and `--redirect-uri` (a public HTTPS callback URL for an internet-facing host).
 
   ```bash
-  hermes dashboard register
+  aurora dashboard register
   # ✓ Registered dashboard "swift_falcon"
-  # …writes HERMES_DASHBOARD_OAUTH_CLIENT_ID to ~/.hermes/.env
+  # …writes AURORA_DASHBOARD_OAUTH_CLIENT_ID to ~/.aurora/.env
   ```
 
-- **GUI — the Local Dashboards page.** Open [`/local-dashboards`](https://portal.nousresearch.com/local-dashboards) in the Nous Portal to register, name, manage, and revoke self-hosted dashboards from the browser. Copy the resulting `agent:{id}` client ID into `HERMES_DASHBOARD_OAUTH_CLIENT_ID` (env) or `dashboard.oauth.client_id` (config.yaml). This is also where you revoke a dashboard registered via the CLI.
+- **GUI — the Local Dashboards page.** Open [`/local-dashboards`](https://portal.nousresearch.com/local-dashboards) in the Nous Portal to register, name, manage, and revoke self-hosted dashboards from the browser. Copy the resulting `agent:{id}` client ID into `AURORA_DASHBOARD_OAUTH_CLIENT_ID` (env) or `dashboard.oauth.client_id` (config.yaml). This is also where you revoke a dashboard registered via the CLI.
 
 #### Configuration
 
@@ -722,9 +722,9 @@ dashboard:
 
 | Env var | Overrides | Format | Provisioned by |
 |---------|-----------|--------|----------------|
-| `HERMES_DASHBOARD_OAUTH_CLIENT_ID` | `dashboard.oauth.client_id` | `agent:{instance_id}` | `hermes dashboard register` |
+| `AURORA_DASHBOARD_OAUTH_CLIENT_ID` | `dashboard.oauth.client_id` | `agent:{instance_id}` | `aurora dashboard register` |
 
-Per the Hermes Agent convention (`~/.hermes/.env` is for API keys / secrets only), **`config.yaml` is the recommended place to set these values** for local dev, on-prem, and any deployment you control directly. The environment-variable path exists so a hosting platform's secret injection can push per-deploy `client_id`s without anyone having to edit `config.yaml` inside the image — that's its primary purpose.
+Per the Aurora Agent convention (`~/.aurora/.env` is for API keys / secrets only), **`config.yaml` is the recommended place to set these values** for local dev, on-prem, and any deployment you control directly. The environment-variable path exists so a hosting platform's secret injection can push per-deploy `client_id`s without anyone having to edit `config.yaml` inside the image — that's its primary purpose.
 
 Empty environment values are treated as unset, so a provisioned-but-not-populated platform secret can't accidentally shadow a valid `config.yaml` entry.
 
@@ -737,12 +737,12 @@ Refusing to bind dashboard to 0.0.0.0 — the auth gate engages on
 non-loopback binds, but no auth providers are registered.
 
 Bundled providers reported these issues:
-  • nous: HERMES_DASHBOARD_OAUTH_CLIENT_ID is not set (and
+  • nous: AURORA_DASHBOARD_OAUTH_CLIENT_ID is not set (and
     dashboard.oauth.client_id in config.yaml is empty). …
 
 Configure an auth provider before exposing the dashboard:
   • Password: set dashboard.basic_auth.username + password_hash in config.yaml
-  • OAuth: run `hermes dashboard register` (Nous Portal) or install a
+  • OAuth: run `aurora dashboard register` (Nous Portal) or install a
     DashboardAuthProvider plugin.
 There is no unauthenticated public-bind option — to keep it local, bind
 127.0.0.1 and tunnel in (SSH / Tailscale).
@@ -750,21 +750,21 @@ There is no unauthenticated public-bind option — to keep it local, bind
 
 #### Worked example: Nous Research
 
-From a logged-in Hermes install to a Nous-gated dashboard in three steps.
+From a logged-in Aurora install to a Nous-gated dashboard in three steps.
 
-**1. Log in and register the dashboard.** `hermes dashboard register` uses your existing Nous login to provision an OAuth client and writes `HERMES_DASHBOARD_OAUTH_CLIENT_ID` into `~/.hermes/.env` for you:
+**1. Log in and register the dashboard.** `aurora dashboard register` uses your existing Nous login to provision an OAuth client and writes `AURORA_DASHBOARD_OAUTH_CLIENT_ID` into `~/.aurora/.env` for you:
 
 ```bash
-hermes setup            # if you're not already logged into Nous Portal
-hermes dashboard register
+aurora setup            # if you're not already logged into Nous Portal
+aurora dashboard register
 # ✓ Registered dashboard "swift_falcon"
-# …writes HERMES_DASHBOARD_OAUTH_CLIENT_ID to ~/.hermes/.env
+# …writes AURORA_DASHBOARD_OAUTH_CLIENT_ID to ~/.aurora/.env
 ```
 
 **2. Run the dashboard on a reachable address.** A non-loopback bind engages the OAuth gate, and the `client_id` just written activates the `nous` provider:
 
 ```bash
-hermes dashboard --host 0.0.0.0 --port 9119 --no-open
+aurora dashboard --host 0.0.0.0 --port 9119 --no-open
 ```
 
 **3. Log in.** Open `http://<host>:9119/`, you'll be bounced to `/login`. Click **Sign in with Nous Research** → authenticate at the Portal → land back on the authenticated dashboard. Verify the gate from any machine:
@@ -775,7 +775,7 @@ curl -s http://<host>:9119/api/status | jq '.auth_required, .auth_providers'
 # ["nous"]
 ```
 
-`GET /api/auth/me` then returns the verified session (`provider: nous`). For an internet-facing host, register with `--redirect-uri https://hermes.example.com/auth/callback` and set `HERMES_DASHBOARD_PUBLIC_URL` so the OAuth callback resolves to your public URL (see [Public URL override](#public-url-override)).
+`GET /api/auth/me` then returns the verified session (`provider: nous`). For an internet-facing host, register with `--redirect-uri https://aurora.example.com/auth/callback` and set `AURORA_DASHBOARD_PUBLIC_URL` so the OAuth callback resolves to your public URL (see [Public URL override](#public-url-override)).
 
 ### Username/password provider (no OAuth IDP)
 
@@ -810,11 +810,11 @@ dashboard:
 
 | Env var | Overrides | Notes |
 |---------|-----------|-------|
-| `HERMES_DASHBOARD_BASIC_AUTH_USERNAME` | `dashboard.basic_auth.username` | required to activate |
-| `HERMES_DASHBOARD_BASIC_AUTH_PASSWORD_HASH` | `dashboard.basic_auth.password_hash` | preferred (no plaintext at rest) |
-| `HERMES_DASHBOARD_BASIC_AUTH_PASSWORD` | `dashboard.basic_auth.password` | plaintext; **wins over a config `password_hash`** so you can rotate via env |
-| `HERMES_DASHBOARD_BASIC_AUTH_SECRET` | `dashboard.basic_auth.secret` | token-signing key |
-| `HERMES_DASHBOARD_BASIC_AUTH_TTL_SECONDS` | `dashboard.basic_auth.session_ttl_seconds` | access-token lifetime |
+| `AURORA_DASHBOARD_BASIC_AUTH_USERNAME` | `dashboard.basic_auth.username` | required to activate |
+| `AURORA_DASHBOARD_BASIC_AUTH_PASSWORD_HASH` | `dashboard.basic_auth.password_hash` | preferred (no plaintext at rest) |
+| `AURORA_DASHBOARD_BASIC_AUTH_PASSWORD` | `dashboard.basic_auth.password` | plaintext; **wins over a config `password_hash`** so you can rotate via env |
+| `AURORA_DASHBOARD_BASIC_AUTH_SECRET` | `dashboard.basic_auth.secret` | token-signing key |
+| `AURORA_DASHBOARD_BASIC_AUTH_TTL_SECONDS` | `dashboard.basic_auth.session_ttl_seconds` | access-token lifetime |
 
 :::caution Set an explicit `secret` for stable sessions
 When `secret` is empty, a random per-process signing key is generated. That's fine for a single process, but it means **every session is invalidated on restart** and sessions **don't span multiple workers**. Set an explicit `secret` for restart-surviving / multi-worker deployments.
@@ -826,24 +826,24 @@ The `/auth/password-login` endpoint is rate-limited per client IP (default 10 at
 
 From nothing to a password-gated dashboard on a trusted network in three steps.
 
-**1. Set credentials in `~/.hermes/.env`.** Hash the password so no plaintext sits at rest, and set a stable signing secret so sessions survive restarts:
+**1. Set credentials in `~/.aurora/.env`.** Hash the password so no plaintext sits at rest, and set a stable signing secret so sessions survive restarts:
 
 ```bash
 # Compute a scrypt hash of your chosen password:
 HASH=$(python -c "from plugins.dashboard_auth.basic import hash_password; print(hash_password('choose-a-strong-password'))")
 
-cat >> ~/.hermes/.env <<EOF
-HERMES_DASHBOARD_BASIC_AUTH_USERNAME=admin
-HERMES_DASHBOARD_BASIC_AUTH_PASSWORD_HASH=$HASH
-HERMES_DASHBOARD_BASIC_AUTH_SECRET=$(openssl rand -base64 32)
+cat >> ~/.aurora/.env <<EOF
+AURORA_DASHBOARD_BASIC_AUTH_USERNAME=admin
+AURORA_DASHBOARD_BASIC_AUTH_PASSWORD_HASH=$HASH
+AURORA_DASHBOARD_BASIC_AUTH_SECRET=$(openssl rand -base64 32)
 EOF
-chmod 600 ~/.hermes/.env
+chmod 600 ~/.aurora/.env
 ```
 
 **2. Run the dashboard on a reachable address.** A non-loopback bind engages the gate, and the username + hash activate the `basic` provider:
 
 ```bash
-hermes dashboard --host 0.0.0.0 --port 9119 --no-open
+aurora dashboard --host 0.0.0.0 --port 9119 --no-open
 ```
 
 **3. Log in.** Open `http://<host>:9119/`, you'll be bounced to `/login` — a **credential form** (not a "Sign in with X" button). Enter `admin` / your password → land on the authenticated dashboard. Verify the gate from any machine:
@@ -862,15 +862,15 @@ curl -s http://<host>:9119/api/status | jq '.auth_required, .auth_providers'
 
 ### Deployment session-token provider (token-only deployments)
 
-The bundled `plugins/dashboard_auth/session_token` plugin makes the **deployment session token** (`HERMES_DASHBOARD_SESSION_TOKEN`) a first-class gated-mode credential. This is the shape secret-managed deployments already provision — a single shared token (nix/agenix hands it over as a decrypted file; the Nix modules set `HERMES_DASHBOARD_SESSION_TOKEN=file:<path>` from `backend.sessionTokenFile`) that Hermes Desktop's remote-gateway **"Session token"** field presents. Without this provider, a non-loopback bind with only a provisioned token hit the fail-closed gate and pushed the operator into basic-auth or OAuth credentials the deployment never asked for.
+The bundled `plugins/dashboard_auth/session_token` plugin makes the **deployment session token** (`AURORA_DASHBOARD_SESSION_TOKEN`) a first-class gated-mode credential. This is the shape secret-managed deployments already provision — a single shared token (nix/agenix hands it over as a decrypted file; the Nix modules set `AURORA_DASHBOARD_SESSION_TOKEN=file:<path>` from `backend.sessionTokenFile`) that Aurora Desktop's remote-gateway **"Session token"** field presents. Without this provider, a non-loopback bind with only a provisioned token hit the fail-closed gate and pushed the operator into basic-auth or OAuth credentials the deployment never asked for.
 
-When the env var is provisioned, the provider registers automatically and `verify_session` constant-time-compares the presented credential against it. Both legs a token-mode client uses run through that seam — REST, where Desktop's "Session token" connection sends the token in the `X-Hermes-Session-Token` header (a bearer token in the `Authorization` header works too and wins when both are sent; only this provider's token works in the dedicated header), and the `/api/ws` `?token=` upgrade credential — so one provisioned token authorizes both. There is **no browser sign-in flow**: `/login` renders a note explaining the credential channel instead of sign-in buttons, and the provider is never offered by the auto-SSO redirect.
+When the env var is provisioned, the provider registers automatically and `verify_session` constant-time-compares the presented credential against it. Both legs a token-mode client uses run through that seam — REST, where Desktop's "Session token" connection sends the token in the `X-Aurora-Session-Token` header (a bearer token in the `Authorization` header works too and wins when both are sent; only this provider's token works in the dedicated header), and the `/api/ws` `?token=` upgrade credential — so one provisioned token authorizes both. There is **no browser sign-in flow**: `/login` renders a note explaining the credential channel instead of sign-in buttons, and the provider is never offered by the auto-SSO redirect.
 
 :::warning Treat the token like a password
 The provisioned token grants full dashboard access to whoever holds it. Provision it from a secret manager (never a Nix store path), rotate by redeploying the secret — rotation invalidates every saved client copy, which surfaces as "HTTP reachable but the WebSocket fails" in Desktop until the new token is pasted in. There is no per-user identity behind it: for shared or internet-facing deployments prefer the [Nous Research](#default-provider-nous-research) or [self-hosted OIDC](#self-hosted-oidc-provider) provider.
 :::
 
-**Activation and opt-out.** Registering is driven by the credential itself: the provider is a no-op until `HERMES_DASHBOARD_SESSION_TOKEN` is set (env wins; `file:<path>` is read at startup and fails loudly when missing/empty). To keep the token internal-only (loopback SPA use, desktop-spawned backends) while authenticating the gate with basic-auth/OAuth instead, disable the provider:
+**Activation and opt-out.** Registering is driven by the credential itself: the provider is a no-op until `AURORA_DASHBOARD_SESSION_TOKEN` is set (env wins; `file:<path>` is read at startup and fails loudly when missing/empty). To keep the token internal-only (loopback SPA use, desktop-spawned backends) while authenticating the gate with basic-auth/OAuth instead, disable the provider:
 
 ```yaml
 dashboard:
@@ -909,8 +909,8 @@ dashboard:
   oauth:
     provider: self-hosted
     self_hosted:
-      issuer: https://auth.example.com/application/o/hermes/   # required
-      client_id: hermes-dashboard                              # required
+      issuer: https://auth.example.com/application/o/aurora/   # required
+      client_id: aurora-dashboard                              # required
       scopes: "openid profile email"                           # optional (this is the default)
       id_token_leeway: 60                                      # optional; seconds of clock-skew tolerance
 ```
@@ -919,9 +919,9 @@ dashboard:
 
 | Env var | Overrides | Notes |
 |---------|-----------|-------|
-| `HERMES_DASHBOARD_OIDC_ISSUER` | `dashboard.oauth.self_hosted.issuer` | OIDC issuer URL — required |
-| `HERMES_DASHBOARD_OIDC_CLIENT_ID` | `dashboard.oauth.self_hosted.client_id` | Public client id — required |
-| `HERMES_DASHBOARD_OIDC_SCOPES` | `dashboard.oauth.self_hosted.scopes` | Defaults to `openid profile email` |
+| `AURORA_DASHBOARD_OIDC_ISSUER` | `dashboard.oauth.self_hosted.issuer` | OIDC issuer URL — required |
+| `AURORA_DASHBOARD_OIDC_CLIENT_ID` | `dashboard.oauth.self_hosted.client_id` | Public client id — required |
+| `AURORA_DASHBOARD_OIDC_SCOPES` | `dashboard.oauth.self_hosted.scopes` | Defaults to `openid profile email` |
 
 In your IDP, register a **public** application/client with the authorization-code + PKCE (S256) grant and add the dashboard's callback as an allowed redirect URI. The callback is `<dashboard public URL>/auth/callback` (see [Public URL override](#public-url-override) for how the dashboard derives its public URL behind a proxy).
 
@@ -946,16 +946,16 @@ The ID token is what establishes identity — the access token is treated as opa
 
 [Keycloak](https://www.keycloak.org/) is one of the easiest self-hosted OIDC servers to stand up for a local test — it runs as a single container in dev mode (in-memory DB) and exposes textbook OIDC discovery. This walkthrough gets you from nothing to a working dashboard login in a few minutes.
 
-**1. Run Keycloak with a pre-configured realm.** Save this realm export as `realm-hermes.json` — it defines a `hermes` realm, a **public PKCE client** (`hermes-dashboard`), and a test user, all imported on boot so there's nothing to click in the admin UI:
+**1. Run Keycloak with a pre-configured realm.** Save this realm export as `realm-aurora.json` — it defines an `aurora` realm, a **public PKCE client** (`aurora-dashboard`), and a test user, all imported on boot so there's nothing to click in the admin UI:
 
 ```json
 {
-  "realm": "hermes",
+  "realm": "aurora",
   "enabled": true,
   "clients": [
     {
-      "clientId": "hermes-dashboard",
-      "name": "Hermes Agent Dashboard",
+      "clientId": "aurora-dashboard",
+      "name": "Aurora Agent Dashboard",
       "enabled": true,
       "publicClient": true,
       "standardFlowEnabled": true,
@@ -987,26 +987,26 @@ Start it (Keycloak 26+), mounting that file into the import directory:
 docker run --rm -p 8080:8080 \
   -e KC_BOOTSTRAP_ADMIN_USERNAME=admin \
   -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin \
-  -v "$PWD/realm-hermes.json:/opt/keycloak/data/import/realm-hermes.json:ro" \
+  -v "$PWD/realm-aurora.json:/opt/keycloak/data/import/realm-aurora.json:ro" \
   quay.io/keycloak/keycloak:26.0 \
   start-dev --import-realm
 ```
 
 Once it's up, the realm advertises standard OIDC discovery at
-`http://localhost:8080/realms/hermes/.well-known/openid-configuration` (issuer
-`http://localhost:8080/realms/hermes`). The admin console is at
+`http://localhost:8080/realms/aurora/.well-known/openid-configuration` (issuer
+`http://localhost:8080/realms/aurora`). The admin console is at
 `http://localhost:8080/` (`admin` / `admin`).
 
 **2. Point the dashboard at it.** The self-hosted plugin permits a loopback `http://` issuer (HTTPS is required for any non-loopback issuer), so the local Keycloak works as-is:
 
 ```bash
-export HERMES_DASHBOARD_OIDC_ISSUER="http://localhost:8080/realms/hermes"
-export HERMES_DASHBOARD_OIDC_CLIENT_ID="hermes-dashboard"
-export HERMES_DASHBOARD_PUBLIC_URL="http://localhost:9119"
-hermes dashboard --host 0.0.0.0 --port 9119 --no-open
+export AURORA_DASHBOARD_OIDC_ISSUER="http://localhost:8080/realms/aurora"
+export AURORA_DASHBOARD_OIDC_CLIENT_ID="aurora-dashboard"
+export AURORA_DASHBOARD_PUBLIC_URL="http://localhost:9119"
+aurora dashboard --host 0.0.0.0 --port 9119 --no-open
 ```
 
-`HERMES_DASHBOARD_PUBLIC_URL` tells the dashboard its OAuth callback is
+`AURORA_DASHBOARD_PUBLIC_URL` tells the dashboard its OAuth callback is
 `http://localhost:9119/auth/callback` — the redirect URI the realm registered
 above. Binding to `0.0.0.0` (a non-loopback bind) is what
 engages the OAuth gate.
@@ -1015,7 +1015,7 @@ engages the OAuth gate.
 
 > If you bind or browse on a different host/port, add that origin's
 > `…/auth/callback` to the client's **Valid redirect URIs** in the Keycloak
-> admin console (Clients → hermes-dashboard → Settings). The same pattern works
+> admin console (Clients → aurora-dashboard → Settings). The same pattern works
 > for Authentik, Zitadel, Authelia, and other OIDC servers — only the issuer
 > URL and client registration UI differ.
 
@@ -1023,11 +1023,11 @@ engages the OAuth gate.
 
 By default, the dashboard reconstructs the OAuth callback URL from the request — `X-Forwarded-Host` + `X-Forwarded-Proto` + `X-Forwarded-Prefix` (when uvicorn is configured with `proxy_headers=True`, which `start_server` enables under the gate). This works out of the box behind a reverse proxy that sets all three headers correctly.
 
-For deploys behind reverse proxies that don't reliably forward those headers (manual nginx setups, on-prem ingresses, custom-domain deploys with partial proxy chains), set `dashboard.public_url` (or `HERMES_DASHBOARD_PUBLIC_URL`) to the **complete public URL** the dashboard is reached at:
+For deploys behind reverse proxies that don't reliably forward those headers (manual nginx setups, on-prem ingresses, custom-domain deploys with partial proxy chains), set `dashboard.public_url` (or `AURORA_DASHBOARD_PUBLIC_URL`) to the **complete public URL** the dashboard is reached at:
 
 ```yaml
 dashboard:
-  public_url: "https://dashboard.example.com/hermes"
+  public_url: "https://dashboard.example.com/aurora"
   trusted_proxies:
     - "172.20.0.5"
 ```
@@ -1043,7 +1043,7 @@ guard.
 
 Declaring a non-loopback `public_url` always engages the dashboard auth gate,
 even when the backend binds to loopback. Configure a password or OAuth provider
-first; without one, Hermes fails closed at startup. This prevents the local SPA
+first; without one, Aurora fails closed at startup. This prevents the local SPA
 session token from becoming a remote authentication mechanism through the
 proxy. Uvicorn also enables proxy-header processing in this mode. Loopback
 proxies are trusted automatically. If the TLS terminator connects from another
@@ -1052,13 +1052,13 @@ add a bounded CIDR for a dedicated proxy network when the address is dynamic:
 
 ```yaml
 dashboard:
-  public_url: "https://dashboard.example.com/hermes"
+  public_url: "https://dashboard.example.com/aurora"
   trusted_proxies:
     - "172.20.0.0/24"
 ```
 
 Only listed peers may supply `X-Forwarded-Proto` and `X-Forwarded-For`.
-Hermes always preserves loopback trust and rejects `*`, `0.0.0.0/0`, and
+Aurora always preserves loopback trust and rejects `*`, `0.0.0.0/0`, and
 `::/0`. Trusting a network means every container or machine on that network
 can supply forwarding metadata, so prefer an exact proxy IP or a dedicated
 proxy-only network. Without a trusted-proxy entry, clients behind that proxy
@@ -1067,7 +1067,7 @@ events record the proxy's address.
 
 ```bash
 # Backend remains reachable only on this machine.
-hermes dashboard --host 127.0.0.1 --port 9119 --no-open
+aurora dashboard --host 127.0.0.1 --port 9119 --no-open
 ```
 
 Point the TLS reverse proxy at `http://127.0.0.1:9119` and use
@@ -1084,8 +1084,8 @@ Same precedence as the other dashboard settings — env wins over `config.yaml`:
 
 | Surface | Override path | When to use |
 |---------|---------------|-------------|
-| `dashboard.public_url` in `config.yaml` | `HERMES_DASHBOARD_PUBLIC_URL` | Local dev / on-prem (canonical) |
-| `HERMES_DASHBOARD_PUBLIC_URL` env var | — | Hosting-platform secrets / CI |
+| `dashboard.public_url` in `config.yaml` | `AURORA_DASHBOARD_PUBLIC_URL` | Local dev / on-prem (canonical) |
+| `AURORA_DASHBOARD_PUBLIC_URL` env var | — | Hosting-platform secrets / CI |
 | (unset) | — | Default — reconstruct from `X-Forwarded-*` headers |
 
 Validation rejects values without `http://` / `https://` scheme, without a host, or containing quote / angle / whitespace / control characters. A malformed value silently falls through to header reconstruction so the login flow keeps working rather than dispatching the user to a hostile URL.
@@ -1100,7 +1100,7 @@ The provider implements the [Nous Portal OAuth contract v1](https://github.com/N
 2. Login page shows a "Continue with Nous Research" button → `/auth/login?provider=nous`.
 3. Server stashes PKCE state in a short-lived cookie, redirects user to `https://portal.nousresearch.com/oauth/authorize?…`.
 4. User authenticates with Portal, lands at `/auth/callback?code=…&state=…`.
-5. Server exchanges the code for an access token at `POST /api/oauth/token`, verifies the JWT signature against the Portal's JWKS (`/.well-known/jwks.json`), and sets the `hermes_session_at` cookie.
+5. Server exchanges the code for an access token at `POST /api/oauth/token`, verifies the JWT signature against the Portal's JWKS (`/.well-known/jwks.json`), and sets the `aurora_session_at` cookie.
 6. User is redirected to `/` (or to the original deep-link path via the `next=` query parameter).
 
 Access tokens have a 15-minute TTL. **There is no refresh token in contract v1** — when the token expires, the SPA's fetch wrapper detects the 401 envelope and full-page-navigates back to `/login` to re-run the flow.
@@ -1109,9 +1109,9 @@ Access tokens have a 15-minute TTL. **There is no refresh token in contract v1**
 
 | Name | Lifetime | Notes |
 |------|----------|-------|
-| `hermes_session_at` | Token TTL (15 min) | HttpOnly, SameSite=Lax, Secure-when-HTTPS |
-| `hermes_session_pkce` | 10 min | HttpOnly; holds the PKCE verifier + provider hint during the round trip. SameSite=None + Secure over HTTPS (must survive the cross-site IDP redirect chain — Chromium drops SameSite=Lax cookies set on a 302 in a cross-site chain); SameSite=Lax on loopback HTTP |
-| `hermes_session_rt` | unused in v1 | Reserved for forward-compat; not written when `refresh_token` is empty |
+| `aurora_session_at` | Token TTL (15 min) | HttpOnly, SameSite=Lax, Secure-when-HTTPS |
+| `aurora_session_pkce` | 10 min | HttpOnly; holds the PKCE verifier + provider hint during the round trip. SameSite=None + Secure over HTTPS (must survive the cross-site IDP redirect chain — Chromium drops SameSite=Lax cookies set on a 302 in a cross-site chain); SameSite=Lax on loopback HTTP |
+| `aurora_session_rt` | unused in v1 | Reserved for forward-compat; not written when `refresh_token` is empty |
 
 All three are `Path=/`. The session cookies are `SameSite=Lax`; the PKCE cookie is `SameSite=None` when set over HTTPS (see table). The `Secure` flag is set when the dashboard is reached over HTTPS (detected via the request URL scheme — honours `X-Forwarded-Proto` from an upstream TLS terminator under `proxy_headers=True`).
 
@@ -1121,15 +1121,15 @@ The sidebar widget shows `Logged in as <user_id…> via nous` with a logout icon
 
 ### Audit log
 
-Every login start, success, failure, and session-verify failure is written as a JSON line to `$HERMES_HOME/logs/dashboard-auth.log`. Sensitive fields (`access_token`, `refresh_token`, `code`, `code_verifier`, `state`, `Authorization` header) are redacted before logging.
+Every login start, success, failure, and session-verify failure is written as a JSON line to `$AURORA_HOME/logs/dashboard-auth.log`. Sensitive fields (`access_token`, `refresh_token`, `code`, `code_verifier`, `state`, `Authorization` header) are redacted before logging.
 
 ### Custom providers
 
 To plug a non-Nous OAuth provider (e.g. Google, GitHub, custom OIDC), create a plugin that registers a `DashboardAuthProvider`:
 
 ```python
-# ~/.hermes/plugins/dashboard-auth-myidp/__init__.py
-from hermes_cli.dashboard_auth import DashboardAuthProvider, Session, LoginStart
+# ~/.aurora/plugins/dashboard-auth-myidp/__init__.py
+from aurora_cli.dashboard_auth import DashboardAuthProvider, Session, LoginStart
 
 class MyIdPProvider(DashboardAuthProvider):
     name = "myidp"
@@ -1151,7 +1151,7 @@ The login page lists all registered providers; multiple providers can be stacked
 
 Alongside interactive human login (session cookies + refresh), the `DashboardAuthProvider` ABC supports a **non-interactive, service-to-service** capability via `supports_token = True` + `verify_token(token=...)`. When a provider opts in, an inbound `Authorization: Bearer <token>` is verified and, on success, a `TokenPrincipal` is attached to the request (`request.state.token_principal`) for the endpoints that provider marks token-authable — no cookie, no redirect, no refresh.
 
-The bundled first consumer is the **drain** provider (`plugins/dashboard_auth/drain`): `nous-account-service` provisions a per-agent secret via `HERMES_DASHBOARD_DRAIN_SECRET`, and the provider verifies inbound bearer tokens against it with a constant-time compare, registering `/api/gateway/drain` as token-authable. It **fails closed** — a weak/short secret (< 256 bits) is rejected at registration and the endpoint stays disabled; it's a no-op when the env var is unset. Behavioural knobs (`scope`, `min_secret_chars`) live under `dashboard.drain_auth` in `config.yaml`.
+The bundled first consumer is the **drain** provider (`plugins/dashboard_auth/drain`): `nous-account-service` provisions a per-agent secret via `AURORA_DASHBOARD_DRAIN_SECRET`, and the provider verifies inbound bearer tokens against it with a constant-time compare, registering `/api/gateway/drain` as token-authable. It **fails closed** — a weak/short secret (< 256 bits) is rejected at registration and the endpoint stays disabled; it's a no-op when the env var is unset. Behavioural knobs (`scope`, `min_secret_chars`) live under `dashboard.drain_auth` in `config.yaml`.
 
 Custom providers can implement `supports_token`/`verify_token` the same way to expose their own machine-authable endpoints.
 
@@ -1159,8 +1159,8 @@ Custom providers can implement `supports_token`/`verify_token` the same way to e
 
 ```bash
 # Quick env-var path.
-HERMES_DASHBOARD_OAUTH_CLIENT_ID=agent:test \
-  hermes dashboard --host 0.0.0.0
+AURORA_DASHBOARD_OAUTH_CLIENT_ID=agent:test \
+  aurora dashboard --host 0.0.0.0
 
 # Or the equivalent via config.yaml (recommended for local dev / on-prem):
 #
@@ -1169,7 +1169,7 @@ HERMES_DASHBOARD_OAUTH_CLIENT_ID=agent:test \
 #       client_id: agent:test
 #
 # then just:
-hermes dashboard --host 0.0.0.0
+aurora dashboard --host 0.0.0.0
 
 # Hit /api/status to see the gate state:
 curl -s http://127.0.0.1:9119/api/status | jq '.auth_required, .auth_providers'
@@ -1179,77 +1179,77 @@ curl -s http://127.0.0.1:9119/api/status | jq '.auth_required, .auth_providers'
 
 The dashboard's React StatusPage shows the same fields under "Web server". A sidebar AuthWidget surfaces the current identity once you've signed in.
 
-## Connecting Hermes Desktop to a remote backend
+## Connecting Aurora Desktop to a remote backend
 
-Hermes Desktop can drive a Hermes backend running on another machine (a VPS, a home server, a Mini behind Tailscale). In the app this lives under **Settings → Gateways → Remote gateway**, which asks for a **Remote URL** and a way to **Sign in**. (For the desktop app itself — install, settings, chat — see the [Hermes Desktop](../desktop.md) page.)
+Aurora Desktop can drive an Aurora backend running on another machine (a VPS, a home server, a Mini behind Tailscale). In the app this lives under **Settings → Gateways → Remote gateway**, which asks for a **Remote URL** and a way to **Sign in**. (For the desktop app itself — install, settings, chat — see the [Aurora Desktop](../desktop.md) page.)
 
-You protect the remote dashboard with one of the bundled auth providers, and the desktop app signs in against whichever one the backend advertises. For a backend reachable beyond your own machine — a VPS, a public host, anything internet-facing — the recommended provider is **OAuth (Nous Portal)** (register it with [`hermes dashboard register`](#registering-a-dashboard) and sign in with *Sign in with Nous Research*). The bundled [username/password provider](#usernamepassword-provider-no-oauth-idp) is the quickest option when the backend is on a trusted LAN or reachable only over a VPN, but is **not suitable for direct public-internet exposure**. Binding the dashboard to a non-loopback address engages its auth gate; once signed in, Desktop reuses the session for the chat WebSocket automatically — there is no token to copy or paste.
+You protect the remote dashboard with one of the bundled auth providers, and the desktop app signs in against whichever one the backend advertises. For a backend reachable beyond your own machine — a VPS, a public host, anything internet-facing — the recommended provider is **OAuth (Nous Portal)** (register it with [`aurora dashboard register`](#registering-a-dashboard) and sign in with *Sign in with Nous Research*). The bundled [username/password provider](#usernamepassword-provider-no-oauth-idp) is the quickest option when the backend is on a trusted LAN or reachable only over a VPN, but is **not suitable for direct public-internet exposure**. Binding the dashboard to a non-loopback address engages its auth gate; once signed in, Desktop reuses the session for the chat WebSocket automatically — there is no token to copy or paste.
 
 The recipe below uses the username/password path because it's the quickest to stand up on a trusted network; for the OAuth path see [Default provider: Nous Research](#default-provider-nous-research).
 
 ### On the backend (the remote machine)
 
 ```bash
-# 1. Set the dashboard login credentials in ~/.hermes/.env (secrets file, 0600).
-cat >> ~/.hermes/.env <<'EOF'
-HERMES_DASHBOARD_BASIC_AUTH_USERNAME=admin
-HERMES_DASHBOARD_BASIC_AUTH_PASSWORD=choose-a-strong-password
+# 1. Set the dashboard login credentials in ~/.aurora/.env (secrets file, 0600).
+cat >> ~/.aurora/.env <<'EOF'
+AURORA_DASHBOARD_BASIC_AUTH_USERNAME=admin
+AURORA_DASHBOARD_BASIC_AUTH_PASSWORD=choose-a-strong-password
 EOF
 # Recommended: a stable signing secret so sessions survive restarts.
 # This runs openssl, so the secret is unique to you.
-echo "HERMES_DASHBOARD_BASIC_AUTH_SECRET=$(openssl rand -base64 32)" >> ~/.hermes/.env
-chmod 600 ~/.hermes/.env
+echo "AURORA_DASHBOARD_BASIC_AUTH_SECRET=$(openssl rand -base64 32)" >> ~/.aurora/.env
+chmod 600 ~/.aurora/.env
 
 # 2. Run the dashboard bound to a reachable address. The non-loopback bind
 #    engages the auth gate; the username/password provider handles login.
-hermes dashboard --no-open --host 0.0.0.0 --port 9119
+aurora dashboard --no-open --host 0.0.0.0 --port 9119
 ```
 
-An earlier version of this recipe wrote the secret line inside the quoted heredoc, which stores the text `$(openssl rand -base64 32)` instead of a random value. If `grep BASIC_AUTH_SECRET ~/.hermes/.env` shows that text, replace the line with a freshly generated secret and restart the dashboard.
+An earlier version of this recipe wrote the secret line inside the quoted heredoc, which stores the text `$(openssl rand -base64 32)` instead of a random value. If `grep BASIC_AUTH_SECRET ~/.aurora/.env` shows that text, replace the line with a freshly generated secret and restart the dashboard.
 
-Prefer no plaintext at rest? Use `HERMES_DASHBOARD_BASIC_AUTH_PASSWORD_HASH` with a scrypt hash instead — see [Username/password provider](#usernamepassword-provider-no-oauth-idp) for the full surface.
+Prefer no plaintext at rest? Use `AURORA_DASHBOARD_BASIC_AUTH_PASSWORD_HASH` with a scrypt hash instead — see [Username/password provider](#usernamepassword-provider-no-oauth-idp) for the full surface.
 
-If you run the dashboard as a systemd service, `~/.hermes/.env` is picked up automatically when the unit has `EnvironmentFile=%h/.hermes/.env`, so the credentials are in the environment at boot.
+If you run the dashboard as a systemd service, `~/.aurora/.env` is picked up automatically when the unit has `EnvironmentFile=%h/.aurora/.env`, so the credentials are in the environment at boot.
 
 :::warning
 The dashboard reads and writes your `.env` (API keys, secrets) and can run agent commands. The **username/password** setup shown here is for a trusted network — never expose a password-protected dashboard directly to the open internet. Put it behind a VPN. [Tailscale](https://tailscale.com/) is the clean option: bind to the machine's tailscale IP (`--host <tailscale-ip>`) and use `http://<tailscale-ip>:9119` as the Remote URL. Only devices on your tailnet can reach it. To reach a backend over the public internet, use the **OAuth (Nous Portal)** provider instead.
 :::
 
-### In Hermes Desktop
+### In Aurora Desktop
 
 **Settings → Gateways → Remote gateway:**
 
-- **Remote URL** — `http://<backend-host>:9119` (path prefixes like `/hermes` are supported if you front it with a reverse proxy)
+- **Remote URL** — `http://<backend-host>:9119` (path prefixes like `/aurora` are supported if you front it with a reverse proxy)
 - **Sign in** — the app detects the username/password gateway and shows a **Sign in** button; click it and enter the credentials from step 1
 - **Save and reconnect** — switches the desktop shell onto the remote backend
 
-The session refreshes automatically and survives restarts when `HERMES_DASHBOARD_BASIC_AUTH_SECRET` is set on the backend.
+The session refreshes automatically and survives restarts when `AURORA_DASHBOARD_BASIC_AUTH_SECRET` is set on the backend.
 
 ### Environment-variable override
 
-Instead of the in-app setting, you can point the desktop at a backend with an env var before launching it. When `HERMES_DESKTOP_REMOTE_URL` is set, it overrides the saved in-app URL (the Gateway settings panel shows an "env override" badge and disables editing); you still **Sign in** with your username and password from the panel.
+Instead of the in-app setting, you can point the desktop at a backend with an env var before launching it. When `AURORA_DESKTOP_REMOTE_URL` is set, it overrides the saved in-app URL (the Gateway settings panel shows an "env override" badge and disables editing); you still **Sign in** with your username and password from the panel.
 
 | Env var | Value |
 |---------|-------|
-| `HERMES_DESKTOP_REMOTE_URL` | `http://<backend-host>:9119` |
+| `AURORA_DESKTOP_REMOTE_URL` | `http://<backend-host>:9119` |
 
 ### Troubleshooting
 
 - **"Remote gateway incomplete"** — you haven't entered a remote URL.
-- **Sign-in fails with 401 / "Invalid credentials"** — the username or password doesn't match the backend's `HERMES_DASHBOARD_BASIC_AUTH_USERNAME` / `HERMES_DASHBOARD_BASIC_AUTH_PASSWORD`. The backend returns the same generic error for unknown user and wrong password, so check both. Confirm the gate with `curl -s http://<host>:9119/api/status | jq '.auth_required, .auth_providers'` — it should report `true` and include `"basic"`.
+- **Sign-in fails with 401 / "Invalid credentials"** — the username or password doesn't match the backend's `AURORA_DASHBOARD_BASIC_AUTH_USERNAME` / `AURORA_DASHBOARD_BASIC_AUTH_PASSWORD`. The backend returns the same generic error for unknown user and wrong password, so check both. Confirm the gate with `curl -s http://<host>:9119/api/status | jq '.auth_required, .auth_providers'` — it should report `true` and include `"basic"`.
 - **No "Sign in" button — it asks for a session token instead** — the username/password provider isn't active (`/api/status` won't list `"basic"`). Make sure the username and a password (or password hash) are set and the dashboard process loaded them.
-- **Signed out on every restart** — set `HERMES_DASHBOARD_BASIC_AUTH_SECRET` to a stable value; otherwise the signing key is regenerated per boot.
+- **Signed out on every restart** — set `AURORA_DASHBOARD_BASIC_AUTH_SECRET` to a stable value; otherwise the signing key is regenerated per boot.
 - **Connection refused / times out** — the backend bound to `127.0.0.1` (the default) instead of a reachable address, or a firewall/VPN is blocking the port. Bind to `0.0.0.0` or the tailscale IP and open the port to your trusted network.
 
 ## CORS
 
 The web server grants CORS, and accepts browser WebSocket upgrades, only for its own origin: a
 loopback origin (`localhost`, `127.0.0.1`, `[::1]`) on the port the server is bound to. That is
-`http://127.0.0.1:9119` for a default `hermes dashboard`, the `--port` you chose, or the ephemeral
+`http://127.0.0.1:9119` for a default `aurora dashboard`, the `--port` you chose, or the ephemeral
 port a Desktop backend binds. The packaged desktop app loads from `file://` and is not affected.
 
 A backend spawned by a desktop dev build also trusts that build's own renderer (the loopback
-`HERMES_DESKTOP_DEV_SERVER` it inherits, such as an [`hgui` slot](../../developer-guide/worktree-ui-dev.md#hgui--desktop-app-from-the-worktree)
+`AURORA_DESKTOP_DEV_SERVER` it inherits, such as an [`hgui` slot](../../developer-guide/worktree-ui-dev.md#hgui--desktop-app-from-the-worktree)
 on `5174+N`). No fixed dev-server port is trusted: pages served from any other local port, including
 Vite apps on `5173` or `5174`, get no CORS headers and their WebSocket upgrades are refused, so they
 cannot read the session token or open the terminal.
@@ -1270,7 +1270,7 @@ machine are one-use, ticketed native dials that carry no Origin, so a dev build 
 gateway that is already running without restarting it, and it does not pass the variable to a
 gateway it starts (that gateway outlives the dev session). Only a connection that presents the dev
 renderer's Origin to a backend Desktop did not start (for example a remote backend you start
-yourself and reach directly) needs that backend started with `HERMES_DESKTOP_DEV_SERVER` set to the
+yourself and reach directly) needs that backend started with `AURORA_DESKTOP_DEV_SERVER` set to the
 build's renderer URL.
 
 ## Development
@@ -1279,7 +1279,7 @@ If you're contributing to the web dashboard frontend:
 
 ```bash
 # Terminal 1: start the backend API
-hermes dashboard --no-open
+aurora dashboard --no-open
 
 # Terminal 2: start the Vite dev server with HMR
 cd web/
@@ -1287,15 +1287,15 @@ pnpm install
 pnpm run dev
 ```
 
-The Vite dev server at `http://localhost:5173` proxies `/api` requests, WebSockets included, to the FastAPI backend at `http://127.0.0.1:9119` (set `HERMES_DASHBOARD_URL` to use another backend). It reads the session token from the backend server-side. It forwards WebSocket upgrades with their `Host` and `Origin` unchanged, so the page's Origin names the host and port it dialled and the backend admits it as same-origin without trusting port `5173`. This holds when `HERMES_DASHBOARD_URL` points at a port forward to the backend (for example `http://127.0.0.1:8000` through `ssh -L 8000:localhost:9119`). Vite's own CORS is turned off, so other local pages cannot read the token from the dev server either.
+The Vite dev server at `http://localhost:5173` proxies `/api` requests, WebSockets included, to the FastAPI backend at `http://127.0.0.1:9119` (set `AURORA_DASHBOARD_URL` to use another backend). It reads the session token from the backend server-side. It forwards WebSocket upgrades with their `Host` and `Origin` unchanged, so the page's Origin names the host and port it dialled and the backend admits it as same-origin without trusting port `5173`. This holds when `AURORA_DASHBOARD_URL` points at a port forward to the backend (for example `http://127.0.0.1:8000` through `ssh -L 8000:localhost:9119`). Vite's own CORS is turned off, so other local pages cannot read the token from the dev server either.
 
-The frontend is built with React 19, TypeScript, Tailwind CSS v4, and shadcn/ui-style components. Production builds output to `hermes_cli/web_dist/` which the FastAPI server serves as a static SPA.
+The frontend is built with React 19, TypeScript, Tailwind CSS v4, and shadcn/ui-style components. Production builds output to `aurora_cli/web_dist/` which the FastAPI server serves as a static SPA.
 
-The build is CPU- and memory-intensive (Vite 8's Rust-native Rolldown bundler parallelizes across cores), so it is **resource-bounded by default**: the V8 heap is capped (`--max-old-space-size`, sized from the container's memory limit) and the native bundler's thread pool is limited to half the available cores (`RAYON_NUM_THREADS`), preventing the 200%+ CPU spikes and OOMs small VPS hosts otherwise hit during a build (#63338). Override with `HERMES_WEB_BUILD_MAX_OLD_SPACE_SIZE` / `HERMES_WEB_BUILD_THREADS`; set `HERMES_WEB_BUILD_LIGHT=1` to tighten the caps (1 thread, 1 GB heap) when the host cannot spare full CPU.
+The build is CPU- and memory-intensive (Vite 8's Rust-native Rolldown bundler parallelizes across cores), so it is **resource-bounded by default**: the V8 heap is capped (`--max-old-space-size`, sized from the container's memory limit) and the native bundler's thread pool is limited to half the available cores (`RAYON_NUM_THREADS`), preventing the 200%+ CPU spikes and OOMs small VPS hosts otherwise hit during a build (#63338). Override with `AURORA_WEB_BUILD_MAX_OLD_SPACE_SIZE` / `AURORA_WEB_BUILD_THREADS`; set `AURORA_WEB_BUILD_LIGHT=1` to tighten the caps (1 thread, 1 GB heap) when the host cannot spare full CPU.
 
 ## Automatic Build on Update
 
-When you run `hermes update`, the web frontend is automatically rebuilt with the Node and pnpm Hermes provisions. This keeps the dashboard in sync with code updates. If the update cannot provision them (for example with lazy installs disabled), it skips the frontend build and `hermes dashboard` will build it on first launch.
+When you run `aurora update`, the web frontend is automatically rebuilt with the Node and pnpm Aurora provisions. This keeps the dashboard in sync with code updates. If the update cannot provision them (for example with lazy installs disabled), it skips the frontend build and `aurora dashboard` will build it on first launch.
 
 ## Themes & plugins
 
@@ -1309,8 +1309,8 @@ Built-in themes:
 
 | Theme | Character |
 |-------|-----------|
-| **Hermes Teal** (`default`) | Dark teal + cream, system fonts, comfortable spacing |
-| **Hermes Teal (Large)** (`default-large`) | Same as default with 18px text and roomier spacing |
+| **Aurora Teal** (`default`) | Dark teal + cream, system fonts, comfortable spacing |
+| **Aurora Teal (Large)** (`default-large`) | Same as default with 18px text and roomier spacing |
 | **Nous Blue** (`nous-blue`) | Nous-branded blue accents with airy spacing |
 | **Midnight** (`midnight`) | Deep blue-violet, Inter + JetBrains Mono |
 | **Ember** (`ember`) | Warm crimson + bronze, Spectral serif + IBM Plex Mono |

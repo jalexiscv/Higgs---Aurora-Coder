@@ -127,7 +127,7 @@ def test_release_claims_the_first_attempt_creates_a_draft_and_dispatches(source)
     assert "--verify-tag" in create and "--draft" in create
     assert "--generate-notes" not in create
     assert "--notes-file" in create
-    assert create[-2:] == ["--title", "Hermes Agent v0.21.5"]
+    assert create[-2:] == ["--title", "Aurora Agent v0.21.5"]
     assert calls[1:] == [
         # Stable dispatches the default-branch workflow. The tag is an input.
         ["gh", "workflow", "run", "stable-release.yml", "--ref", "main",
@@ -505,7 +505,7 @@ def test_release_draft_lists_the_commits_since_the_stable_base(source, published
     assert "hipped in the published release" not in body
     assert "compare/v0.21.4...rc.1-v0.21.5" in body
     # The stable workflow renders the download tables into this marker.
-    assert "<!-- HERMES_BUILDS_TABLE -->" in body
+    assert "<!-- AURORA_BUILDS_TABLE -->" in body
     assert "python scripts/release.py publish --version 0.21.5" in body
     assert "python scripts/release.py abandon --version 0.21.5" in body
 
@@ -570,7 +570,7 @@ def test_no_changelog_releases_what_the_full_changelog_could_not(source, tmp_pat
 
     assert result["tag"] == "rc.1-v0.21.5"
     assert len(seen["body"]) <= GITHUB_BODY_LIMIT
-    assert "<!-- HERMES_BUILDS_TABLE -->" in seen["body"]
+    assert "<!-- AURORA_BUILDS_TABLE -->" in seen["body"]
 
 
 def test_changelog_prints_the_notes_a_draft_would_carry_and_claims_nothing(source, monkeypatch, capsys):
@@ -590,7 +590,7 @@ def test_changelog_prints_the_notes_a_draft_would_carry_and_claims_nothing(sourc
     release_script.main()
 
     out = capsys.readouterr().out
-    assert out.startswith("# Hermes Agent v0.21.5 (rc.1-v0.21.5)")
+    assert out.startswith("# Aurora Agent v0.21.5 (rc.1-v0.21.5)")
     assert "New in this release" in out
     assert "hipped in the published release" not in out
     assert git(source, "ls-remote", "origin", "refs/tags/*") == ""

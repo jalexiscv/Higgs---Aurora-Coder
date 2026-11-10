@@ -7,9 +7,9 @@ import { $apiRequestScope, setApiRequestConnection, setApiRequestProfile } from 
 // request names. Every scope listener (the version poller among them) must only
 // ever observe pairs that exist, never the new gateway with the old profile.
 
-vi.mock(import('@/hermes'), async importOriginal => ({
+vi.mock(import('@/aurora'), async importOriginal => ({
   ...(await importOriginal()),
-  HermesGateway: class {
+  AuroraGateway: class {
     connectionState = 'closed'
     connect = async (): Promise<void> => {
       this.connectionState = 'open'
@@ -37,7 +37,7 @@ const {
 } = await import('./gateway')
 
 function installDesktop(): void {
-  ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = {
+  ;(window as unknown as { auroraDesktop: unknown }).auroraDesktop = {
     getConnectionFor: vi.fn(async ({ connectionId, profile }: { connectionId: string; profile: string }) => ({
       authMode: 'token',
       connectionId,
@@ -79,7 +79,7 @@ afterEach(() => {
   closeSecondaryGateways()
   setApiRequestConnection(null)
   setApiRequestProfile(null)
-  delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as unknown as { auroraDesktop?: unknown }).auroraDesktop
 })
 
 describe('ambient request scope across a gateway switch', () => {

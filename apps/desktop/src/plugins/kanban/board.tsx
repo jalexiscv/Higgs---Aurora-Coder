@@ -51,7 +51,7 @@ import {
   useQueryClient,
   useValue,
   WorkspacePageHeaderControl
-} from '@hermes/plugin-sdk'
+} from '@aurora/plugin-sdk'
 import {
   type CSSProperties,
   type DragEvent as ReactDragEvent,

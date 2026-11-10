@@ -2,7 +2,7 @@
 
 Downgrading is unsupported, but a manual ``git checkout <older release>`` under a running gateway
 leaves this process serving every local session from code the tree no longer has. Older clients
-cannot attach to it, and older ``hermes gateway run`` refuses because this process still holds the
+cannot attach to it, and older ``aurora gateway run`` refuses because this process still holds the
 profile. Nothing on the older side knows how to stop it. So the gateway watches its own tree, using the boot
 revision ``gateway.code_skew`` records. Once the checkout has provably moved (two consecutive
 reads, never while an update holds the tree) to code whose state-store modules lack the runtime
@@ -23,8 +23,8 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from gateway.restart import GATEWAY_SERVICE_RESTART_EXIT_CODE
-from hermes_cli._startup_fast import project_root_str
-from hermes_cli.update_downgrade_guard import STATE_MODULES, defines_runtime
+from aurora_cli._startup_fast import project_root_str
+from aurora_cli.update_downgrade_guard import STATE_MODULES, defines_runtime
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +72,7 @@ async def runtime_downgrade_watcher(runner, *, poll_s: float = POLL_S, skew_fn=N
     if skew_fn is None:
         from gateway.code_skew import detect_code_skew as skew_fn
     if update_probe is None:
-        from hermes_cli.update_lock import update_in_progress as update_probe
+        from aurora_cli.update_lock import update_in_progress as update_probe
     observe_skew: Callable = skew_fn
     observe_update: Callable[[], bool] = update_probe
 

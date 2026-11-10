@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import type { StaleAuxAssignment } from '@/hermes'
+import type { StaleAuxAssignment } from '@/aurora'
 
 import { dismissStaleAux, readStaleAuxDismissal, staleAuxFingerprint } from './stale-aux-dismissal'
 

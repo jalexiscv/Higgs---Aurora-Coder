@@ -6,14 +6,14 @@ import { captureAnnotateCrop, createPreviewAnnotateGuest } from './preview-annot
 import { runPreviewGuestScript, withPreviewDeadline } from './preview-drive-channels'
 
 const rect = { height: 20, width: 40, x: 10, y: 10 }
-const originalDesktop = window.hermesDesktop
+const originalDesktop = window.auroraDesktop
 const guestWindow = window as Window & {
-  __hermesAnnotate?: { beginCapture: () => Promise<void>; endCapture: () => void }
+  __auroraAnnotate?: { beginCapture: () => Promise<void>; endCapture: () => void }
 }
 
 afterEach(() => {
-  window.hermesDesktop = originalDesktop
-  delete guestWindow.__hermesAnnotate
+  window.auroraDesktop = originalDesktop
+  delete guestWindow.__auroraAnnotate
   vi.useRealTimers()
 })
 
@@ -23,7 +23,7 @@ function setup(stalled: 'begin' | 'capture' | 'cleanup' | 'read' | 'viewport') {
   let nextToken = 0
   let pinsVisible = true
   const capture = vi.fn(async () => (stalled === 'capture' ? pending.promise : 'image'))
-  guestWindow.__hermesAnnotate = {
+  guestWindow.__auroraAnnotate = {
     beginCapture: async () => {
       pinsVisible = false
 
@@ -48,7 +48,7 @@ function setup(stalled: 'begin' | 'capture' | 'cleanup' | 'read' | 'viewport') {
 
     return result
   }
-  window.hermesDesktop = {
+  window.auroraDesktop = {
     beginPreviewGuestActivity: async () => {
       leases.add(++nextToken)
 
@@ -59,7 +59,7 @@ function setup(stalled: 'begin' | 'capture' | 'cleanup' | 'read' | 'viewport') {
     },
     executePreviewGuestScript: async (_token: number, code: string) => execute(code),
     capturePreview: capture
-  } as unknown as Window['hermesDesktop']
+  } as unknown as Window['auroraDesktop']
   const webview = Object.assign(document.createElement('div'), {
     executeJavaScript: execute,
     getWebContentsId: () => 42
@@ -97,7 +97,7 @@ describe('bounded first-party preview work', () => {
     const rejected = expect(result).rejects.toThrow()
     await vi.advanceTimersByTimeAsync(0)
     const replacementCleanup = vi.fn()
-    guestWindow.__hermesAnnotate = { beginCapture: async () => undefined, endCapture: replacementCleanup }
+    guestWindow.__auroraAnnotate = { beginCapture: async () => undefined, endCapture: replacementCleanup }
     lifetime.abort()
     await rejected
     expect(fixture.leases.size).toBe(0)

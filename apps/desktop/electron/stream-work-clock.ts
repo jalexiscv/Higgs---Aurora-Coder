@@ -32,7 +32,7 @@ export function registerStreamWorkClock(
     { cancel: () => void; token: string; timer?: ReturnType<typeof setTimeout> }
   >()
 
-  ipc.on('hermes:stream-work-wake', (event, payload: unknown) => {
+  ipc.on('aurora:stream-work-wake', (event, payload: unknown) => {
     const sender = event.sender
     const owner = getOwner(sender)
 
@@ -88,7 +88,7 @@ export function registerStreamWorkClock(
       current.token = ''
 
       if (frame && !sender.isDestroyed() && !frame.isDestroyed() && !frame.detached) {
-        frame.send('hermes:stream-work-ready', payload.token)
+        frame.send('aurora:stream-work-ready', payload.token)
       }
     }, Math.ceil(payload.delayMs))
   })

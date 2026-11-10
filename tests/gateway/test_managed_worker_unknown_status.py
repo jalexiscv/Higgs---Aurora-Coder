@@ -10,7 +10,7 @@ import pytest
 from gateway.session_contract import SessionActor, SessionRef
 
 CHILD = """import json, os, sys, psutil
-from hermes_cli.process_identity import worker_birth
+from aurora_cli.process_identity import worker_birth
 me = psutil.Process()
 out = os.fdopen(os.dup(sys.stdout.fileno()), 'wb', buffering=0)
 out.write((json.dumps({'type': 'hello', 'pid': me.pid, 'birth': worker_birth(me),
@@ -27,10 +27,10 @@ def _authority_with_a_lost_worker(tmp_path, monkeypatch):
     from gateway.session_authority import LiveSession, SessionAuthority
     from gateway.session_contract import Submission
     from gateway.session_policy import build_policy
-    from hermes_state import SessionDB
-    from hermes_state_runtime import begin_runtime_epoch, claim_session_input
+    from aurora_state import SessionDB
+    from aurora_state_runtime import begin_runtime_epoch, claim_session_input
 
-    monkeypatch.setenv('HERMES_HOME', str(tmp_path))
+    monkeypatch.setenv('AURORA_HOME', str(tmp_path))
     db = SessionDB(db_path=tmp_path / 'state.db')
     db.create_session('s', source='test')
     runner = SimpleNamespace(_draining=False, _cached_agent_for=lambda route: None,

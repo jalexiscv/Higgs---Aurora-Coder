@@ -2,47 +2,47 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import {
-  HERMES_HUB_FALLBACK_ORIGIN,
-  HERMES_HUB_ORIGIN,
-  isHermesHubClipboardWrite,
-  isHermesHubExternalUrl,
-  isHermesHubOrigin
+  AURORA_HUB_FALLBACK_ORIGIN,
+  AURORA_HUB_ORIGIN,
+  isAuroraHubClipboardWrite,
+  isAuroraHubExternalUrl,
+  isAuroraHubOrigin
 } from './hub-iframe-policy'
 import { createWindowOpenHandler, describeDeniedUrl } from './window-open-policy'
 
 describe('hub-iframe-policy predicates', () => {
   it('admits exactly the two hub origins and nothing else', () => {
-    expect(isHermesHubOrigin(HERMES_HUB_ORIGIN)).toBe(true)
-    expect(isHermesHubOrigin(HERMES_HUB_FALLBACK_ORIGIN)).toBe(true)
+    expect(isAuroraHubOrigin(AURORA_HUB_ORIGIN)).toBe(true)
+    expect(isAuroraHubOrigin(AURORA_HUB_FALLBACK_ORIGIN)).toBe(true)
 
     // Opaque sandboxed frames, data URLs, look-alikes, and absent origins
     // never qualify.
-    expect(isHermesHubOrigin('null')).toBe(false)
-    expect(isHermesHubOrigin('')).toBe(false)
-    expect(isHermesHubOrigin(null)).toBe(false)
-    expect(isHermesHubOrigin(undefined)).toBe(false)
-    expect(isHermesHubOrigin('https://hermes-agent.nousresearch.com.evil.example')).toBe(false)
-    expect(isHermesHubOrigin('https://evil.example')).toBe(false)
-    expect(isHermesHubOrigin('file://')).toBe(false)
+    expect(isAuroraHubOrigin('null')).toBe(false)
+    expect(isAuroraHubOrigin('')).toBe(false)
+    expect(isAuroraHubOrigin(null)).toBe(false)
+    expect(isAuroraHubOrigin(undefined)).toBe(false)
+    expect(isAuroraHubOrigin('https://hermes-agent.nousresearch.com.evil.example')).toBe(false)
+    expect(isAuroraHubOrigin('https://evil.example')).toBe(false)
+    expect(isAuroraHubOrigin('file://')).toBe(false)
   })
 
   it('delegates only http/https/mailto external URLs', () => {
-    expect(isHermesHubExternalUrl('https://github.com/NousResearch/hermes-agent')).toBe(true)
-    expect(isHermesHubExternalUrl('http://example.com/docs')).toBe(true)
-    expect(isHermesHubExternalUrl('mailto:support@example.com')).toBe(true)
+    expect(isAuroraHubExternalUrl('https://github.com/NousResearch/hermes-agent')).toBe(true)
+    expect(isAuroraHubExternalUrl('http://example.com/docs')).toBe(true)
+    expect(isAuroraHubExternalUrl('mailto:support@example.com')).toBe(true)
 
-    expect(isHermesHubExternalUrl('file:///etc/passwd')).toBe(false)
-    expect(isHermesHubExternalUrl('javascript:alert(1)')).toBe(false)
-    expect(isHermesHubExternalUrl('hermes://internal')).toBe(false)
-    expect(isHermesHubExternalUrl('not a url')).toBe(false)
+    expect(isAuroraHubExternalUrl('file:///etc/passwd')).toBe(false)
+    expect(isAuroraHubExternalUrl('javascript:alert(1)')).toBe(false)
+    expect(isAuroraHubExternalUrl('aurora://internal')).toBe(false)
+    expect(isAuroraHubExternalUrl('not a url')).toBe(false)
   })
 
   it('grants clipboard-write to hub origins only', () => {
-    expect(isHermesHubClipboardWrite(HERMES_HUB_ORIGIN)).toBe(true)
-    expect(isHermesHubClipboardWrite(HERMES_HUB_FALLBACK_ORIGIN)).toBe(true)
-    expect(isHermesHubClipboardWrite('null')).toBe(false)
-    expect(isHermesHubClipboardWrite('https://artifact-preview.invalid')).toBe(false)
-    expect(isHermesHubClipboardWrite(null)).toBe(false)
+    expect(isAuroraHubClipboardWrite(AURORA_HUB_ORIGIN)).toBe(true)
+    expect(isAuroraHubClipboardWrite(AURORA_HUB_FALLBACK_ORIGIN)).toBe(true)
+    expect(isAuroraHubClipboardWrite('null')).toBe(false)
+    expect(isAuroraHubClipboardWrite('https://artifact-preview.invalid')).toBe(false)
+    expect(isAuroraHubClipboardWrite(null)).toBe(false)
   })
 })
 
@@ -65,7 +65,7 @@ describe('createWindowOpenHandler trusted-hub delegation', () => {
     const openExternalUrl = vi.fn()
 
     const handler = createWindowOpenHandler(undefined, {
-      getOpenerOrigin: () => HERMES_HUB_ORIGIN,
+      getOpenerOrigin: () => AURORA_HUB_ORIGIN,
       openExternalUrl
     })
 
@@ -77,7 +77,7 @@ describe('createWindowOpenHandler trusted-hub delegation', () => {
     const openExternalUrl = vi.fn()
 
     const handler = createWindowOpenHandler(undefined, {
-      getOpenerOrigin: () => HERMES_HUB_FALLBACK_ORIGIN,
+      getOpenerOrigin: () => AURORA_HUB_FALLBACK_ORIGIN,
       openExternalUrl
     })
 
@@ -89,7 +89,7 @@ describe('createWindowOpenHandler trusted-hub delegation', () => {
     const openExternalUrl = vi.fn()
 
     const handler = createWindowOpenHandler(undefined, {
-      getOpenerOrigin: () => HERMES_HUB_ORIGIN,
+      getOpenerOrigin: () => AURORA_HUB_ORIGIN,
       openExternalUrl
     })
 
@@ -127,7 +127,7 @@ describe('createWindowOpenHandler trusted-hub delegation', () => {
     expect(openExternalUrl).not.toHaveBeenCalled()
 
     const throwingOpen = createWindowOpenHandler(undefined, {
-      getOpenerOrigin: () => HERMES_HUB_ORIGIN,
+      getOpenerOrigin: () => AURORA_HUB_ORIGIN,
       openExternalUrl
     })
 
@@ -141,7 +141,7 @@ describe('createWindowOpenHandler trusted-hub delegation', () => {
       () => {
         throw new Error('log failed')
       },
-      { getOpenerOrigin: () => HERMES_HUB_ORIGIN, openExternalUrl }
+      { getOpenerOrigin: () => AURORA_HUB_ORIGIN, openExternalUrl }
     )
 
     expect(handler(baseDetails)).toEqual({ action: 'deny' })

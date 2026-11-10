@@ -1,7 +1,7 @@
-// A real `ws` server for HermesGateway dial tests (node environment only).
-import { type ConnectionState, JsonRpcGatewayClient } from '@hermes/shared'
+// A real `ws` server for AuroraGateway dial tests (node environment only).
+import { type ConnectionState, JsonRpcGatewayClient } from '@aurora/shared'
 
-import type { HermesGateway } from '@/api/client'
+import type { AuroraGateway } from '@/api/client'
 
 export interface FixtureSocket {
   on(event: 'message', handler: (bytes: Buffer) => void): void
@@ -39,20 +39,20 @@ export function publicUrl(server: FixtureServer): string {
   return `ws://127.0.0.1:${(server.address() as { port: number }).port}/api/ws?ticket=public-fixture`
 }
 
-export async function shut(client: HermesGateway, server: FixtureServer): Promise<void> {
+export async function shut(client: AuroraGateway, server: FixtureServer): Promise<void> {
   client.close()
 
   for (const socket of server.clients) { socket.terminate() }
   await new Promise<void>(resolve => server.close(() => resolve()))
 }
 
-// The transport's own states. HermesGateway holds `open` from its subscribers until the dial's
+// The transport's own states. AuroraGateway holds `open` from its subscribers until the dial's
 // wire is known, so a test that needs the moment the socket opened listens below that.
-export function onTransportState(client: HermesGateway, handler: (state: ConnectionState) => void): () => void {
+export function onTransportState(client: AuroraGateway, handler: (state: ConnectionState) => void): () => void {
   return JsonRpcGatewayClient.prototype.onState.call(client, handler)
 }
 
-export function transportOpened(client: HermesGateway): Promise<void> {
+export function transportOpened(client: AuroraGateway): Promise<void> {
   return new Promise(resolve => {
     const off = onTransportState(client, state => {
       if (state === 'open') {

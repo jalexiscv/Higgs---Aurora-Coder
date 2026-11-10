@@ -8,8 +8,8 @@ import { connectWindowsRemote, decodePowerShellCommand } from './windows-remote-
 const OWNERSHIP_ID = '0123456789abcdef0123456789abcdef'
 const SPAWN_NONCE = '0123456789abcdef'
 const REUSE_TOKEN = 'stored-token'
-const HERMES_PATH = 'C:\\h\\hermes.exe'
-const HERMES_HOME = 'C:\\h'
+const AURORA_PATH = 'C:\\h\\aurora.exe'
+const AURORA_HOME = 'C:\\h'
 
 function fingerprint(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex').slice(0, 32)
@@ -26,8 +26,8 @@ function ownedLock(devServer?: string): Record<string, unknown> {
     creationTimeNs: '1784219690452757504',
     port: 40000,
     profile: '',
-    hermesPath: HERMES_PATH,
-    hermesHome: HERMES_HOME,
+    auroraPath: AURORA_PATH,
+    auroraHome: AURORA_HOME,
     tokenFingerprint: fingerprint(REUSE_TOKEN),
     startedAt: '2026-07-14T00:00:00.000Z',
     ...(devServer === undefined ? {} : { devServer })
@@ -49,22 +49,22 @@ function ownedWindowsSsh(lock: null | Record<string, unknown>) {
     async exec(command: string, options: { stdinData?: string } = {}): Promise<string> {
       const script = decodePowerShellCommand(command)
       execs.push({ script, stdinData: String(options.stdinData ?? '') })
-      const op = (name: string) => script.includes(`'hermes_cli.windows_ssh_runtime' '${name}'`)
+      const op = (name: string) => script.includes(`'aurora_cli.windows_ssh_runtime' '${name}'`)
 
       if (op('spawn')) {
         return JSON.stringify({ pid: 890, creationTimeNs: '1784219690452757600' })
       }
 
-      if (script.includes('Get-Command hermes')) {
-        return JSON.stringify({ os: 'Windows', arch: 'AMD64', hermesHome: HERMES_HOME, hermesPath: HERMES_PATH, python: 'C:\\h\\python.exe' })
+      if (script.includes('Get-Command aurora')) {
+        return JSON.stringify({ os: 'Windows', arch: 'AMD64', auroraHome: AURORA_HOME, auroraPath: AURORA_PATH, python: 'C:\\h\\python.exe' })
       }
 
-      if (script.includes('.hermes-update-in-progress')) {
+      if (script.includes('.aurora-update-in-progress')) {
         return 'CLEAR'
       }
 
       if (op('inspect')) {
-        return JSON.stringify({ path: HERMES_PATH, version: 'Hermes Agent v1', runtimeBootstrapOwnership: 1, supported: true })
+        return JSON.stringify({ path: AURORA_PATH, version: 'Aurora Agent v1', runtimeBootstrapOwnership: 1, supported: true })
       }
 
       if (op('read-lock')) {
@@ -76,7 +76,7 @@ function ownedWindowsSsh(lock: null | Record<string, unknown>) {
       }
 
       if (op('read-log')) {
-        return JSON.stringify({ content: 'HERMES_DASHBOARD_READY port=52050\n' })
+        return JSON.stringify({ content: 'AURORA_DASHBOARD_READY port=52050\n' })
       }
 
       return JSON.stringify({ ok: true })
@@ -94,18 +94,18 @@ function connectAs(ssh: ReturnType<typeof ownedWindowsSsh>, devServer: string) {
     pickLocalPort: async () => 50001,
     forward: async () => {},
     cancelForward: async () => {},
-    waitForHermes: async () => {},
+    waitForAurora: async () => {},
     probeReuseProof: async () => 'authenticated-ok',
     readyTimeoutMs: 2000
   })
 }
 
 const spawnOf = (ssh: ReturnType<typeof ownedWindowsSsh>) =>
-  ssh.execs.find(({ script }) => script.includes("'hermes_cli.windows_ssh_runtime' 'spawn'"))?.script
+  ssh.execs.find(({ script }) => script.includes("'aurora_cli.windows_ssh_runtime' 'spawn'"))?.script
 
 const writtenLocks = (ssh: ReturnType<typeof ownedWindowsSsh>) =>
   ssh.execs
-    .filter(({ script }) => script.includes("'hermes_cli.windows_ssh_runtime' 'write-lock'") && !script.includes("'spawn'"))
+    .filter(({ script }) => script.includes("'aurora_cli.windows_ssh_runtime' 'write-lock'") && !script.includes("'spawn'"))
     .map(({ stdinData }) => JSON.parse(stdinData))
 
 for (const [label, devServer, expected] of [
@@ -113,7 +113,7 @@ for (const [label, devServer, expected] of [
   ['a packaged build hands the Windows serve no renderer origin', '', '']
 ] as const) {
   test(`Windows spawn: ${label}`, async (): Promise<void> => {
-    // The backend trusts a dev renderer's http origin only when it inherits HERMES_DESKTOP_DEV_SERVER;
+    // The backend trusts a dev renderer's http origin only when it inherits AURORA_DESKTOP_DEV_SERVER;
     // windows_ssh_runtime.spawn_backend sets it from the payload's devServer, and only when non-empty.
     const ssh = ownedWindowsSsh(null)
 

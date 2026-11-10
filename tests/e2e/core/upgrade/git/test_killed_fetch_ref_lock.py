@@ -1,4 +1,4 @@
-"""A real ``hermes update`` killed inside its fetch's ref transaction, then the user's next update.
+"""A real ``aurora update`` killed inside its fetch's ref transaction, then the user's next update.
 
 Failure class: the Windows crash cell ``mid_fetch`` (``tests/e2e/core/windows_update``) kills the
 update's tree while its ``git fetch`` runs. When the kill lands while git holds
@@ -9,7 +9,7 @@ could fetch again until a user found and deleted the file.
 Here the kill point is deterministic: git's own ``reference-transaction`` hook (in the checkout's
 ``.git/hooks``, nothing in the product) holds the fetch in the ``prepared`` state, when every ref
 lock of the transaction is taken. The whole sandboxed update tree is then SIGKILLed (a closed
-console, ``taskkill /T /F``), and the next plain ``hermes update`` of the same home must complete
+console, ``taskkill /T /F``), and the next plain ``aurora update`` of the same home must complete
 to the target.
 """
 
@@ -58,7 +58,7 @@ def test_an_update_killed_holding_its_fetchs_ref_lock_does_not_block_the_next(tm
     hold.touch()
     # Rig.update's process is not a group leader, so H.kill_tree could not reach it.
     first = subprocess.Popen(
-        H.sandbox_argv([sys.executable, "-m", "hermes_cli.main", "update", "--yes", "--branch", "main",
+        H.sandbox_argv([sys.executable, "-m", "aurora_cli.main", "update", "--yes", "--branch", "main",
                         "--no-gateway-restart"], writable=[tmp_path]),
         env=rig.env("home-a"), cwd=rig.checkout, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT, text=True, start_new_session=True)

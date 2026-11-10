@@ -5,13 +5,13 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 [group('setup')]
 [unix]
 setup:
-    bash setup-hermes.sh --runtime-only --test-environment
+    bash setup-aurora.sh --runtime-only --test-environment
 
 # Provision the PM tools, Python runtime and test environment
 [group('setup')]
 [windows]
 setup:
-    powershell.exe -NoProfile -ExecutionPolicy Bypass -File setup-hermes.ps1 -RuntimeOnly
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File setup-aurora.ps1 -RuntimeOnly
 
 # Install the JS workspaces from pnpm-lock.yaml
 [group('setup')]
@@ -37,12 +37,12 @@ electron-runtime:
 [group('check')]
 [positional-arguments]
 check *args:
-    scripts/hermes-python scripts/check "$@"
+    scripts/aurora-python scripts/check "$@"
 
 # Apply ruff and JS workspace autofixes to the tree
 [group('check')]
 fix:
-    scripts/hermes-python -m scripts.code_health.ruff_runner check --fix .
+    scripts/aurora-python -m scripts.code_health.ruff_runner check --fix .
     pnpm -r fix
 
 # Run every JS workspace check
@@ -65,7 +65,7 @@ check-icons:
 check-repo-guards:
     scripts/ci/local_step.sh scripts/ci/check_infographic_images.py scripts/ci/check_common_ancestor.py scripts/ci/check_contributor_emails.py 'scripts/ci/scan_supply_chain.py patterns' 'scripts/ci/scan_supply_chain.py dependency-bounds'
 
-# Fail when uv.lock is out of sync with pyproject.toml (re-resolves against PyPI; prepares pm's runtime in the Hermes home)
+# Fail when uv.lock is out of sync with pyproject.toml (re-resolves against PyPI; prepares pm's runtime in the Aurora home)
 [group('check')]
 check-uv-lock:
     scripts/ci/local_step.sh scripts/ci/verify_uv_lock.py
@@ -78,7 +78,7 @@ lint-docker:
 # Validate every plugin-catalog entry's structure (no clone, no install)
 [group('check')]
 check-plugin-catalog:
-    scripts/hermes-python scripts/validate_plugin_catalog.py plugin-catalog/
+    scripts/aurora-python scripts/validate_plugin_catalog.py plugin-catalog/
 
 # Run the flake's checks (needs nix with flakes)
 [group('check')]
@@ -96,7 +96,7 @@ test +args:
 test-all:
     scripts/run_tests.sh
 
-# Run every JS workspace's tests (builds @hermes/ink first, as the TUI's check does)
+# Run every JS workspace's tests (builds @aurora/ink first, as the TUI's check does)
 [group('test')]
 test-js:
     pnpm --dir ui-tui run build:ink
@@ -105,7 +105,7 @@ test-js:
 # Run the plugin-catalog tests, the files scripts/ci/catalog_test_files.py selects
 [group('test')]
 test-catalog:
-    scripts/hermes-python scripts/ci/catalog_test_files.py | scripts/run_tests.sh --files-from -
+    scripts/aurora-python scripts/ci/catalog_test_files.py | scripts/run_tests.sh --files-from -
 
 # Run the WhatsApp bridge's node tests (after `just js-install-whatsapp-bridge`)
 [group('test')]
@@ -132,7 +132,7 @@ desktop-build:
 tui:
     pnpm --dir ui-tui run dev
 
-# Run a command against a throwaway HERMES_HOME (scripts/dev-sandbox.sh)
+# Run a command against a throwaway AURORA_HOME (scripts/dev-sandbox.sh)
 [group('dev')]
 [positional-arguments]
 sandbox *args:
@@ -156,8 +156,8 @@ docs-build:
 # Regenerate the skills dashboard data and the per-skill docs pages
 [group('docs')]
 docs-generate:
-    scripts/hermes-python website/scripts/extract-skills.py
-    scripts/hermes-python website/scripts/generate-skill-docs.py
+    scripts/aurora-python website/scripts/extract-skills.py
+    scripts/aurora-python website/scripts/generate-skill-docs.py
 
 # Run every docs check CI runs, after regenerating the skill docs
 [group('docs')]
@@ -172,12 +172,12 @@ docs-check-generated:
 # Fail on cross-page links that break on GitHub or on the site
 [group('docs')]
 docs-check-links:
-    scripts/hermes-python website/scripts/check_doc_links.py
+    scripts/aurora-python website/scripts/check_doc_links.py
 
 # Lint docs for ASCII box diagrams (pm installs the pinned ascii-guard on first run)
 [group('docs')]
 docs-lint-diagrams:
-    scripts/hermes-python -m scripts.ci.python_packages ascii-guard==2.3.0 ruamel.yaml==0.18.17 -- -m ascii_guard.cli lint --exclude-code-blocks website/docs
+    scripts/aurora-python -m scripts.ci.python_packages ascii-guard==2.3.0 ruamel.yaml==0.18.17 -- -m ascii_guard.cli lint --exclude-code-blocks website/docs
 
 # Stage pinned bionic pm packages and their runtime libraries into a Termux payload
 [group('dev')]
@@ -194,7 +194,7 @@ lock:
 [group('hooks')]
 [positional-arguments]
 ruff +files:
-    scripts/hermes-python -m scripts.code_health.ruff_runner check --config ruff.pre-commit.toml "$@"
+    scripts/aurora-python -m scripts.code_health.ruff_runner check --config ruff.pre-commit.toml "$@"
 
 # Pre-commit: eslint on the given files, from the calling workspace
 [group('hooks')]

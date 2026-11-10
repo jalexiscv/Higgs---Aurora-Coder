@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { JsonRpcGatewayClient } from '@hermes/shared'
+import { JsonRpcGatewayClient } from '@aurora/shared'
 import { expect, test, vi } from 'vitest'
 
 import {
@@ -14,7 +14,7 @@ import {
   transportOpened
 } from '../test/ws-gateway-fixture'
 
-import { GATEWAY_NOT_CONNECTED_MESSAGE, HermesGateway } from './client'
+import { AuroraGateway, GATEWAY_NOT_CONNECTED_MESSAGE } from './client'
 
 test('a public authority dial negotiates before create, submit and model mutation', async () => {
   const server = await listen()
@@ -34,7 +34,7 @@ test('a public authority dial negotiates before create, submit and model mutatio
           error = { code: 4001, message: 'invalid_params' }
         } else {
           result = { session_id: 's', stored_session_id: 's', revision: 1, execution_generation: 2,
-            info: { desktop_protocol: 'hermes-gateway-v1', profile_name: 'worker' } }
+            info: { desktop_protocol: 'aurora-gateway-v1', profile_name: 'worker' } }
         }
       } else if (frame.method === 'prompt.submit') {
         result = { admission_id: 'admitted', status: 'queued', ref: { session_id: 's', profile_id: '/profiles/worker' } }
@@ -53,7 +53,7 @@ test('a public authority dial negotiates before create, submit and model mutatio
       }
     })
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   let incomingProfile: string | undefined
   client.on('message.start', event => { incomingProfile = event.profile })
 
@@ -93,7 +93,7 @@ test.each(['abort', 'deadline', 'ready'] as const)('a request waiting for public
       reply(socket, frame)
     })
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   const opened = transportOpened(client)
   const connected = client.connect(publicUrl(server))
   void connected.catch(() => {})
@@ -139,7 +139,7 @@ test('a closed-handler redial survives the previous socket\'s close until its ow
     setTimeout(() => socket.send(readyFrame()), 20)
     socket.on('message', bytes => reply(socket, JSON.parse(bytes.toString())))
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   const url = publicUrl(server)
   let redial: Promise<void> | undefined
   let opened = false
@@ -171,10 +171,10 @@ test.each(['refused', 'closed before ready'] as const)('a public dial %s keeps t
   const url = publicUrl(server)
 
   if (failure === 'refused') { await new Promise<void>(resolve => server.close(() => resolve())) }
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
 
   try {
-    await expect(client.connect(url)).rejects.toThrow(failure === 'refused' ? 'Could not connect to Hermes gateway' : 'before protocol readiness')
+    await expect(client.connect(url)).rejects.toThrow(failure === 'refused' ? 'Could not connect to Aurora gateway' : 'before protocol readiness')
     await expect(client.request('config.get')).rejects.toThrow(GATEWAY_NOT_CONNECTED_MESSAGE)
   } finally {
     if (failure === 'refused') { client.close() } else { await shut(client, server) }
@@ -184,7 +184,7 @@ test.each(['refused', 'closed before ready'] as const)('a public dial %s keeps t
 test('a readiness timeout fails within the connect budget and leaves transport errors behind it', async () => {
   const server = await listen()
   server.on('connection', (socket: FixtureSocket) => { socket.on('message', bytes => reply(socket, JSON.parse(bytes.toString()))) })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   const opened = transportOpened(client)
   vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
 
@@ -210,7 +210,7 @@ test('state subscribers hear open only after readiness', async () => {
 
   let announceReady = () => {}
   server.on('connection', (socket: FixtureSocket) => { announceReady = () => socket.send(readyFrame()) })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   const heard: string[] = []
   const off = client.onState(state => { heard.push(state) })
   const opened = transportOpened(client)
@@ -235,7 +235,7 @@ test('a never-ready peer closes without ever reporting open', async () => {
   const server = await listen()
   let peer: FixtureSocket | undefined
   server.on('connection', (socket: FixtureSocket) => { peer = socket })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   const heard: string[] = []
   const off = client.onState(state => { heard.push(state) })
   const opened = transportOpened(client)
@@ -266,7 +266,7 @@ test('the first ready frame latches the wire for its connection', async () => {
       reply(socket, frame)
     })
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   let readies = 0
   client.on('gateway.ready', () => { readies += 1 })
 
@@ -287,7 +287,7 @@ test('a settled readiness sends a request without waiting a turn', async () => {
     socket.send(readyFrame({}))
     socket.on('message', bytes => reply(socket, JSON.parse(bytes.toString())))
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   const send = vi.spyOn(JsonRpcGatewayClient.prototype, 'request')
 
   try {
@@ -310,7 +310,7 @@ test.each(['unsubscribe', 'close'] as const)('a held open is not delivered after
 
   let announceReady = () => {}
   server.on('connection', (socket: FixtureSocket) => { announceReady = () => socket.send(readyFrame()) })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   const heard: string[] = []
 
   let offLater = () => {}

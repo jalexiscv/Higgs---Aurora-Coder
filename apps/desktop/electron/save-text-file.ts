@@ -114,8 +114,8 @@ export async function selectSavePath(options: any, deps: SaveTextFileDeps): Prom
   return result.canceled || !result.filePath ? null : result.filePath
 }
 
-/** `hermes:selectSavePath` (path only) and `hermes:saveTextFileAs` (dialog + main-process write). */
+/** `aurora:selectSavePath` (path only) and `aurora:saveTextFileAs` (dialog + main-process write). */
 export function registerSaveDialogIpc(ipcMain: IpcMainLike, deps: SaveTextFileDeps): void {
-  ipcMain.handle('hermes:selectSavePath', (_event, options = {}) => selectSavePath(options, deps))
-  ipcMain.handle('hermes:saveTextFileAs', (_event, request) => saveTextFileAs(request || {}, deps))
+  ipcMain.handle('aurora:selectSavePath', (_event, options = {}) => selectSavePath(options, deps))
+  ipcMain.handle('aurora:saveTextFileAs', (_event, request) => saveTextFileAs(request || {}, deps))
 }

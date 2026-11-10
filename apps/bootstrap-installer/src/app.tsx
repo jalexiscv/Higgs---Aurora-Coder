@@ -8,9 +8,9 @@ import Welcome from './routes/welcome'
 import { $bootstrap, $route, initialize } from './store'
 
 /*
- * App shell — Hermes Setup.
+ * App shell — Aurora Setup.
  *
- * No header chrome (the OS title bar already says "Hermes Setup"; an
+ * No header chrome (the OS title bar already says "Aurora Setup"; an
  * in-window repeat of the H mark + words was redundant slop).
  *
  * Route state lives in a single $route atom — 4 screens, no react-router.

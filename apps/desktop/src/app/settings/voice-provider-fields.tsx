@@ -2,17 +2,17 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
+  getAuroraConfigSchema,
   getElevenLabsVoices,
-  getHermesConfigSchema,
   type ProfileScope,
   profileScopeKey,
-  saveHermesConfigRecord
-} from '@/hermes'
+  saveAuroraConfigRecord
+} from '@/aurora'
 import { useI18n } from '@/i18n'
 import { notifyError } from '@/store/notifications'
-import type { HermesConfigRecord } from '@/types/hermes'
+import type { AuroraConfigRecord } from '@/types/aurora'
 
-import { hermesConfigCacheWriter, useHermesConfigRecord } from '../hooks/use-config-record'
+import { auroraConfigCacheWriter, useAuroraConfigRecord } from '../hooks/use-config-record'
 
 import { ConfigField } from './config-field'
 import { SECTIONS } from './constants'
@@ -53,30 +53,30 @@ export function VoiceProviderFields({
 }) {
   const { t } = useI18n()
   const keys = useMemo(() => voiceProviderKeys(section, providerKey), [section, providerKey])
-  const { data: loadedConfig, writeScope } = useHermesConfigRecord(profile)
+  const { data: loadedConfig, writeScope } = useAuroraConfigRecord(profile)
   // Parents pass `profile` as a fresh object literal each render; keying the
   // writer and the autosave effect on its identity would re-arm the 550ms
   // timer on every unrelated re-render. Key on the scope string instead
   // (null when unscoped, which maps to the bare cache row).
   const scopeKey = profile == null ? null : profileScopeKey(profile)
   // eslint-disable-next-line react-hooks/exhaustive-deps -- scopeKey is the identity of `profile`
-  const writeConfigCache = useMemo(() => hermesConfigCacheWriter(profile), [scopeKey])
+  const writeConfigCache = useMemo(() => auroraConfigCacheWriter(profile), [scopeKey])
 
   const { data: schemaResponse } = useQuery({
-    queryKey: ['hermes-config-schema'],
-    queryFn: () => getHermesConfigSchema(),
+    queryKey: ['aurora-config-schema'],
+    queryFn: () => getAuroraConfigSchema(),
     staleTime: 5 * 60 * 1000
   })
 
   // Local editable draft, seeded once from the shared cache (background
   // refetches must not clobber in-progress edits) — the same shape as
   // config-settings.tsx's autosave loop.
-  const [config, setConfig] = useState<HermesConfigRecord | null>(null)
+  const [config, setConfig] = useState<AuroraConfigRecord | null>(null)
   // Autosave sends only what changed against this baseline (config-settings.tsx
   // pattern): the seeded record is a default-expanded snapshot, and echoing it
   // whole would overwrite keys other surfaces changed since it loaded. The
   // baseline advances to each successfully saved draft.
-  const [baseline, setBaseline] = useState<HermesConfigRecord | null>(null)
+  const [baseline, setBaseline] = useState<AuroraConfigRecord | null>(null)
   const seeded = useRef(false)
 
   // eslint-disable-next-line no-restricted-syntax -- one-shot config seed flag, not an atom mirror
@@ -97,7 +97,7 @@ export function VoiceProviderFields({
     }
 
     const timeout = window.setTimeout(() => {
-      void saveHermesConfigRecord(diffConfig(baseline ?? {}, config), writeScope ?? profile)
+      void saveAuroraConfigRecord(diffConfig(baseline ?? {}, config), writeScope ?? profile)
         .then(() => {
           setBaseline(config)
           writeConfigCache(config)
@@ -147,7 +147,7 @@ export function VoiceProviderFields({
 
   const schema = schemaResponse?.fields ?? {}
 
-  const updateConfig = (next: HermesConfigRecord) => {
+  const updateConfig = (next: AuroraConfigRecord) => {
     saveVersionRef.current += 1
     setConfig(next)
     setSaveVersion(saveVersionRef.current)

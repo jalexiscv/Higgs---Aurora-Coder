@@ -26,7 +26,7 @@ def _verdict(tmp_path, *lines: str) -> str:
     logs = tmp_path / "logs"
     logs.mkdir()
     (logs / "gateway.log").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return X.restart_wait_verdict(SimpleNamespace(hermes_home=tmp_path))
+    return X.restart_wait_verdict(SimpleNamespace(aurora_home=tmp_path))
 
 
 @pytest.mark.parametrize("close", sorted(CLOSES))

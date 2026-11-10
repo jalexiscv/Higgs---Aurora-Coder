@@ -20,9 +20,9 @@ afterEach(() => {
 })
 
 function storeIn() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-gw-bind-'))
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'aurora-gw-bind-'))
   dirs.push(dir)
-  const root = path.join(dir, 'hermes')
+  const root = path.join(dir, 'aurora')
   const userData = path.join(dir, 'userData')
   fs.mkdirSync(root, { recursive: true })
   fs.mkdirSync(userData, { recursive: true })

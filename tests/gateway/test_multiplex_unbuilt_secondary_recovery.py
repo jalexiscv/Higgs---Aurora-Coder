@@ -190,7 +190,7 @@ class TestSecondaryAdapterUnavailableRecovery:
 
     @pytest.mark.asyncio
     async def test_plugin_load_rearm_is_capped_and_off_loop(self, monkeypatch):
-        import hermes_cli.plugins as plugins_mod
+        import aurora_cli.plugins as plugins_mod
 
         runner = _secondary_recovery_runner()
         _install_plugin_platform_context(
@@ -221,7 +221,7 @@ class TestSecondaryAdapterUnavailableRecovery:
         secondary's scope."""
         import contextvars
 
-        import hermes_cli.plugins as plugins_mod
+        import aurora_cli.plugins as plugins_mod
         from gateway.platform_registry import platform_registry
 
         scope = contextvars.ContextVar("probe_scope", default="launch")
@@ -309,7 +309,7 @@ class TestSecondaryAdapterUnavailableRecovery:
     @pytest.mark.asyncio
     @pytest.mark.parametrize("heals", [True, False])
     async def test_unbuilt_platform_status_names_the_cause(self, monkeypatch, heals):
-        """``hermes status`` shows an unbuilt secondary platform as adapter_unavailable: retrying when its plugin
+        """``aurora status`` shows an unbuilt secondary platform as adapter_unavailable: retrying when its plugin
         can still load, fatal when only a config change helps."""
         runner = _secondary_recovery_runner()
         _install_plugin_platform_context(monkeypatch, runner, _PluginPlatformRecoveryAdapter())
@@ -551,7 +551,7 @@ class TestSecondaryAdapterUnavailableRecovery:
         monkeypatch.setattr(runner, "_bounded_adapter_teardown", bounded_teardown)
         monkeypatch.setattr(runner, "_run_secondary_profile_reconnect", reconnect_until_cancelled)
         monkeypatch.setattr(runner, "_connect_initial_adapter_with_timeout", reserve_connect)
-        monkeypatch.setattr("hermes_state_registry.close_all_under", lambda directory: 0)
+        monkeypatch.setattr("aurora_state_registry.close_all_under", lambda directory: 0)
         home = tmp_path / "a"
         process_ownership.reserve([home])
         runner._served_profile_homes, runner._served_profile_signatures = {"a": home}, {}

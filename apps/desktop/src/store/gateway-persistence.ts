@@ -1,4 +1,4 @@
-import { LOCAL_CONNECTION_ID } from '@hermes/shared'
+import { LOCAL_CONNECTION_ID } from '@aurora/shared'
 
 import type { DesktopConnectionsRegistry, DesktopRegistryConnection } from '@/global'
 import { localBootstrapNeeded } from '@/lib/local-backend-probe'
@@ -40,7 +40,7 @@ function primaryPublished(primary: PrimaryGatewayRoute): boolean {
   return Boolean(primary.connectionId || primary.mode)
 }
 
-/** Dialing This device where Hermes is not installed would start the installer
+/** Dialing This device where Aurora is not installed would start the installer
  *  unseen; only a confirmed click may do that. */
 async function dial(
   connectionId: string,

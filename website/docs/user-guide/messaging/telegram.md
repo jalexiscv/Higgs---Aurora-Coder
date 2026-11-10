@@ -1,26 +1,26 @@
 ---
 sidebar_position: 1
 title: "Telegram"
-description: "Set up Hermes Agent as a Telegram bot"
+description: "Set up Aurora Agent as a Telegram bot"
 ---
 
 # Telegram Setup
 
-Hermes Agent integrates with Telegram as a full-featured conversational bot. Once connected, you can chat with your agent from any device, send voice memos that get auto-transcribed, receive scheduled task results, and use the agent in group chats. The integration is built on [python-telegram-bot](https://python-telegram-bot.org/) and supports text, voice, images, and file attachments.
+Aurora Agent integrates with Telegram as a full-featured conversational bot. Once connected, you can chat with your agent from any device, send voice memos that get auto-transcribed, receive scheduled task results, and use the agent in group chats. The integration is built on [python-telegram-bot](https://python-telegram-bot.org/) and supports text, voice, images, and file attachments.
 
 ## Quick setup (dashboard and desktop app)
 
-The **Messaging → Telegram** page in the [dashboard](../features/web-dashboard.md) and the [desktop app](../desktop.md) has a **Create with QR** button. Scan the code (or open the link) in Telegram; Hermes creates the bot for you, detects your Telegram user ID, writes `TELEGRAM_BOT_TOKEN` and `TELEGRAM_ALLOWED_USERS` into your profile's `.env`, and restarts the gateway. If you prefer to create the bot yourself, follow the manual steps below.
+The **Messaging → Telegram** page in the [dashboard](../features/web-dashboard.md) and the [desktop app](../desktop.md) has a **Create with QR** button. Scan the code (or open the link) in Telegram; Aurora creates the bot for you, detects your Telegram user ID, writes `TELEGRAM_BOT_TOKEN` and `TELEGRAM_ALLOWED_USERS` into your profile's `.env`, and restarts the gateway. If you prefer to create the bot yourself, follow the manual steps below.
 
-## Hermes Cloud with Team Gateway
+## Aurora Cloud with Team Gateway
 
-On a Hermes Cloud instance with Team Gateway on, Telegram (and Discord and Slack) reach your agent through a shared Hermes bot. A bot of your own does not run there: the gateway switches direct connections off at every start so the instance can sleep when idle. The Telegram card shows **Via Team Gateway** instead of **Create with QR**.
+On an Aurora Cloud instance with Team Gateway on, Telegram (and Discord and Slack) reach your agent through a shared Aurora bot. A bot of your own does not run there: the gateway switches direct connections off at every start so the instance can sleep when idle. The Telegram card shows **Via Team Gateway** instead of **Create with QR**.
 
 When Nous Portal manages who can reach the agent (agents created in the Portal), link your account from the Portal: the card lists the linked accounts and its **Link accounts in Nous Portal** button opens the agent there. Use **Message platforms** on the agent to get the link code.
 
 Otherwise the card links the account itself:
 
-1. Click **Link Telegram**. Hermes shows a one-time message such as `/link AB12CD`, a QR code and an **Open Telegram** button.
+1. Click **Link Telegram**. Aurora shows a one-time message such as `/link AB12CD`, a QR code and an **Open Telegram** button.
 2. Scan the QR code with your phone (or click the button) to open the shared bot, and send it that message from the Telegram account you want to use.
 3. The card lists the account once the bot sees the message. From then on, message the shared bot to talk to your agent.
 
@@ -32,8 +32,8 @@ Every Telegram bot requires an API token issued by [@BotFather](https://t.me/Bot
 
 1. Open Telegram and search for **@BotFather**, or visit [t.me/BotFather](https://t.me/BotFather)
 2. Send `/newbot`
-3. Choose a **display name** (e.g., "Hermes Agent") — this can be anything
-4. Choose a **username** — this must be unique and end in `bot` (e.g., `my_hermes_bot`)
+3. Choose a **display name** (e.g., "Aurora Agent") — this can be anything
+4. Choose a **username** — this must be unique and end in `bot` (e.g., `my_aurora_bot`)
 5. BotFather replies with your **API token**. It looks like this:
 
 ```
@@ -73,7 +73,7 @@ Telegram bots have no real online/offline presence dot — that green dot is a
 surface is the bot's **short description** (the line shown under its name in the
 bot's profile).
 
-Enable `status_indicator` and Hermes sets that short description to **Online**
+Enable `status_indicator` and Aurora sets that short description to **Online**
 when the gateway connects and **Offline** on a clean shutdown:
 
 ```yaml
@@ -102,7 +102,7 @@ Notes:
 Messages sent while the gateway is off (a desktop shut down overnight, a
 restart, an update) wait in Telegram's Bot API queue for up to 24 hours. By
 default the adapter keeps that queue on a cold boot and answers the backlog
-in order once it starts; updates Hermes already handled before the restart
+in order once it starts; updates Aurora already handled before the restart
 are skipped by its persisted update receipts, so they are not answered twice.
 
 Set `drop_pending_on_cold_boot: true` to discard that backlog on startup
@@ -146,7 +146,7 @@ platforms:
 ### Albums (Optional)
 
 Telegram delivers an album (several photos or files sent together) as one update per item.
-Hermes waits until every item that has arrived is downloaded, then sends the whole album to the
+Aurora waits until every item that has arrived is downloaded, then sends the whole album to the
 agent as one message. It waits at most 8 seconds for a slow download before sending what it has.
 After the last item, it waits a short debounce (default 1.5 s, at most 10 s) for one sent later.
 Raise the debounce if your phone uploads album items far apart:
@@ -160,7 +160,7 @@ platforms:
 
 ### Repeated inbound updates
 
-Hermes suppresses repeated Telegram `update_id` values before message batching,
+Aurora suppresses repeated Telegram `update_id` values before message batching,
 command/media handling, observed group-history writes and plugin observers.
 The receiving adapter and numeric bot ID scope this check; it does not deduplicate
 by text or `message_id`. A genuine edit with a new update ID can still be processed.
@@ -170,7 +170,7 @@ This is bounded protection, not an exactly-once guarantee:
 - The adapter remembers the most recent 4096 completed admissions per bot. Active
   updates stay claimed until dispatch and its scheduled PTB handler tasks finish,
   including nonblocking native plugins and registered error callbacks.
-- Completed update IDs are also saved per bot under the Hermes home and kept for
+- Completed update IDs are also saved per bot under the Aurora home and kept for
   24 hours, the longest Telegram holds an undelivered update. Reconnects, adapter
   rebuilds and gateway restarts therefore do not answer an already-handled update
   again, including the backlog answered after a cold boot. A receipt older than
@@ -194,9 +194,9 @@ For a suspected late replay, compare both occurrences' bot/profile, chat/topic,
 
 ### Command menu priority and cap (Optional)
 
-Hermes registers its command menu automatically when the Telegram gateway starts. The menu is built from the central slash-command registry plus eligible plugin/skill commands, then capped so Telegram accepts the payload reliably. The default cap is 60 commands — enough to keep all built-in commands plus common skill commands visible.
+Aurora registers its command menu automatically when the Telegram gateway starts. The menu is built from the central slash-command registry plus eligible plugin/skill commands, then capped so Telegram accepts the payload reliably. The default cap is 60 commands — enough to keep all built-in commands plus common skill commands visible.
 
-If you have skill, plugin, or built-in commands that should stay visible in Telegram's `/` picker, prioritize them in `~/.hermes/config.yaml`:
+If you have skill, plugin, or built-in commands that should stay visible in Telegram's `/` picker, prioritize them in `~/.aurora/config.yaml`:
 
 ```yaml
 platforms:
@@ -210,19 +210,19 @@ platforms:
           - excalidraw       # skill commands work here too
 ```
 
-`priority_mode` controls how your list combines with Hermes' built-in priority list:
+`priority_mode` controls how your list combines with Aurora's built-in priority list:
 
-- `prepend`: put your commands first, then Hermes defaults
-- `append`: keep Hermes defaults first, then your commands
+- `prepend`: put your commands first, then Aurora defaults
+- `append`: keep Aurora defaults first, then your commands
 - `replace`: use only your list for priority ordering
 
 Priority is applied to the **combined** candidate list (core commands, plugin commands, and skill commands) before the cap is enforced — so a prioritized skill command is guaranteed a menu slot even when core commands alone would fill the menu. Previously skills were always trimmed first and alphabetically, so late-alphabet skills could never appear regardless of `priority`.
 
-Telegram allows up to 100 BotCommands, but large command payloads can fail. Hermes defaults to 60 for reliability and clamps configured values to `1..100`; use `/commands` for the full command list.
+Telegram allows up to 100 BotCommands, but large command payloads can fail. Aurora defaults to 60 for reliability and clamps configured values to `1..100`; use `/commands` for the full command list.
 
 ### Inline command picker: search every command (no cap)
 
-The `/` menu is capped, but Telegram's **inline mode** is not. Once enabled, type `@yourbotname` followed by a search term in any chat to get a live, searchable picker over **every** Hermes command and installed skill — results are computed per keystroke and paginated, so nothing is ever trimmed:
+The `/` menu is capped, but Telegram's **inline mode** is not. Once enabled, type `@yourbotname` followed by a search term in any chat to get a live, searchable picker over **every** Aurora command and installed skill — results are computed per keystroke and paginated, so nothing is ever trimmed:
 
 ```
 @yourbotname plan            → tap the /plan result to send it
@@ -238,7 +238,7 @@ Results are only served to users who pass your gateway allowlist — unauthorize
 
 ### Forum topics
 
-In Telegram supergroups with topics enabled, the command menu does **not** inherit from the global `AllGroupChats` scope — each forum supergroup needs its own chat-scoped command registration. Hermes handles this automatically: the first time a message arrives in a forum supergroup, the gateway lazily registers the same capped menu scoped to that chat (`BotCommandScopeChat`). This happens once per forum chat per gateway run and is transparent to users — the `/` menu appears in forum topics just like in regular groups, without any configuration.
+In Telegram supergroups with topics enabled, the command menu does **not** inherit from the global `AllGroupChats` scope — each forum supergroup needs its own chat-scoped command registration. Aurora handles this automatically: the first time a message arrives in a forum supergroup, the gateway lazily registers the same capped menu scoped to that chat (`BotCommandScopeChat`). This happens once per forum chat per gateway run and is transparent to users — the `/` menu appears in forum topics just like in regular groups, without any configuration.
 
 ## Step 3: Privacy Mode (Critical for Groups)
 
@@ -295,7 +295,7 @@ This requires Telegram to deliver ordinary group messages to the gateway, so dis
 
 ## Step 4: Find Your User ID
 
-Hermes Agent uses numeric Telegram user IDs to control access. Your user ID is **not** your username — it's a number like `123456789`.
+Aurora Agent uses numeric Telegram user IDs to control access. Your user ID is **not** your username — it's a number like `123456789`.
 
 **Method 1 (recommended):** Message [@userinfobot](https://t.me/userinfobot) — it instantly replies with your user ID.
 
@@ -303,19 +303,19 @@ Hermes Agent uses numeric Telegram user IDs to control access. Your user ID is *
 
 Save this number; you'll need it for the next step.
 
-## Step 5: Configure Hermes
+## Step 5: Configure Aurora
 
 ### Option A: Interactive Setup (Recommended)
 
 ```bash
-hermes gateway setup
+aurora gateway setup
 ```
 
 Select **Telegram** when prompted. The wizard asks for your bot token and allowed user IDs, then writes the configuration for you.
 
 ### Option B: Manual Configuration
 
-Add the following to `~/.hermes/.env`:
+Add the following to `~/.aurora/.env`:
 
 ```bash
 TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrSTUvwxYZ
@@ -325,7 +325,7 @@ TELEGRAM_ALLOWED_USERS=123456789    # Comma-separated for multiple users
 ### Start the Gateway
 
 ```bash
-hermes gateway
+aurora gateway
 ```
 
 The bot should come online within seconds. Send it a message on Telegram to verify.
@@ -350,14 +350,14 @@ Recommended pattern:
 terminal:
   backend: docker
   docker_volumes:
-    - "/home/user/.hermes/cache/documents:/output"
+    - "/home/user/.aurora/cache/documents:/output"
 ```
 
 Then:
 
 - write files inside Docker to `/output/...`
 - emit the **host-visible** path in `MEDIA:`, for example:
-  `MEDIA:/home/user/.hermes/cache/documents/report.txt`
+  `MEDIA:/home/user/.aurora/cache/documents/report.txt`
 
 If you already have a `docker_volumes:` section, add the new mount to the same
 list. YAML duplicate keys silently override earlier ones.
@@ -380,7 +380,7 @@ Anything on this list is delivered as a native attachment on platforms that supp
 
 ## Webhook Mode
 
-By default, Hermes connects to Telegram using **long polling** — the gateway makes outbound requests to Telegram's servers to fetch new updates. This works well for local and always-on deployments.
+By default, Aurora connects to Telegram using **long polling** — the gateway makes outbound requests to Telegram's servers to fetch new updates. This works well for local and always-on deployments.
 
 For **cloud deployments** (Fly.io, Railway, Render, etc.), **webhook mode** is more cost-effective. These platforms can auto-wake suspended machines on inbound HTTP traffic, but not on outbound connections. Since polling is outbound, a polling bot can never sleep. Webhook mode flips the direction — Telegram pushes updates to your bot's HTTPS URL, enabling sleep-when-idle deployments.
 
@@ -393,7 +393,7 @@ For **cloud deployments** (Fly.io, Railway, Render, etc.), **webhook mode** is m
 
 ### Configuration
 
-Add the following to `~/.hermes/.env`:
+Add the following to `~/.aurora/.env`:
 
 ```bash
 TELEGRAM_WEBHOOK_URL=https://my-app.fly.dev/telegram
@@ -459,13 +459,13 @@ Supported schemes: `http://`, `https://`, `socks5://`.
 
 The proxy applies to both the main Telegram connection and the fallback IP transport. If no Telegram-specific proxy is set, the gateway falls back to `HTTPS_PROXY` / `HTTP_PROXY` / `ALL_PROXY` (or macOS system proxy auto-detection).
 
-If the fallback IP discovery path is unhealthy on your host, set `HERMES_TELEGRAM_DISABLE_FALLBACK_IPS=true` to keep cold connect on the plain `api.telegram.org` path. You can also bound DNS-over-HTTPS fallback discovery with `HERMES_TELEGRAM_FALLBACK_DISCOVERY_TIMEOUT` in seconds; the default is `5`.
+If the fallback IP discovery path is unhealthy on your host, set `AURORA_TELEGRAM_DISABLE_FALLBACK_IPS=true` to keep cold connect on the plain `api.telegram.org` path. You can also bound DNS-over-HTTPS fallback discovery with `AURORA_TELEGRAM_FALLBACK_DISCOVERY_TIMEOUT` in seconds; the default is `5`.
 
 ## Home Channel
 
 Use the `/sethome` command in any Telegram chat (DM or group) to designate it as the **home channel**. Scheduled tasks (cron jobs) deliver their results to this channel.
 
-You can also set it manually in `~/.hermes/.env`:
+You can also set it manually in `~/.aurora/.env`:
 
 ```bash
 TELEGRAM_HOME_CHANNEL=-1001234567890
@@ -494,25 +494,25 @@ A contact card or location pin you share with the bot reaches the agent as a sho
 
 ### Incoming Voice (Speech-to-Text)
 
-Voice messages you send on Telegram are automatically transcribed by Hermes's configured STT provider and injected as text into the conversation.
+Voice messages you send on Telegram are automatically transcribed by Aurora's configured STT provider and injected as text into the conversation.
 
-- `local` uses `faster-whisper` on the machine running Hermes — no API key required
+- `local` uses `faster-whisper` on the machine running Aurora — no API key required
 - `groq` uses Groq Whisper and requires `GROQ_API_KEY`
 - `openai` uses OpenAI Whisper and requires `VOICE_TOOLS_OPENAI_KEY`
 
 #### Skipping STT: pass the raw audio file to the agent
 
-If you'd rather have the **agent itself** handle audio — for diarization, a custom transcription tool, or just archiving the recording — set `stt.enabled: false` in `~/.hermes/config.yaml`:
+If you'd rather have the **agent itself** handle audio — for diarization, a custom transcription tool, or just archiving the recording — set `stt.enabled: false` in `~/.aurora/config.yaml`:
 
 ```yaml
 stt:
   enabled: false
 ```
 
-With STT disabled, the gateway still downloads the voice/audio attachment into Hermes's audio cache, but **does not transcribe it**. The agent receives the message with a marker like:
+With STT disabled, the gateway still downloads the voice/audio attachment into Aurora's audio cache, but **does not transcribe it**. The agent receives the message with a marker like:
 
 ```
-[The user sent a voice message: /home/<user>/.hermes/cache/audio/<hash>.ogg]
+[The user sent a voice message: /home/<user>/.aurora/cache/audio/<hash>.ogg]
 ```
 
 Your tools or skills can then read that path directly (e.g., hand it off to a local diarization pipeline, a richer transcription model, or upload it to long-term storage). The file extension reflects the original format Telegram delivered (`.ogg` for voice notes, `.mp3`/`.m4a`/etc. for audio attachments).
@@ -542,7 +542,7 @@ Configure the TTS provider in your `config.yaml` under the `tts.provider` key.
 
 ## Large Files (>20MB) via Local Bot API Server
 
-Telegram's **public** Bot API caps `getFile` downloads at **20 MB**, so any voice note, audio file, video, or document larger than that is silently rejected by Hermes with a "too large" reply. The documented way around this is to run a **local** [telegram-bot-api](https://github.com/tdlib/telegram-bot-api) daemon — the same server software Telegram uses, but running on your network. A local server raises the file ceiling to **2 GB** and Hermes auto-lifts its own internal cap when it sees a custom `base_url` configured.
+Telegram's **public** Bot API caps `getFile` downloads at **20 MB**, so any voice note, audio file, video, or document larger than that is silently rejected by Aurora with a "too large" reply. The documented way around this is to run a **local** [telegram-bot-api](https://github.com/tdlib/telegram-bot-api) daemon — the same server software Telegram uses, but running on your network. A local server raises the file ceiling to **2 GB** and Aurora auto-lifts its own internal cap when it sees a custom `base_url` configured.
 
 This unlocks workflows like:
 
@@ -607,9 +607,9 @@ curl "http://127.0.0.1:8081/bot<YOUR_BOT_TOKEN>/getMe"
 # expected response: {"ok":true,"result":{"id":...,"is_bot":true,...}}
 ```
 
-### Step 4: Point Hermes at the local server
+### Step 4: Point Aurora at the local server
 
-Add the URLs under `platforms.telegram.extra` in `~/.hermes/config.yaml`:
+Add the URLs under `platforms.telegram.extra` in `~/.aurora/config.yaml`:
 
 ```yaml
 platforms:
@@ -618,25 +618,25 @@ platforms:
       base_url: "http://127.0.0.1:8081/bot"
       base_file_url: "http://127.0.0.1:8081/file/bot"
       local_mode: true        # see Step 5 below — only set this if the bot's data
-                              # directory is readable by the Hermes process
+                              # directory is readable by the Aurora process
 ```
 
 :::caution Use `platforms.telegram.extra`, not `telegram.extra`
 At the moment only the `platforms.<name>.extra` form is deep-merged into the platform config. Keys placed directly under a top-level `telegram.extra` block are silently dropped.
 :::
 
-When `base_url` is set, Hermes:
+When `base_url` is set, Aurora:
 
 - Builds the python-telegram-bot client against the local server
 - Auto-lifts its internal document/audio size cap from 20 MB → 2 GB
 - Reports the active limit in the "too large" error message (`Maximum: 2048 MB.`) so it's obvious which mode you're in
-- Sends through the same server outside the gateway too: `hermes send`, the `send_message` tool and cron deliveries that fall back to the standalone sender
+- Sends through the same server outside the gateway too: `aurora send`, the `send_message` tool and cron deliveries that fall back to the standalone sender
 
 Restart the gateway and look for a confirmation log line:
 
 ```bash
-hermes gateway restart
-grep -E "Using custom Telegram base_url|Using Telegram local_mode" ~/.hermes/logs/gateway.log | tail
+aurora gateway restart
+grep -E "Using custom Telegram base_url|Using Telegram local_mode" ~/.aurora/logs/gateway.log | tail
 ```
 
 ### Step 5: `local_mode` — file access on disk
@@ -644,35 +644,35 @@ grep -E "Using custom Telegram base_url|Using Telegram local_mode" ~/.hermes/log
 The local server has **two ways** to deliver files:
 
 1. **Without `--local`** (the default): files are served over HTTP at `/file/bot<TOKEN>/<path>`, same as the public Bot API. The 20MB ceiling stays in effect. Useful as a network-fix only (e.g. when `api.telegram.org` is unreachable but you can self-host); not what you want for the size lift.
-2. **With `--local`** (set via `TELEGRAM_LOCAL=1` above): files are written to the server's filesystem and the `getFile` response returns an **absolute path** instead of an HTTP URL. The 20MB ceiling is lifted. Hermes must then read the bytes **from disk**, not over HTTP.
+2. **With `--local`** (set via `TELEGRAM_LOCAL=1` above): files are written to the server's filesystem and the `getFile` response returns an **absolute path** instead of an HTTP URL. The 20MB ceiling is lifted. Aurora must then read the bytes **from disk**, not over HTTP.
 
-To make the disk-read path work, set `local_mode: true` in the config above **and** make sure the Hermes process can read the path the server returns. Two scenarios:
+To make the disk-read path work, set `local_mode: true` in the config above **and** make sure the Aurora process can read the path the server returns. Two scenarios:
 
-- **Same machine** — telegram-bot-api and Hermes run on the same host. Bind-mount the data volume to a directory that Hermes can read (e.g., `/var/lib/telegram-bot-api`), and make sure the file ownership matches. The container drops privileges to its internal `telegram-bot-api` user (uid varies by image); the simplest fix is to add `user: "<UID>:<GID>"` to the compose service so files are owned by a uid Hermes already runs as.
-- **Different machines** — the bot server runs on one host (e.g., a NAS, a separate VM) and Hermes on another. The server's data directory must be shared with the Hermes machine at the **same absolute path** the server reports (typically `/var/lib/telegram-bot-api`). NFS works well for this; CIFS/SMB with `uid=` mount remapping is friendlier if you don't want to deal with uid mismatches at the filesystem level.
+- **Same machine** — telegram-bot-api and Aurora run on the same host. Bind-mount the data volume to a directory that Aurora can read (e.g., `/var/lib/telegram-bot-api`), and make sure the file ownership matches. The container drops privileges to its internal `telegram-bot-api` user (uid varies by image); the simplest fix is to add `user: "<UID>:<GID>"` to the compose service so files are owned by a uid Aurora already runs as.
+- **Different machines** — the bot server runs on one host (e.g., a NAS, a separate VM) and Aurora on another. The server's data directory must be shared with the Aurora machine at the **same absolute path** the server reports (typically `/var/lib/telegram-bot-api`). NFS works well for this; CIFS/SMB with `uid=` mount remapping is friendlier if you don't want to deal with uid mismatches at the filesystem level.
 
-If `local_mode: true` is set but Hermes can't `stat` the returned file path (permissions or wrong mount), python-telegram-bot silently falls back to an HTTP `getFile` against the local server — which in `--local` mode responds with `404 Not Found`. The symptom shows up in `gateway.log` as:
+If `local_mode: true` is set but Aurora can't `stat` the returned file path (permissions or wrong mount), python-telegram-bot silently falls back to an HTTP `getFile` against the local server — which in `--local` mode responds with `404 Not Found`. The symptom shows up in `gateway.log` as:
 
 ```
 [Telegram] Failed to cache voice: Not Found
 telegram.error.InvalidToken: Not Found
 ```
 
-If you see that, the cap-lift is working but the file-share isn't. Verify `ls -la /var/lib/telegram-bot-api/<TOKEN>/voice/` from the Hermes host as the user the gateway runs as, and confirm a single file is `cat`-able without a permission error.
+If you see that, the cap-lift is working but the file-share isn't. Verify `ls -la /var/lib/telegram-bot-api/<TOKEN>/voice/` from the Aurora host as the user the gateway runs as, and confirm a single file is `cat`-able without a permission error.
 
 ### Step 6: Test it
 
 Send the bot a voice note or audio file that's bigger than 20 MB. Tail the gateway log:
 
 ```bash
-tail -f ~/.hermes/logs/gateway.log | grep -iE "telegram|cache"
+tail -f ~/.aurora/logs/gateway.log | grep -iE "telegram|cache"
 ```
 
-You should see a `[Telegram] Cached user voice at /home/<user>/.hermes/cache/audio/...` line and **no** "too large" rejection. Combined with `stt.enabled: false` (above), the path to the original audio file then lands in the agent's inbound message for downstream processing.
+You should see a `[Telegram] Cached user voice at /home/<user>/.aurora/cache/audio/...` line and **no** "too large" rejection. Combined with `stt.enabled: false` (above), the path to the original audio file then lands in the agent's inbound message for downstream processing.
 
 ## Group Chat Usage
 
-Hermes Agent works in Telegram group chats with a few considerations:
+Aurora Agent works in Telegram group chats with a few considerations:
 
 - **Privacy mode** determines what messages the bot can see (see [Step 3](#step-3-privacy-mode-critical-for-groups))
 - `TELEGRAM_ALLOWED_USERS` still applies — only authorized users can trigger the bot, even in groups
@@ -682,12 +682,12 @@ Hermes Agent works in Telegram group chats with a few considerations:
   - `@botusername` mentions
   - `/command@botusername` (Telegram's bot-menu command form that includes the bot name)
   - matches for one of your configured regex wake words in `telegram.mention_patterns`
-- In groups with multiple Hermes bots, `telegram.exclusive_bot_mentions` keeps routing deterministic. When a message is addressed to one or more Telegram bot usernames, only the mentioned bot profiles process it; other Hermes bots ignore it before reply and wake-word fallbacks run (and log one `Skipping message ... addressed to other bot(s)` line). A message is addressed to another bot only when it starts with that bot's handle (`@OtherBot do this`, `@BotA @BotB: compare`, `/status@OtherBot`). A handle later in the text, as in `the shop has its own bot now (@ShopBot)`, only talks about that bot and does not silence this one. This bot's own handle anywhere still wins unless an opening command, optionally after this bot's address, explicitly targets another bot. Enabled by default.
-- Renaming the bot's `@username` in BotFather is picked up automatically — Hermes follows the new handle for mention routing without a gateway restart. Collectible (Fragment) usernames that don't end in `bot` are supported too.
-- Use `telegram.ignored_threads` to keep Hermes silent in specific Telegram forum topics, even when the group would otherwise allow free responses or mention-triggered replies
-- Use `telegram.allowed_topics` as a forum-topic whitelist — when set, Hermes ignores messages from any other group/forum topic and logs the first drop per chat/topic at INFO (DMs are never filtered). Telegram's General topic, and any group message without a `message_thread_id`, is normalized to topic ID `1`. Whitelist evaluation runs before `ignored_threads`.
+- In groups with multiple Aurora bots, `telegram.exclusive_bot_mentions` keeps routing deterministic. When a message is addressed to one or more Telegram bot usernames, only the mentioned bot profiles process it; other Aurora bots ignore it before reply and wake-word fallbacks run (and log one `Skipping message ... addressed to other bot(s)` line). A message is addressed to another bot only when it starts with that bot's handle (`@OtherBot do this`, `@BotA @BotB: compare`, `/status@OtherBot`). A handle later in the text, as in `the shop has its own bot now (@ShopBot)`, only talks about that bot and does not silence this one. This bot's own handle anywhere still wins unless an opening command, optionally after this bot's address, explicitly targets another bot. Enabled by default.
+- Renaming the bot's `@username` in BotFather is picked up automatically — Aurora follows the new handle for mention routing without a gateway restart. Collectible (Fragment) usernames that don't end in `bot` are supported too.
+- Use `telegram.ignored_threads` to keep Aurora silent in specific Telegram forum topics, even when the group would otherwise allow free responses or mention-triggered replies
+- Use `telegram.allowed_topics` as a forum-topic whitelist — when set, Aurora ignores messages from any other group/forum topic and logs the first drop per chat/topic at INFO (DMs are never filtered). Telegram's General topic, and any group message without a `message_thread_id`, is normalized to topic ID `1`. Whitelist evaluation runs before `ignored_threads`.
 - Use `telegram.free_response_chats` / `telegram.free_response_topics` to bypass `require_mention` for a whole chat or a single forum topic only.
-- If `telegram.require_mention` is left unset or false, Hermes keeps the previous open-group behavior and responds to normal group messages it can see
+- If `telegram.require_mention` is left unset or false, Aurora keeps the previous open-group behavior and responds to normal group messages it can see
 
 ### Letting the bot stay silent in a group
 
@@ -702,9 +702,9 @@ A bot that reads every group message can answer exactly `[SILENT]` (or another [
 
 A message still gets the notice while the bot's own identity is unknown, or when it replies to a message whose author is unknown or that was posted as a chat (a linked channel's post, an anonymous admin). A voice note, video note or audio file without a caption also gets the notice, because its words are not in the message text. A forum topic's root message is not a reply to another member.
 
-### Multiple Hermes bots in one group
+### Multiple Aurora bots in one group
 
-If you run several Hermes profiles in the same Telegram group, create one Telegram bot token per profile and start one gateway per profile. Do not reuse the same bot token in multiple running gateways; Telegram will reject concurrent polling for the same token.
+If you run several Aurora profiles in the same Telegram group, create one Telegram bot token per profile and start one gateway per profile. Do not reuse the same bot token in multiple running gateways; Telegram will reject concurrent polling for the same token.
 
 Recommended group config:
 
@@ -715,9 +715,9 @@ telegram:
   mention_patterns: []
 ```
 
-With this setup, a group message like `@research_bot @ops_bot summarize this` is processed by `research_bot` and `ops_bot` only. Other Hermes bots in the group stay silent, even if the message is a reply to one of their earlier messages or would otherwise match a shared wake word.
+With this setup, a group message like `@research_bot @ops_bot summarize this` is processed by `research_bot` and `ops_bot` only. Other Aurora bots in the group stay silent, even if the message is a reply to one of their earlier messages or would otherwise match a shared wake word.
 
-Two Hermes bots that answer each other's quote-replies can still loop forever with `TELEGRAM_ALLOW_BOTS=all`, because a reply to the bot always passes the `require_mention` gate. Setting `telegram.bots_require_mention: true` (env `TELEGRAM_BOTS_REQUIRE_MENTION`) closes that path: a message from another bot only triggers a response when it explicitly `@mentions` this bot, while human replies keep working unchanged. This also holds in `free_response_chats` / `free_response_topics`: those let *humans* trigger Hermes without a mention, but another bot must still `@mention` it explicitly.
+Two Aurora bots that answer each other's quote-replies can still loop forever with `TELEGRAM_ALLOW_BOTS=all`, because a reply to the bot always passes the `require_mention` gate. Setting `telegram.bots_require_mention: true` (env `TELEGRAM_BOTS_REQUIRE_MENTION`) closes that path: a message from another bot only triggers a response when it explicitly `@mentions` this bot, while human replies keep working unchanged. This also holds in `free_response_chats` / `free_response_topics`: those let *humans* trigger Aurora without a mention, but another bot must still `@mention` it explicitly.
 
 A bot-to-bot loop guard also meters every chat where bot-authored messages are admitted (`TELEGRAM_ALLOW_BOTS` set to `mentions` or `all`). Once 20 bot messages land in one chat inside 5 minutes, further bot messages in that chat are dropped for 10 minutes and one warning is logged; human messages are never counted or dropped. Settings live in `config.yaml`:
 
@@ -732,7 +732,7 @@ gateway:
 
 A legitimate high-volume bot posting more than 20 messages into one chat in 5 minutes trips the guard too; raise `max_events` for that gateway.
 
-The same block also ends a bot-to-bot exchange long before that budget. Your message starts an exchange. After it, each bot message is one hop, and past `max_hops` (default 4) further bot messages start no turn. A bot repeating the same text in one exchange counts once. With `bot_replies_expect_reply: false` (the default), Hermes does not answer a bot that is answering Hermes's own reply. Hermes also never sends its runtime notices to a bot: busy and interrupt acknowledgements, progress and status lines, the "not processed" and retry hints, and model-fallback notices. A bot gets only the model's reply.
+The same block also ends a bot-to-bot exchange long before that budget. Your message starts an exchange. After it, each bot message is one hop, and past `max_hops` (default 4) further bot messages start no turn. A bot repeating the same text in one exchange counts once. With `bot_replies_expect_reply: false` (the default), Aurora does not answer a bot that is answering Aurora's own reply. Aurora also never sends its runtime notices to a bot: busy and interrupt acknowledgements, progress and status lines, the "not processed" and retry hints, and model-fallback notices. A bot gets only the model's reply.
 
 ```yaml
 gateway:
@@ -741,7 +741,7 @@ gateway:
     bot_replies_expect_reply: false
 ```
 
-Group conversation text and media captions keep every mention when the message names other participants too (`@research_bot , @ops_bot are you both listening?` reaches `research_bot` verbatim); when this bot is the only one addressed, its own handle is still stripped so short answers such as `@hermes_bot 2` keep working. Group turns also carry the bot's own Telegram username in the per-channel context so the model can tell which retained mentions are for it. Slash commands still use the normal command-trigger cleanup.
+Group conversation text and media captions keep every mention when the message names other participants too (`@research_bot , @ops_bot are you both listening?` reaches `research_bot` verbatim); when this bot is the only one addressed, its own handle is still stripped so short answers such as `@aurora_bot 2` keep working. Group turns also carry the bot's own Telegram username in the per-channel context so the model can tell which retained mentions are for it. Slash commands still use the normal command-trigger cleanup.
 
 Set `exclusive_bot_mentions: false` only for legacy groups where explicit mentions should not override reply and wake-word triggers.
 
@@ -749,17 +749,17 @@ To operate several profiles, run the gateway command once per profile. For examp
 
 ```bash
 # default profile
-hermes gateway start
-hermes gateway status
-hermes gateway stop
+aurora gateway start
+aurora gateway status
+aurora gateway stop
 
 # named profiles
-hermes -p research gateway start
-hermes -p research gateway status
-hermes -p research gateway stop
+aurora -p research gateway start
+aurora -p research gateway status
+aurora -p research gateway stop
 ```
 
-For a small fixed fleet, use a shell loop or script that calls `hermes gateway <action>` for the default profile and `hermes -p <profile> gateway <action>` for each named profile. This is more reliable than assuming a single process-level command controls every named profile on every service manager.
+For a small fixed fleet, use a shell loop or script that calls `aurora gateway <action>` for the default profile and `aurora -p <profile> gateway <action>` for each named profile. This is more reliable than assuming a single process-level command controls every named profile on every service manager.
 
 ### Troubleshooting: works in DMs but not groups
 
@@ -767,19 +767,19 @@ If the bot responds in a private chat but stays silent in a group, check these
 gates in order:
 
 1. **Telegram delivery:** turn off BotFather privacy mode, promote the bot to
-   admin, or mention the bot directly. Hermes cannot respond to group messages
+   admin, or mention the bot directly. Aurora cannot respond to group messages
    that Telegram never delivers to the bot.
 2. **Rejoin after changing privacy:** remove the bot from the group and add it
    again after changing BotFather privacy settings. Telegram may keep the old
    delivery behavior for existing memberships.
-3. **Hermes authorization:** make sure the sender is listed in
+3. **Aurora authorization:** make sure the sender is listed in
    `TELEGRAM_ALLOWED_USERS` or `TELEGRAM_GROUP_ALLOWED_USERS`, or allow the
    group chat with `TELEGRAM_GROUP_ALLOWED_CHATS`.
 4. **Mention filters:** if `telegram.require_mention: true` is set, normal
    group chatter is ignored unless the message is a slash command, reply to the
    bot, `@botusername` mention, or configured `mention_patterns` match.
 5. **Multi-bot routing:** if a group contains several bots, make sure each
-   Hermes profile uses a unique bot token and keep `exclusive_bot_mentions`
+   Aurora profile uses a unique bot token and keep `exclusive_bot_mentions`
    enabled unless you intentionally want legacy shared-trigger behavior.
 
 Negative chat IDs are normal for Telegram groups and supergroups. If you use
@@ -788,7 +788,7 @@ the sender-user allowlist.
 
 ### Example group trigger configuration
 
-Add this to `~/.hermes/config.yaml`:
+Add this to `~/.aurora/config.yaml`:
 
 ```yaml
 telegram:
@@ -814,7 +814,7 @@ Messages in Telegram topics `31` and `42` are always ignored before the mention 
 
 ## Private Chat Topics (Bot API 9.4)
 
-Telegram Bot API 9.4 (February 2026) introduced **Private Chat Topics** — bots can create forum-style topic threads directly in 1-on-1 DM chats, no supergroup needed. This lets you run multiple isolated workspaces within your existing DM with Hermes.
+Telegram Bot API 9.4 (February 2026) introduced **Private Chat Topics** — bots can create forum-style topic threads directly in 1-on-1 DM chats, no supergroup needed. This lets you run multiple isolated workspaces within your existing DM with Aurora.
 
 ### Use case
 
@@ -835,10 +835,10 @@ Before adding topics to your config, the bot owner must **enable Threaded Mode**
 2. Go to **My bots → your bot → Bot Settings → Threads Settings**
 3. Turn on **Threaded Mode**
 
-There is no "Topics" toggle in the DM chat itself — a bot DM is not a group, so the group-forum toggle described in some older guides does not apply here. Without Threaded Mode, Hermes will log `The chat is not a forum` on startup and skip topic creation. See [Prerequisites](#prerequisites) below for the same steps with more detail.
+There is no "Topics" toggle in the DM chat itself — a bot DM is not a group, so the group-forum toggle described in some older guides does not apply here. Without Threaded Mode, Aurora will log `The chat is not a forum` on startup and skip topic creation. See [Prerequisites](#prerequisites) below for the same steps with more detail.
 :::
 
-Add topics under `platforms.telegram.extra.dm_topics` in `~/.hermes/config.yaml`:
+Add topics under `platforms.telegram.extra.dm_topics` in `~/.aurora/config.yaml`:
 
 ```yaml
 platforms:
@@ -868,14 +868,14 @@ platforms:
 
 ### How it works
 
-1. On gateway startup, Hermes calls `createForumTopic` for each topic that doesn't have a `thread_id` yet
+1. On gateway startup, Aurora calls `createForumTopic` for each topic that doesn't have a `thread_id` yet
 2. The `thread_id` is saved back to `config.yaml` automatically. Restarts, reconnects and adapter rebuilds after a network failure reuse it instead of creating the topic again
 3. Each topic maps to an isolated session key: `agent:main:telegram:dm:{chat_id}:{thread_id}`
 4. Messages in each topic have their own conversation history, memory flush, and context window
 5. Every topic with a `thread_id` (in `dm_topics` and `group_topics`) is listed in `channel_directory.json`, so `send_message` can target it by name even when it has no recent session. A topic name used in more than one chat is listed as `<chat_id> / <name>`. A topic named like another directory entry (a DM or group of that name) is listed as `<chat_id>:<thread_id> / <name>`, and that entry as `<its id> / <name>`, so the bare name resolves to neither
 
 :::caution Read-state limitation
-Telegram private DM topics have a Bot API read-state limitation. Hermes can receive messages from a user-created topic and route replies back into that topic, but normal bot accounts don't expose a reliable API for marking the topic copy of an incoming user message as read. Telegram may show the root "All Messages" chat and the topic with different unread/read indicators. This is expected Telegram behaviour, not necessarily a Hermes processing failure.
+Telegram private DM topics have a Bot API read-state limitation. Aurora can receive messages from a user-created topic and route replies back into that topic, but normal bot accounts don't expose a reliable API for marking the topic copy of an incoming user message as read. Telegram may show the root "All Messages" chat and the topic with different unread/read indicators. This is expected Telegram behaviour, not necessarily an Aurora processing failure.
 :::
 
 ### Root DM handling
@@ -912,7 +912,7 @@ Topics created outside of the config (e.g., by manually calling the Telegram API
 
 ## Multi-session DM mode (`/topic`)
 
-A ChatGPT-style multi-session DM — one bot, many parallel conversations. Unlike the operator-curated `extra.dm_topics` above, this mode is **user-driven**: no config, no pre-declared topic names. The end user flips it on with `/topic`, then taps the Telegram **+** button to create as many topics as they want, each one a fully independent Hermes session.
+A ChatGPT-style multi-session DM — one bot, many parallel conversations. Unlike the operator-curated `extra.dm_topics` above, this mode is **user-driven**: no config, no pre-declared topic names. The end user flips it on with `/topic`, then taps the Telegram **+** button to create as many topics as they want, each one a fully independent Aurora session.
 
 ### `/topic` subcommands
 
@@ -933,7 +933,7 @@ Only authorized users (allowlist via `TELEGRAM_ALLOWED_USERS` / platform auth co
 |---|---|---|
 | Who activates it | Operator, in `config.yaml` | End user, by sending `/topic` |
 | Topic list | Fixed set declared in config | User creates/deletes topics freely |
-| Topic names | Chosen by operator | Chosen by user; auto-renamed to match Hermes session title |
+| Topic names | Chosen by operator | Chosen by user; auto-renamed to match Aurora session title |
 | Root DM behavior | Normal chat (lobby if `ignore_root_dm: true`) | Becomes a system lobby (non-command messages are rejected) |
 | Primary use case | Permanent workspaces with optional skill binding | Ad-hoc parallel sessions |
 | Persistence | `extra.dm_topics` in config | `telegram_dm_topic_mode` + `telegram_dm_topic_bindings` SQLite tables |
@@ -947,7 +947,7 @@ In **@BotFather**, open your bot → **Bot Settings → Threads Settings**:
 1. Turn on **Threaded Mode** (enables `has_topics_enabled`)
 2. Do **not** disable users creating topics (keeps `allows_users_to_create_topics` on)
 
-When the user first runs `/topic`, Hermes calls `getMe` to verify both flags. If either is off, Hermes sends a screenshot of the BotFather Threads Settings page and explains what to toggle — no activation happens until prerequisites are met.
+When the user first runs `/topic`, Aurora calls `getMe` to verify both flags. If either is off, Aurora sends a screenshot of the BotFather Threads Settings page and explains what to toggle — no activation happens until prerequisites are met.
 
 ### Activation flow
 
@@ -957,7 +957,7 @@ From the root DM, send:
 /topic
 ```
 
-Hermes will:
+Aurora will:
 
 1. Check `getMe().has_topics_enabled` and `allows_users_to_create_topics`
 2. If both are true, enable multi-session topic mode for this DM
@@ -970,13 +970,13 @@ After activation, the **root DM is a lobby**: normal prompts are rejected with g
 1. Open the bot DM in Telegram
 2. Tap **All Messages** at the top of the bot interface, then send any message
 3. Telegram creates a new topic for that message
-4. Hermes responds inside that topic — the topic is now a standalone session
+4. Aurora responds inside that topic — the topic is now a standalone session
 
 Every topic gets its own conversation history, model state, tool execution, and session ID. The isolation key is `agent:main:telegram:dm:{chat_id}:{thread_id}` — identical to the config-driven DM topics isolation.
 
 ### Messages sent in the root DM
 
-Some Telegram clients deliver a message typed in the root DM (General / **All Messages**) without a `message_thread_id`. By default Hermes treats such a message as a continuation and answers it in your **most recently active topic** (lobby recovery).
+Some Telegram clients deliver a message typed in the root DM (General / **All Messages**) without a `message_thread_id`. By default Aurora treats such a message as a continuation and answers it in your **most recently active topic** (lobby recovery).
 
 To get a fresh session for every root-DM message instead, turn on `dm_topic_auto_transfer`:
 
@@ -988,11 +988,11 @@ gateway:
         dm_topic_auto_transfer: true   # default: false
 ```
 
-With it on, a plain message in the root DM makes Hermes create a new topic (named "Hermes Chat" until the auto-title renames it), start a new session there, and post the reply inside that topic. Slash commands typed in the root DM stay lobby commands and never create a topic. If creating the topic fails (for example Threaded Mode was switched off in BotFather), Hermes falls back to the default behaviour and answers in your most recently active topic. The key only matters while `/topic` mode is on. The top-level `telegram.extra.dm_topic_auto_transfer` key (shown in Desktop Settings) works too.
+With it on, a plain message in the root DM makes Aurora create a new topic (named "Aurora Chat" until the auto-title renames it), start a new session there, and post the reply inside that topic. Slash commands typed in the root DM stay lobby commands and never create a topic. If creating the topic fails (for example Threaded Mode was switched off in BotFather), Aurora falls back to the default behaviour and answers in your most recently active topic. The key only matters while `/topic` mode is on. The top-level `telegram.extra.dm_topic_auto_transfer` key (shown in Desktop Settings) works too.
 
 ### Auto-renamed topics
 
-When Hermes generates a session title for a topic (via the auto-title pipeline, after the first exchange), the Telegram topic itself is renamed to match — e.g. "New Topic" becomes "Database migration plan". The rename is best-effort: failures are logged but don't break the session.
+When Aurora generates a session title for a topic (via the auto-title pipeline, after the first exchange), the Telegram topic itself is renamed to match — e.g. "New Topic" becomes "Database migration plan". The rename is best-effort: failures are logged but don't break the session.
 
 To disable this and keep your manually-chosen topic names untouched, set:
 
@@ -1004,11 +1004,11 @@ gateway:
         disable_topic_auto_rename: true
 ```
 
-When this flag is on, Hermes still generates an internal session title (used by `hermes sessions`, the TUI, etc.) but never edits the Telegram topic name. Useful when you organise topics by hand under BotFather Threaded Mode and don't want every first reply to overwrite the title.
+When this flag is on, Aurora still generates an internal session title (used by `aurora sessions`, the TUI, etc.) but never edits the Telegram topic name. Useful when you organise topics by hand under BotFather Threaded Mode and don't want every first reply to overwrite the title.
 
 ### `/new` inside a topic
 
-Resets the current topic's session (new session ID, fresh history) without touching other topics. Hermes replies with a reminder that for parallel work, creating another topic (via **All Messages**) is usually what you want.
+Resets the current topic's session (new session ID, fresh history) without touching other topics. Aurora replies with a reminder that for parallel work, creating another topic (via **All Messages**) is usually what you want.
 
 ### Restoring a previous session
 
@@ -1018,14 +1018,14 @@ Inside a topic, send:
 /topic <session-id>
 ```
 
-This binds the current topic to an existing Hermes session instead of starting fresh. Useful for continuing a conversation that started before topic mode was enabled. Restrictions:
+This binds the current topic to an existing Aurora session instead of starting fresh. Useful for continuing a conversation that started before topic mode was enabled. Restrictions:
 
 - The target session must belong to the same Telegram user
 - The target session must not already be bound to another topic
 
-Hermes confirms with the session title and replays the last assistant message for context.
+Aurora confirms with the session title and replays the last assistant message for context.
 
-To discover session IDs, send `/topic` (no argument) in the root DM — Hermes lists the user's unlinked Telegram sessions.
+To discover session IDs, send `/topic` (no argument) in the root DM — Aurora lists the user's unlinked Telegram sessions.
 
 ### `/topic` inside a topic (no argument)
 
@@ -1046,25 +1046,25 @@ Shows the current topic's binding: session title, session ID, and hints for `/ne
 - BotFather setup screenshots are rate-limited to one send per 5 minutes per **(profile, chat)** — repeated `/topic` attempts while Threads Settings are still disabled won't re-upload the same image
 - `/bg <prompt>` started inside a topic delivers its result back to the same topic; background sessions don't trigger auto-rename of the owning topic
 - `/topic` itself is gated by the bot's user authorization check — unauthorized DMs get a refusal instead of activation
-- When Telegram rejects a topic with `message thread not found` (the topic was deleted, or topics were turned off in the Telegram client), Hermes retries the same topic once, then delivers the reply to the root chat without its reply anchor and drops that topic's binding. A reply whose anchor message was deleted keeps its topic and only loses the anchor. A send to a topic Hermes just created by name fails instead, so the topic is recreated rather than the reply landing in the root. Removing the chat's last binding turns topic mode off, so the root DM works as a normal chat again
+- When Telegram rejects a topic with `message thread not found` (the topic was deleted, or topics were turned off in the Telegram client), Aurora retries the same topic once, then delivers the reply to the root chat without its reply anchor and drops that topic's binding. A reply whose anchor message was deleted keeps its topic and only loses the anchor. A send to a topic Aurora just created by name fails instead, so the topic is recreated rather than the reply landing in the root. Removing the chat's last binding turns topic mode off, so the root DM works as a normal chat again
 
 ### Disabling multi-session mode
 
-Send `/topic off` in the root DM. Hermes flips the row off for **this profile's** namespace, clears that profile's `(thread_id → session_id)` bindings for the chat, and the root DM reverts to a normal Hermes chat. Existing topics in Telegram aren't deleted — they just stop being gated as independent sessions. Re-run `/topic` later to turn it back on.
+Send `/topic off` in the root DM. Aurora flips the row off for **this profile's** namespace, clears that profile's `(thread_id → session_id)` bindings for the chat, and the root DM reverts to a normal Aurora chat. Existing topics in Telegram aren't deleted — they just stop being gated as independent sessions. Re-run `/topic` later to turn it back on.
 
 If you need to clean up by hand (e.g. a bulk reset across many chats), scope rows by `profile_name` (use `default` for single-profile installs):
 
 ```bash
-sqlite3 ~/.hermes/state.db \
+sqlite3 ~/.aurora/state.db \
   "UPDATE telegram_dm_topic_mode SET enabled = 0
      WHERE profile_name = 'default' AND chat_id = '<your_chat_id>';
    DELETE FROM telegram_dm_topic_bindings
      WHERE profile_name = 'default' AND chat_id = '<your_chat_id>';"
 ```
 
-### Downgrading Hermes
+### Downgrading Aurora
 
-If you downgrade to a Hermes version that predates `/topic`, the feature simply stops working — the `telegram_dm_topic_mode` and `telegram_dm_topic_bindings` tables remain in `state.db` but are ignored by older code. DMs revert to the native per-thread isolation (each `message_thread_id` still gets its own session via `build_session_key`), so your existing Telegram topics keep working as parallel sessions. The root DM is no longer a lobby — messages there go into the agent like they used to. Re-upgrading reactivates multi-session mode exactly where it was.
+If you downgrade to an Aurora version that predates `/topic`, the feature simply stops working — the `telegram_dm_topic_mode` and `telegram_dm_topic_bindings` tables remain in `state.db` but are ignored by older code. DMs revert to the native per-thread isolation (each `message_thread_id` still gets its own session via `build_session_key`), so your existing Telegram topics keep working as parallel sessions. The root DM is no longer a lobby — messages there go into the agent like they used to. Re-upgrading reactivates multi-session mode exactly where it was.
 
 ## Group Forum Topic Skill Binding
 
@@ -1080,7 +1080,7 @@ A team supergroup with forum topics for different workstreams:
 
 ### Configuration
 
-Add topic bindings under `platforms.telegram.extra.group_topics` in `~/.hermes/config.yaml`:
+Add topic bindings under `platforms.telegram.extra.group_topics` in `~/.aurora/config.yaml`:
 
 ```yaml
 platforms:
@@ -1111,7 +1111,7 @@ platforms:
 
 ### How it works
 
-1. When a message arrives in a mapped group topic, Hermes looks up the `chat_id` and `thread_id` in `group_topics` config
+1. When a message arrives in a mapped group topic, Aurora looks up the `chat_id` and `thread_id` in `group_topics` config
 2. If a matching entry has a `skill` field, that skill is auto-loaded for the session — identical to DM topic skill binding
 3. Topics without a `skill` key get session isolation only (existing behavior, unchanged)
 4. Unmapped `thread_id` values or `chat_id` values fall through silently — no error, no skill
@@ -1121,7 +1121,7 @@ platforms:
 | | DM Topics | Group Topics |
 |---|---|---|
 | Config key | `extra.dm_topics` | `extra.group_topics` |
-| Topic creation | Hermes creates topics via API if `thread_id` is missing | Admin creates topics in Telegram UI |
+| Topic creation | Aurora creates topics via API if `thread_id` is missing | Admin creates topics in Telegram UI |
 | `thread_id` | Auto-populated after creation | Must be set manually |
 | `icon_color` / `icon_custom_emoji_id` | Supported | Not applicable (admin controls appearance) |
 | Skill binding | ✓ | ✓ |
@@ -1133,13 +1133,13 @@ To find a topic's `thread_id`, open the topic in Telegram Web or Desktop and loo
 
 ## Recent Bot API Features
 
-- **Bot API 9.4 (Feb 2026):** Private Chat Topics — bots can create forum topics in 1-on-1 DM chats via `createForumTopic`. Hermes uses this for two distinct features: operator-curated [Private Chat Topics](#private-chat-topics-bot-api-94) (config-driven, fixed topic list) and user-driven [Multi-session DM mode](#multi-session-dm-mode-topic) (activated by `/topic`, unlimited user-created topics).
+- **Bot API 9.4 (Feb 2026):** Private Chat Topics — bots can create forum topics in 1-on-1 DM chats via `createForumTopic`. Aurora uses this for two distinct features: operator-curated [Private Chat Topics](#private-chat-topics-bot-api-94) (config-driven, fixed topic list) and user-driven [Multi-session DM mode](#multi-session-dm-mode-topic) (activated by `/topic`, unlimited user-created topics).
 - **Privacy policy:** Telegram now requires bots to have a privacy policy. Set one via BotFather with `/setprivacy_policy`, or Telegram may auto-generate a placeholder. This is particularly important if your bot is public-facing.
-- **Bot API 9.5 (Mar 2026): Native streaming via `sendMessageDraft`.** Hermes uses Telegram's native streaming-draft API for private chats under the default `auto` transport (groups and group forum topics always use the `editMessageText` path; private-chat topics try drafts too and fall back to edits if Telegram rejects them). If the draft preview visibly collapses and re-renders on your Telegram client, set `transport: edit` (see below).
+- **Bot API 9.5 (Mar 2026): Native streaming via `sendMessageDraft`.** Aurora uses Telegram's native streaming-draft API for private chats under the default `auto` transport (groups and group forum topics always use the `editMessageText` path; private-chat topics try drafts too and fall back to edits if Telegram rejects them). If the draft preview visibly collapses and re-renders on your Telegram client, set `transport: edit` (see below).
 
 ### Streaming transport (`gateway.streaming.transport`)
 
-When streaming is enabled (`gateway.streaming.enabled: true`), Hermes picks one of four transports:
+When streaming is enabled (`gateway.streaming.enabled: true`), Aurora picks one of four transports:
 
 | Value | Behaviour |
 |---|---|
@@ -1148,7 +1148,7 @@ When streaming is enabled (`gateway.streaming.enabled: true`), Hermes picks one 
 | `edit` | Legacy progressive `editMessageText` polling for every chat type. |
 | `off` | Disable streaming entirely (final reply only, no progressive updates). |
 
-In `~/.hermes/config.yaml`:
+In `~/.aurora/config.yaml`:
 
 ```yaml
 gateway:
@@ -1171,7 +1171,7 @@ gateway:
 
 The rich path is skipped automatically when content exceeds the 32,768-character rich text limit, and any rejection from Telegram (unsupported endpoint on an older `python-telegram-bot`, parser error, oversized blocks/columns) **transparently falls back** to the MarkdownV2 path — your message is never lost. Transient/network errors are *not* silently re-sent (no duplicate final message).
 
-**MarkdownV2 fallback.** When the rich path is unavailable for a message, Hermes converts markdown to MarkdownV2. Since MarkdownV2 has no native table syntax, pipe tables are normalized:
+**MarkdownV2 fallback.** When the rich path is unavailable for a message, Aurora converts markdown to MarkdownV2. Since MarkdownV2 has no native table syntax, pipe tables are normalized:
 
 - **Small tables** are flattened into **row-group bullets** — each row becomes a readable bulleted list under the column headings. Good for 2–4 columns and short cells.
 - **Larger or wider tables** fall back to a **fenced code block** with aligned columns so nothing collapses.
@@ -1188,9 +1188,9 @@ gateway:
         allow_cjk_rich_messages: false
 ```
 
-This setting is for client-rendering/copy compatibility; Hermes already falls back automatically when Telegram rejects the rich API call. `rich_drafts` controls whether the DM streaming preview *renders* rich (`sendRichMessageDraft`) and stays off by default because Telegram Desktop/macOS can visually overlay rich draft frames until the chat redraws; with it off, the preview streams plain and the final still arrives as a native Rich Message.
+This setting is for client-rendering/copy compatibility; Aurora already falls back automatically when Telegram rejects the rich API call. `rich_drafts` controls whether the DM streaming preview *renders* rich (`sendRichMessageDraft`) and stays off by default because Telegram Desktop/macOS can visually overlay rich draft frames until the chat redraws; with it off, the preview streams plain and the final still arrives as a native Rich Message.
 
-The same setting applies to sends made outside the gateway process: `hermes send`, the `send_message` tool, and cron deliveries that fall back to the standalone sender take the rich path under the same rules. They also escape the `(1/2)` chunk marker on long messages, and treat only Telegram's own HTML tags (`<b>`, `<a>`, `<code>`, ...) as HTML. A `<details>` block or an angle-bracket placeholder therefore keeps its Markdown formatting. A message the Bot API still rejects as HTML is retried as MarkdownV2 before falling back to plain text. Two or more photos sent together arrive as a native album (`sendMediaGroup`, 10 per album).
+The same setting applies to sends made outside the gateway process: `aurora send`, the `send_message` tool, and cron deliveries that fall back to the standalone sender take the rich path under the same rules. They also escape the `(1/2)` chunk marker on long messages, and treat only Telegram's own HTML tags (`<b>`, `<a>`, `<code>`, ...) as HTML. A `<details>` block or an angle-bracket placeholder therefore keeps its Markdown formatting. A message the Bot API still rejects as HTML is retried as MarkdownV2 before falling back to plain text. Two or more photos sent together arrive as a native album (`sendMediaGroup`, 10 per album).
 
 CJK text (Chinese, Japanese, Korean, and rare Han extensions) stays on the legacy MarkdownV2 path by default because affected Telegram Desktop/macOS clients have rendered Bot API rich messages with overlapping CJK glyph artifacts. If you use an unaffected client and prefer native rich tables/task lists/details/math for CJK payloads, set `allow_cjk_rich_messages: true` alongside `rich_messages: true` to opt in to that client-side risk.
 
@@ -1206,9 +1206,9 @@ gateway:
         disable_link_previews: true
 ```
 
-When enabled, Hermes attaches Telegram's `LinkPreviewOptions(is_disabled=True)` to every outgoing message, including the streaming preview edits and the final edit of a streamed reply (edits that resolve a button prompt, such as an approval card, don't carry it yet), and falls back to the legacy `disable_web_page_preview` parameter on older `python-telegram-bot` versions.
+When enabled, Aurora attaches Telegram's `LinkPreviewOptions(is_disabled=True)` to every outgoing message, including the streaming preview edits and the final edit of a streamed reply (edits that resolve a button prompt, such as an approval card, don't carry it yet), and falls back to the legacy `disable_web_page_preview` parameter on older `python-telegram-bot` versions.
 
-**Long replies and flood control.** A reply longer than Telegram's 4,096-character limit is sent as numbered parts (`(1/3)`, `(2/3)`, …). Sends to one chat are delivered one reply at a time, so a scheduled report and a DM answer landing together cannot interleave their parts, and a file upload cannot land between two parts of the text it accompanies. If Telegram's flood control refuses a part mid-way, Hermes resumes from the refused part once the penalty passes instead of re-sending the parts already on screen, and while a chat is inside a known penalty window further sends to it fail closed locally (no extra requests that would lengthen the penalty). A penalty longer than the gateway's inline wait cap is handed to the delivery ledger, which redelivers the reply with a "part of it may already have arrived above" note. File attachments (documents, photos, videos, voice) follow the same rule: a short penalty is waited out and the upload retried; a longer one schedules a single native re-upload once the window has passed, and you only see the "Couldn't deliver the file attachment" notice if that re-upload is refused too.
+**Long replies and flood control.** A reply longer than Telegram's 4,096-character limit is sent as numbered parts (`(1/3)`, `(2/3)`, …). Sends to one chat are delivered one reply at a time, so a scheduled report and a DM answer landing together cannot interleave their parts, and a file upload cannot land between two parts of the text it accompanies. If Telegram's flood control refuses a part mid-way, Aurora resumes from the refused part once the penalty passes instead of re-sending the parts already on screen, and while a chat is inside a known penalty window further sends to it fail closed locally (no extra requests that would lengthen the penalty). A penalty longer than the gateway's inline wait cap is handed to the delivery ledger, which redelivers the reply with a "part of it may already have arrived above" note. File attachments (documents, photos, videos, voice) follow the same rule: a short penalty is waited out and the upload retried; a longer one schedules a single native re-upload once the window has passed, and you only see the "Couldn't deliver the file attachment" notice if that re-upload is refused too.
 
 ## Group Allowlisting
 
@@ -1337,7 +1337,7 @@ Use `/whoami` to see the active scope, your tier (admin / user / unrestricted), 
 
 ## Interactive Model Picker
 
-When you send `/model` with no arguments in a Telegram chat, Hermes shows an interactive inline keyboard for switching models:
+When you send `/model` with no arguments in a Telegram chat, Aurora shows an interactive inline keyboard for switching models:
 
 1. **Provider selection** — buttons showing each available provider with model counts (e.g., "OpenAI (15)", "✓ Anthropic (12)" for the current provider).
 2. **Model selection** — paginated model list with **Prev**/**Next** navigation, a **Back** button to return to providers, and **Cancel**.
@@ -1361,7 +1361,7 @@ In some restricted networks, `api.telegram.org` may resolve to an IP that is unr
 5. Once a path succeeds, it becomes "sticky" — subsequent requests use it directly. The hostname is kept as a last resort for IPv6-only networks.
 6. One request's walk across these paths shares a 15s connect budget, half the 30s send deadline. The first path keeps its full connect timeout and later paths split the rest. If every path hangs, the send fails with a connect timeout before the deadline. The gateway retries it, because the message never left.
 
-Sends made outside the gateway process (`hermes send`, the `send_message` tool, standalone cron delivery) use the same transport with your configured IPs or the seed list. They skip DoH discovery so a one-shot send stays fast. They also use the gateway's `HERMES_TELEGRAM_HTTP_*` timeouts and its 60s media-upload write timeout. A connect or pool timeout is retried there, because the request never left. Any other timeout is not retried: Telegram may already have delivered the message.
+Sends made outside the gateway process (`aurora send`, the `send_message` tool, standalone cron delivery) use the same transport with your configured IPs or the seed list. They skip DoH discovery so a one-shot send stays fast. They also use the gateway's `AURORA_TELEGRAM_HTTP_*` timeouts and its 60s media-upload write timeout. A connect or pool timeout is retried there, because the request never left. Any other timeout is not retried: Telegram may already have delivered the message.
 
 ### Configuration
 
@@ -1370,7 +1370,7 @@ Sends made outside the gateway process (`hermes send`, the `send_message` tool, 
 TELEGRAM_FALLBACK_IPS=149.154.167.220,149.154.167.221
 ```
 
-Or in `~/.hermes/config.yaml`:
+Or in `~/.aurora/config.yaml`:
 
 ```yaml
 platforms:
@@ -1403,19 +1403,19 @@ Set the proxy in your environment before starting the gateway:
 
 ```bash
 export HTTPS_PROXY=http://proxy.example.com:8080
-hermes gateway
+aurora gateway
 ```
 
-Or add it to `~/.hermes/.env`:
+Or add it to `~/.aurora/.env`:
 
 ```bash
 HTTPS_PROXY=http://proxy.example.com:8080
 ```
 
-The proxy applies to both the primary transport and all fallback IP transports. No additional Hermes configuration is needed — if the environment variable is set, it's used automatically.
+The proxy applies to both the primary transport and all fallback IP transports. No additional Aurora configuration is needed — if the environment variable is set, it's used automatically.
 
 :::note
-This covers the custom fallback transport layer that Hermes uses for Telegram connections. The standard `httpx` client used elsewhere already respects proxy env vars natively.
+This covers the custom fallback transport layer that Aurora uses for Telegram connections. The standard `httpx` client used elsewhere already respects proxy env vars natively.
 :::
 
 ## Message Reactions
@@ -1474,10 +1474,10 @@ Numeric YAML keys are automatically normalized to strings.
 
 | Problem | Solution |
 |---------|----------|
-| Bot not responding at all | Verify `TELEGRAM_BOT_TOKEN` is correct. Check `hermes gateway` logs for errors. |
+| Bot not responding at all | Verify `TELEGRAM_BOT_TOKEN` is correct. Check `aurora gateway` logs for errors. |
 | Bot responds with "unauthorized" | Your user ID is not in `TELEGRAM_ALLOWED_USERS`. Double-check with @userinfobot. |
 | Bot ignores group messages | Privacy mode is likely on. Disable it (Step 3) or make the bot a group admin. **Remember to remove and re-add the bot after changing privacy.** |
-| Voice messages not transcribed | Verify STT is available: install `faster-whisper` for local transcription, or set `GROQ_API_KEY` / `VOICE_TOOLS_OPENAI_KEY` in `~/.hermes/.env`. |
+| Voice messages not transcribed | Verify STT is available: install `faster-whisper` for local transcription, or set `GROQ_API_KEY` / `VOICE_TOOLS_OPENAI_KEY` in `~/.aurora/.env`. |
 | Voice replies are files, not bubbles | Install `ffmpeg` (needed for Edge TTS Opus conversion). |
 | Bot token revoked/invalid | Generate a new token via `/revoke` then `/newbot` or `/token` in BotFather. Update your `.env` file. |
 | Webhook not receiving updates | Verify `TELEGRAM_WEBHOOK_URL` is publicly reachable (test with `curl`). Ensure your platform/reverse proxy routes inbound HTTPS traffic from the URL's port to the local listen port configured by `TELEGRAM_WEBHOOK_PORT` (they do not need to be the same number). Ensure SSL/TLS is active — Telegram only sends to HTTPS URLs. Check firewall rules. |
@@ -1501,11 +1501,11 @@ When the agent calls the `clarify` tool — to ask which approach you prefer, ge
 
 Tap a button to answer, or tap **Other** to type a free-form response (the next message you send becomes the answer). Open-ended `clarify` calls (no preset choices) skip the buttons and just capture your next message.
 
-When `clarify` is in the session's tools (not in cron jobs or profiles that disable it), the Telegram platform hint tells the agent to use it for small fixed-choice decisions, so it does not improvise numbered lists or copy-to-clipboard buttons, which never send an answer back. Persistent agent-authored action buttons are not a generic Hermes feature yet.
+When `clarify` is in the session's tools (not in cron jobs or profiles that disable it), the Telegram platform hint tells the agent to use it for small fixed-choice decisions, so it does not improvise numbered lists or copy-to-clipboard buttons, which never send an answer back. Persistent agent-authored action buttons are not a generic Aurora feature yet.
 
-Configure the response timeout via `agent.clarify_timeout` in `~/.hermes/config.yaml` (default `90` seconds). If you don't respond within the timeout, the agent unblocks with `"outcome": "timed_out"` and adapts rather than hanging. Reply `skip` to skip a question.
+Configure the response timeout via `agent.clarify_timeout` in `~/.aurora/config.yaml` (default `90` seconds). If you don't respond within the timeout, the agent unblocks with `"outcome": "timed_out"` and adapts rather than hanging. Reply `skip` to skip a question.
 
-If Telegram cannot render the button card (the Bot API rejects it, or the send fails after its 15-second acknowledgement window), Hermes re-asks the same question as a plain numbered-list message and your typed reply (a number or the option text) is taken as the answer. When even that cannot be delivered, the agent is released at once with `[clarify prompt could not be delivered]` instead of waiting out the timeout and mistaking the silence for you not answering.
+If Telegram cannot render the button card (the Bot API rejects it, or the send fails after its 15-second acknowledgement window), Aurora re-asks the same question as a plain numbered-list message and your typed reply (a number or the option text) is taken as the answer. When even that cannot be delivered, the agent is released at once with `[clarify prompt could not be delivered]` instead of waiting out the timeout and mistaking the silence for you not answering.
 
 ## Push notification volume
 
@@ -1516,7 +1516,7 @@ Telegram fires a push notification on every message the bot sends. For long agen
 | `important` (default) | Only **final responses**, **approval prompts**, and **slash-command confirmations** ring. Tool progress, streaming chunks, and status messages are delivered with `disable_notification=true`. |
 | `all` | Every outgoing message fires a push notification. Legacy behavior; opt in if you genuinely want to hear about every tool call. |
 
-Configure in `~/.hermes/config.yaml`:
+Configure in `~/.aurora/config.yaml`:
 
 ```yaml
 display:
@@ -1528,12 +1528,12 @@ display:
 Env override (handy for quick A/B testing):
 
 ```bash
-HERMES_TELEGRAM_NOTIFICATIONS=all
+AURORA_TELEGRAM_NOTIFICATIONS=all
 ```
 
 Unknown values log a warning and fall back to `important`.
 
-`hermes send`, the `send_message` tool and standalone cron delivery follow the same mode. Under `important` their messages arrive silently, except cron briefs, which ring by default (`cron.delivery.notify`, as in the gateway lane).
+`aurora send`, the `send_message` tool and standalone cron delivery follow the same mode. Under `important` their messages arrive silently, except cron briefs, which ring by default (`cron.delivery.notify`, as in the gateway lane).
 
 ## Status messages edited in place
 

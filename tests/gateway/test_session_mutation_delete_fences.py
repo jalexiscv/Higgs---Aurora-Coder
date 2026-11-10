@@ -3,8 +3,8 @@ from types import SimpleNamespace
 import pytest
 from gateway.session_authority import LiveSession, SessionAuthority
 from gateway.session_controls import AuthorityConnection
-from hermes_state import SessionDB
-import hermes_state_runtime as rt
+from aurora_state import SessionDB
+import aurora_state_runtime as rt
 
 
 @pytest.mark.asyncio

@@ -9,8 +9,8 @@ import pytest
 from gateway import hosted_room_driver as driver, hosted_rooms, run
 from gateway.session_hosted_service import CanonicalHostedRoomService
 from gateway.session_hosted_transport import HostedRoomOwnerRPC, install_hosted_transport
-from hermes_state import SessionDB
-from hermes_state_runtime import begin_runtime_epoch, list_session_admissions
+from aurora_state import SessionDB
+from aurora_state_runtime import begin_runtime_epoch, list_session_admissions
 from tests.gateway.test_session_hosted_transport import _server
 from tests.tui_gateway.test_hosted_room_driver_runtime import FakeSessionRPC
 
@@ -24,7 +24,7 @@ def test_renewed_local_member_turn_defers_when_its_owner_socket_disappears(
     source.mkdir(mode=0o700)
     target.mkdir(mode=0o700, parents=True)
     target_authority.profile_id = str(target)
-    monkeypatch.setenv('HERMES_HOME', str(source))
+    monkeypatch.setenv('AURORA_HOME', str(source))
     config = run._load_gateway_config()
     monkeypatch.setattr(run, '_load_gateway_config', lambda: {
         **config, 'hosted_rooms': {'profiles': {'other': str(target)}}})

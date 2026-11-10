@@ -1,4 +1,4 @@
-import type { SessionSteerResponse } from '@hermes/shared/gateway-types'
+import type { SessionSteerResponse } from '@aurora/shared/gateway-types'
 
 import { t } from '../i18n/runtime.js'
 

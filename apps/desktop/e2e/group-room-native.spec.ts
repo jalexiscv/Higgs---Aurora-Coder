@@ -41,8 +41,8 @@ function probe(label: string, data: unknown): void {
 async function setupKeyedBackend(mockServer: MockServerOptions, multiplex: boolean): Promise<MockBackendFixture> {
   const mock = await startMockServer(mockServer)
   const sandbox = createSandbox('mock')
-  writeMockProviderConfig(sandbox.hermesHome, mock.url, undefined, multiplex ? MULTIPLEX : undefined)
-  writeEnvFile(sandbox.hermesHome, 'e2e-mock-key', mock.url)
+  writeMockProviderConfig(sandbox.auroraHome, mock.url, undefined, multiplex ? MULTIPLEX : undefined)
+  writeEnvFile(sandbox.auroraHome, 'e2e-mock-key', mock.url)
   const { app, page } = await launchDesktop(buildAppEnv(sandbox))
 
   return {
@@ -250,7 +250,7 @@ async function shootBotsRow(page: Page, room: string, label: string): Promise<vo
 
 test.afterEach(async () => {
   // Backend receipts (install stamp, member turns) die with the sandbox; keep a copy.
-  const logs = fixture && path.join(fixture.sandbox.hermesHome, 'logs')
+  const logs = fixture && path.join(fixture.sandbox.auroraHome, 'logs')
 
   if (logs && fs.existsSync(logs)) {
     fs.cpSync(logs, path.join(SHOT_DIR, `logs-${test.info().title.split(':')[0].replace(/[^a-z0-9]+/gi, '-')}`), { recursive: true })

@@ -1,24 +1,24 @@
-import { hermesApiAs } from '@/api/client'
+import { auroraApiAs } from '@/api/client'
+import { auroraApi } from '@/aurora'
 import type {
-  HermesGitBaseBranch,
-  HermesGitBranch,
-  HermesGitWorktree,
-  HermesRepoPullRequests,
-  HermesRepoStatus,
-  HermesReviewList,
-  HermesReviewShipInfo
+  AuroraGitBaseBranch,
+  AuroraGitBranch,
+  AuroraGitWorktree,
+  AuroraRepoPullRequests,
+  AuroraRepoStatus,
+  AuroraReviewList,
+  AuroraReviewShipInfo
 } from '@/global'
-import { hermesApi } from '@/hermes'
 
 import { desktopFsProfile, isDesktopFsRemoteMode } from './desktop-fs'
 
 // Remote-aware git facade. Locally the desktop runs git through Electron
-// (window.hermesDesktop.git); on a remote gateway that's the wrong filesystem,
+// (window.auroraDesktop.git); on a remote gateway that's the wrong filesystem,
 // so we mirror the same surface over the dashboard REST API (/api/git/*) — the
 // coding rail, worktree lanes, review pane, and branch ops then act on the
 // BACKEND repo where sessions actually run. Mirrors desktop-fs.ts.
 
-type GitBridge = NonNullable<NonNullable<Window['hermesDesktop']>['git']>
+type GitBridge = NonNullable<NonNullable<Window['auroraDesktop']>['git']>
 
 type GitApi = <T>(path: string, body?: Record<string, unknown>) => Promise<T>
 
@@ -29,11 +29,11 @@ export interface GitOwnerRoute {
 }
 
 const windowApi: GitApi = <T>(path: string, body?: Record<string, unknown>) => {
-  if (!window.hermesDesktop) {
-    throw new Error('Hermes Desktop bridge is unavailable')
+  if (!window.auroraDesktop) {
+    throw new Error('Aurora Desktop bridge is unavailable')
   }
 
-  return hermesApi<T>(
+  return auroraApi<T>(
     body ? { body, method: 'POST', path, profile: desktopFsProfile() } : { path, profile: desktopFsProfile() }
   )
 }
@@ -41,7 +41,7 @@ const windowApi: GitApi = <T>(path: string, body?: Record<string, unknown>) => {
 const ownerApi =
   (owner: GitOwnerRoute): GitApi =>
   <T>(path: string, body?: Record<string, unknown>) =>
-    hermesApiAs<T>(owner, body ? { body, method: 'POST', path } : { path })
+    auroraApiAs<T>(owner, body ? { body, method: 'POST', path } : { path })
 
 function remoteGitVia(api: GitApi): GitBridge {
   const gitGet = <T>(route: string, params: Record<string, boolean | null | string | undefined>): Promise<T> => {
@@ -60,7 +60,7 @@ function remoteGitVia(api: GitApi): GitBridge {
 
   return {
     worktreeList: async repoPath =>
-      (await gitGet<{ worktrees: HermesGitWorktree[] }>('worktrees', { path: repoPath })).worktrees,
+      (await gitGet<{ worktrees: AuroraGitWorktree[] }>('worktrees', { path: repoPath })).worktrees,
 
     worktreeAdd: (repoPath, options) => gitPost('worktree/add', { path: repoPath, ...options }),
 
@@ -70,19 +70,19 @@ function remoteGitVia(api: GitApi): GitBridge {
     branchSwitch: (repoPath, branch) => gitPost('branch/switch', { branch, path: repoPath }),
 
     branchList: async repoPath =>
-      (await gitGet<{ branches: HermesGitBranch[] }>('branches', { path: repoPath })).branches,
+      (await gitGet<{ branches: AuroraGitBranch[] }>('branches', { path: repoPath })).branches,
 
     baseBranchList: async repoPath =>
-      (await gitGet<{ branches: HermesGitBaseBranch[] }>('base-branches', { path: repoPath })).branches,
+      (await gitGet<{ branches: AuroraGitBaseBranch[] }>('base-branches', { path: repoPath })).branches,
 
-    repoStatus: repoPath => gitGet<HermesRepoStatus | null>('status', { path: repoPath }),
+    repoStatus: repoPath => gitGet<AuroraRepoStatus | null>('status', { path: repoPath }),
 
     fileDiff: async (repoPath, filePath) =>
       (await gitGet<{ diff: string }>('file-diff', { file: filePath, path: repoPath })).diff,
 
     review: {
       list: (repoPath, scope, baseRef) =>
-        gitGet<HermesReviewList>('review/list', { base: baseRef, path: repoPath, scope }),
+        gitGet<AuroraReviewList>('review/list', { base: baseRef, path: repoPath, scope }),
 
       diff: async (repoPath, filePath, scope, baseRef, staged) =>
         (
@@ -110,10 +110,10 @@ function remoteGitVia(api: GitApi): GitBridge {
 
       push: repoPath => gitPost('review/push', { path: repoPath }),
 
-      shipInfo: repoPath => gitGet<HermesReviewShipInfo>('review/ship-info', { path: repoPath }),
+      shipInfo: repoPath => gitGet<AuroraReviewShipInfo>('review/ship-info', { path: repoPath }),
 
       prList: (repoPath, branches, numbers) =>
-        gitPost<HermesRepoPullRequests>('review/pr-list', { branches, numbers: numbers ?? [], path: repoPath }),
+        gitPost<AuroraRepoPullRequests>('review/pr-list', { branches, numbers: numbers ?? [], path: repoPath }),
 
       createPr: repoPath => gitPost('review/create-pr', { path: repoPath })
     },
@@ -131,7 +131,7 @@ export function desktopGit(): GitBridge | undefined {
     return undefined
   }
 
-  return isDesktopFsRemoteMode() ? remoteGit : window.hermesDesktop?.git
+  return isDesktopFsRemoteMode() ? remoteGit : window.auroraDesktop?.git
 }
 
 /** Git for a repo another gateway owns: that gateway's /api/git, so worktrees and branch switches

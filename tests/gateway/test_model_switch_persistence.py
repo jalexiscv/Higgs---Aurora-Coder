@@ -205,7 +205,7 @@ class TestFallbackEvictionHonorsChannelOverrides:
     @pytest.mark.parametrize("global_model", ["nous/welcome", "default/model"])
     def test_the_welcome_host_pins_its_model_over_the_channel_model(self, monkeypatch, global_model):
         """AIAgent.__init__ runs a welcome-host agent on ``nous/welcome`` whatever the chat configured."""
-        from hermes_cli.anon_auth import pin_model_for_route
+        from aurora_cli.anon_auth import pin_model_for_route
 
         agent_model = pin_model_for_route("nous", self._WELCOME, "chan/model")
         assert agent_model == "nous/welcome"
@@ -303,24 +303,24 @@ class TestOneTurnNeverPersisted:
 
     @staticmethod
     def _runner_with_store(tmp_path, monkeypatch):
-        import hermes_yaml as _yaml
+        import aurora_yaml as _yaml
 
         import gateway.run as gateway_run
         from gateway.run import GatewayRunner
-        from hermes_cli.model_switch import ModelSwitchResult
+        from aurora_cli.model_switch import ModelSwitchResult
 
-        hermes_home = tmp_path / ".hermes"
-        hermes_home.mkdir()
-        (hermes_home / "config.yaml").write_text(
+        aurora_home = tmp_path / ".aurora"
+        aurora_home.mkdir()
+        (aurora_home / "config.yaml").write_text(
             _yaml.safe_dump(
                 {"model": {"default": "old-model", "provider": "openrouter"}}
             ),
             encoding="utf-8",
         )
-        monkeypatch.setattr(gateway_run, "_hermes_home", hermes_home)
+        monkeypatch.setattr(gateway_run, "_aurora_home", aurora_home)
         monkeypatch.setattr("agent.models_dev.fetch_models_dev", dict)
         monkeypatch.setattr(
-            "hermes_cli.model_switch.switch_model",
+            "aurora_cli.model_switch.switch_model",
             lambda **kw: ModelSwitchResult(
                 success=True,
                 new_model="gpt-5.5",
@@ -333,8 +333,8 @@ class TestOneTurnNeverPersisted:
                 provider_label="OpenRouter",
             ),
         )
-        monkeypatch.setattr("hermes_constants.get_hermes_home", lambda: hermes_home)
-        monkeypatch.setattr("hermes_cli.config.get_hermes_home", lambda: hermes_home)
+        monkeypatch.setattr("aurora_constants.get_aurora_home", lambda: aurora_home)
+        monkeypatch.setattr("aurora_cli.config.get_aurora_home", lambda: aurora_home)
 
         runner = object.__new__(GatewayRunner)
         runner.adapters = {}

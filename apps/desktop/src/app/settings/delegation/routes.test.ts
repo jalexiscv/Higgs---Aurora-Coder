@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import type { DelegationModelMap } from '@/hermes'
+import type { DelegationModelMap } from '@/aurora'
 
 import {
   draftFromRoute,

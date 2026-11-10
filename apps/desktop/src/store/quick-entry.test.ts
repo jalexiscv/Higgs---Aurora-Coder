@@ -424,7 +424,7 @@ describe('quickComposerReducer', () => {
     const timeoutEvent = quickEntryResultEvent(timeout, 7)
 
     expect(timeoutEvent).toEqual({
-      message: 'Hermes has not confirmed the prompt yet — it may still be delivered.',
+      message: 'Aurora has not confirmed the prompt yet — it may still be delivered.',
       submitId: 7,
       type: 'submit-unknown'
     })
@@ -461,17 +461,17 @@ describe('quickComposerReducer', () => {
 })
 
 describe('Quick Entry settings bridge', () => {
-  const desktopWindow = window as unknown as { hermesDesktop?: Window['hermesDesktop'] }
-  const initialHermesDesktop = desktopWindow.hermesDesktop
+  const desktopWindow = window as unknown as { auroraDesktop?: Window['auroraDesktop'] }
+  const initialAuroraDesktop = desktopWindow.auroraDesktop
   const initialState = $quickEntry.get()
 
   const status = (shortcut: string): QuickEntryStatus => ({ enabled: true, error: null, registered: true, shortcut })
 
   afterEach(() => {
-    if (initialHermesDesktop) {
-      desktopWindow.hermesDesktop = initialHermesDesktop
+    if (initialAuroraDesktop) {
+      desktopWindow.auroraDesktop = initialAuroraDesktop
     } else {
-      delete desktopWindow.hermesDesktop
+      delete desktopWindow.auroraDesktop
     }
 
     $quickEntry.set(initialState)
@@ -485,7 +485,7 @@ describe('Quick Entry settings bridge', () => {
       .mockResolvedValueOnce({ ...status('Alt+K'), error: 'taken', registered: false })
       .mockRejectedValueOnce(new Error('ipc closed'))
 
-    desktopWindow.hermesDesktop = { quickEntry: { getSettings, setSettings } } as unknown as Window['hermesDesktop']
+    desktopWindow.auroraDesktop = { quickEntry: { getSettings, setSettings } } as unknown as Window['auroraDesktop']
 
     expect(canUseQuickEntry()).toBe(true)
     await loadQuickEntrySettings()
@@ -499,7 +499,7 @@ describe('Quick Entry settings bridge', () => {
   })
 
   it('changes nothing where the shell has no Quick Entry bridge', async () => {
-    delete desktopWindow.hermesDesktop
+    delete desktopWindow.auroraDesktop
     const before = $quickEntry.get()
 
     expect(canUseQuickEntry()).toBe(false)

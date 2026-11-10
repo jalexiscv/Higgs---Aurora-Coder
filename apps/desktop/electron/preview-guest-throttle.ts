@@ -8,7 +8,7 @@ import type { Session, WebContents } from 'electron'
  * sign-ins can never be presented in — or cleared from — another profile's tab
  * (#150283 P1-3, mirrors oauth-partition.ts's per-connection jars).
  */
-export const PREVIEW_GUEST_PARTITION = 'persist:hermes-preview'
+export const PREVIEW_GUEST_PARTITION = 'persist:aurora-preview'
 
 // Colon-free ON PURPOSE (same invariant as oauth-partition.ts): Electron
 // percent-escapes ':' to '%3A' in the on-disk profile folder, and a Windows

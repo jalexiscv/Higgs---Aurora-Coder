@@ -12,9 +12,9 @@
 import './kanban.css'
 
 import {
+  type AuroraPlugin,
   cn,
   Codicon,
-  type HermesPlugin,
   host,
   type KeybindContribution,
   KEYBINDS_AREA,
@@ -28,7 +28,7 @@ import {
   Tip,
   useQuery,
   useValue
-} from '@hermes/plugin-sdk'
+} from '@aurora/plugin-sdk'
 
 import { $boardSlug, bindApi, boardKey, fetchBoard, useKanbanScope } from './api'
 import { KanbanBoardPage } from './board'
@@ -78,7 +78,7 @@ function KanbanCount() {
   )
 }
 
-const plugin: HermesPlugin = {
+const plugin: AuroraPlugin = {
   id: 'kanban',
   name: 'Kanban',
   description: 'Multi-agent task board — board page, sidebar entry, and a live in-flight count in the status bar.',

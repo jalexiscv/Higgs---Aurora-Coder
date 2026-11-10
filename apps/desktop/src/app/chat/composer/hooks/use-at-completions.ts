@@ -1,9 +1,9 @@
 import type { Unstable_TriggerAdapter, Unstable_TriggerItem } from '@assistant-ui/core'
 import { useCallback } from 'react'
 
+import type { AuroraGateway } from '@/aurora'
 import { refChipLabel } from '@/components/assistant-ui/directive-text'
 import { useContributions } from '@/contrib/react/use-contributions'
-import type { HermesGateway } from '@/hermes'
 import { cachedPathCompletion, hasCachedPathCompletion } from '@/lib/slash-completion-cache'
 import { normalize } from '@/lib/text'
 
@@ -125,7 +125,7 @@ function classify(entry: CompletionEntry): {
  *  contributed sources (composer.atCompletions — e.g. Bot Mode agent handles)
  *  merged ahead of the path results. */
 export function useAtCompletions(options: {
-  gateway: HermesGateway | null
+  gateway: AuroraGateway | null
   sessionId: string | null
   cwd: string | null
 }): { adapter: Unstable_TriggerAdapter; loading: boolean } {

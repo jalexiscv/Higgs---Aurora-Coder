@@ -63,7 +63,7 @@ export function createPreviewAnnotateGuest(webview: PreviewDriveGuest | null): n
         signal
       )) as { height: number; width: number }
       signal?.throwIfAborted()
-      const dataUrl = await window.hermesDesktop.capturePreview?.({ rect, viewport, webContentsId })
+      const dataUrl = await window.auroraDesktop.capturePreview?.({ rect, viewport, webContentsId })
 
       if (!dataUrl) {
         throw new Error('preview capture is unavailable')
@@ -96,10 +96,10 @@ let nextOverlaySession = 0
 export function overlayInstallScript(source: string, session = ++nextOverlaySession): string {
   return (
     '(function(){' +
-    `if ((window.__hermesAnnotateSession || 0) >= ${session}) return;` +
-    `window.__hermesAnnotateSession = ${session};` +
-    'if (window.__hermesAnnotate) window.__hermesAnnotate.teardown();' +
-    'var api=' + source + ';window.__hermesAnnotate=api;api.install();})()'
+    `if ((window.__auroraAnnotateSession || 0) >= ${session}) return;` +
+    `window.__auroraAnnotateSession = ${session};` +
+    'if (window.__auroraAnnotate) window.__auroraAnnotate.teardown();' +
+    'var api=' + source + ';window.__auroraAnnotate=api;api.install();})()'
   )
 }
 
@@ -127,21 +127,21 @@ export async function installAnnotateOverlay(guest: PreviewAnnotateGuest, signal
 async function teardownAnnotateOverlay(guest: PreviewAnnotateGuest, session: number): Promise<void> {
   await guest.executeJavaScript(`
     (function () {
-      if ((window.__hermesAnnotateSession || 0) > ${session}) return;
+      if ((window.__auroraAnnotateSession || 0) > ${session}) return;
       // Retain ownership even before installation, so a cancelled queued
       // script cannot resurrect its overlay or replace a newer session.
-      window.__hermesAnnotateSession = ${session};
-      if (window.__hermesAnnotate && window.__hermesAnnotate.teardown) {
-        window.__hermesAnnotate.teardown();
+      window.__auroraAnnotateSession = ${session};
+      if (window.__auroraAnnotate && window.__auroraAnnotate.teardown) {
+        window.__auroraAnnotate.teardown();
       }
-      window.__hermesAnnotate = null;
+      window.__auroraAnnotate = null;
     })()
   `)
 }
 
 export async function waitAnnotateEvent(guest: PreviewAnnotateGuest): Promise<AnnotatePageEvent> {
   const event = await guest.executeJavaScript(`
-    window.__hermesAnnotate ? window.__hermesAnnotate.wait() : Promise.resolve({ type: 'end' })
+    window.__auroraAnnotate ? window.__auroraAnnotate.wait() : Promise.resolve({ type: 'end' })
   `)
 
   return event as AnnotatePageEvent
@@ -149,7 +149,7 @@ export async function waitAnnotateEvent(guest: PreviewAnnotateGuest): Promise<An
 
 export async function syncAnnotatePins(guest: PreviewAnnotateGuest, pins: AnnotatePinChrome[]): Promise<void> {
   await guest.executeJavaScript(`
-    window.__hermesAnnotate && window.__hermesAnnotate.showPins(${JSON.stringify(pins)})
+    window.__auroraAnnotate && window.__auroraAnnotate.showPins(${JSON.stringify(pins)})
   `)
 }
 
@@ -159,13 +159,13 @@ export async function showAnnotateDraft(
   number: number
 ): Promise<void> {
   await guest.executeJavaScript(`
-    window.__hermesAnnotate && window.__hermesAnnotate.showDraft(${JSON.stringify(rect)}, ${number})
+    window.__auroraAnnotate && window.__auroraAnnotate.showDraft(${JSON.stringify(rect)}, ${number})
   `)
 }
 
 export async function hideAnnotateDraft(guest: PreviewAnnotateGuest): Promise<void> {
   await guest.executeJavaScript(`
-    window.__hermesAnnotate && window.__hermesAnnotate.hideDraft()
+    window.__auroraAnnotate && window.__auroraAnnotate.hideDraft()
   `)
 }
 
@@ -190,12 +190,12 @@ export async function captureAnnotateCrop(
   // Keep both paint frames, capturePage and cleanup inside one bounded lease.
   // Waiting for the next user pick must not hold this lease.
   return withPreviewDeadline(async signal => {
-    const cleanup = '(function () { if (window.__hermesAnnotate) window.__hermesAnnotate.endCapture(); })()'
+    const cleanup = '(function () { if (window.__auroraAnnotate) window.__auroraAnnotate.endCapture(); })()'
 
     try {
       return await guest.withActivity(async execute => {
         try {
-          await tryGuest(execute, 'window.__hermesAnnotate ? window.__hermesAnnotate.beginCapture() : null')
+          await tryGuest(execute, 'window.__auroraAnnotate ? window.__auroraAnnotate.beginCapture() : null')
           signal.throwIfAborted()
 
           return await guest.capture!(padRect(rect), signal)

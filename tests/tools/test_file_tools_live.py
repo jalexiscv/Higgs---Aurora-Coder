@@ -107,7 +107,7 @@ def test_quoted_yaml_reads_preserve_source_policy(ops, env, tmp_path, monkeypatc
 
     home = tmp_path / "profile"
     home.mkdir()
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("AURORA_HOME", str(home))
     config = (home if secret_source else tmp_path) / "config.yaml"
     text = 'password: "shortsecret"\napi_key: "os.getenv(\'OPENAI_API_KEY\')"\n'
     config.write_text(text, encoding="utf-8")
@@ -293,13 +293,13 @@ class TestExpandPath:
 
     def test_tilde_injection_blocked(self, ops):
         """Paths like ~; rm -rf / must NOT execute shell commands."""
-        malicious = "~; echo PWNED > /tmp/_hermes_injection_test"
+        malicious = "~; echo PWNED > /tmp/_aurora_injection_test"
         result = ops._expand_path(malicious)
         # The invalid username (contains ";") should prevent shell expansion.
         # The path should be returned as-is (no expansion).
         assert result == malicious
         # Verify the injected command did NOT execute
-        assert not os.path.exists("/tmp/_hermes_injection_test")
+        assert not os.path.exists("/tmp/_aurora_injection_test")
 
     def test_tilde_username_with_subpath(self, ops):
         """~root/file.txt should attempt expansion (valid username)."""

@@ -5,7 +5,7 @@ description: Delegation backend that routes each subagent by task shape and lear
 maintainer: vdimarco
 tier: community
 category: automation
-requires_hermes: ">=0.22.0"
+requires_aurora: ">=0.22.0"
 version: "1.0.0"
 capabilities:
   provides_tools: [scout_stats]

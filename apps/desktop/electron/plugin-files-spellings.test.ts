@@ -17,24 +17,24 @@ const posix = process.platform !== 'win32'
 
 let scratch: string
 let userData: string
-let hermesHome: string
+let auroraHome: string
 let vault: string
 
 const make = (platform?: NodeJS.Platform): PluginFiles =>
   createPluginFiles({
     userDataDir: () => userData,
-    protectedRoots: () => [hermesHome],
+    protectedRoots: () => [auroraHome],
     trashItem: target => fs.promises.rm(target, { recursive: true }),
     platform
   })
 
 beforeEach(() => {
-  scratch = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-plugin-files-spell-')))
+  scratch = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'aurora-plugin-files-spell-')))
   userData = path.join(scratch, 'userData')
-  hermesHome = path.join(scratch, 'home', '.hermes')
+  auroraHome = path.join(scratch, 'home', '.aurora')
   vault = path.join(scratch, 'home', 'Vault')
   fs.mkdirSync(userData, { recursive: true })
-  fs.mkdirSync(hermesHome, { recursive: true })
+  fs.mkdirSync(auroraHome, { recursive: true })
   fs.mkdirSync(vault, { recursive: true })
   fs.writeFileSync(path.join(vault, 'a.md'), '# A\n')
 })
@@ -81,8 +81,8 @@ describe('case on a case-sensitive macOS volume', () => {
     })
   })
 
-  it.runIf(posix)('a differently-cased spelling of the Hermes home still cannot be granted', async () => {
-    const lookalike = path.join(scratch, 'home', '.HERMES')
+  it.runIf(posix)('a differently-cased spelling of the Aurora home still cannot be granted', async () => {
+    const lookalike = path.join(scratch, 'home', '.AURORA')
     fs.mkdirSync(lookalike)
 
     expect(await make('darwin').addGrant('plexus', lookalike)).toMatchObject({ ok: false, error: 'protected' })
@@ -165,8 +165,8 @@ describe('Windows second paths to this machine', () => {
     ['\\\\wsl$\\Ubuntu\\home', true],
     ['\\\\wsl.localhost\\Ubuntu\\home\\me', true],
     ['\\\\wsl.localhost\\Ubuntu\\root', true],
-    ['\\\\wsl.localhost\\Ubuntu\\home\\me\\.hermes\\profiles', true],
-    ['\\\\WSL.LOCALHOST\\Debian\\HOME\\me\\.Hermes', true],
+    ['\\\\wsl.localhost\\Ubuntu\\home\\me\\.aurora\\profiles', true],
+    ['\\\\WSL.LOCALHOST\\Debian\\HOME\\me\\.Aurora', true],
     // The distro's own process environments and its view of the Windows drives.
     ['\\\\wsl.localhost\\Ubuntu\\proc', true],
     ['\\\\wsl$\\Ubuntu\\proc\\1\\environ', true],
@@ -232,12 +232,12 @@ describe('kernel pseudo-filesystems wherever they are mounted', () => {
   })
 })
 
-describe('Hermes data reached by another spelling', () => {
+describe('Aurora data reached by another spelling', () => {
   it('compares folders by filesystem identity', async () => {
-    expect(await overlapsByIdentity(hermesHome, [hermesHome])).toBe(true)
-    expect(await overlapsByIdentity(path.join(scratch, 'home'), [hermesHome])).toBe(true)
-    fs.mkdirSync(path.join(hermesHome, 'skills'))
-    expect(await overlapsByIdentity(path.join(hermesHome, 'skills'), [hermesHome])).toBe(true)
-    expect(await overlapsByIdentity(vault, [hermesHome])).toBe(false)
+    expect(await overlapsByIdentity(auroraHome, [auroraHome])).toBe(true)
+    expect(await overlapsByIdentity(path.join(scratch, 'home'), [auroraHome])).toBe(true)
+    fs.mkdirSync(path.join(auroraHome, 'skills'))
+    expect(await overlapsByIdentity(path.join(auroraHome, 'skills'), [auroraHome])).toBe(true)
+    expect(await overlapsByIdentity(vault, [auroraHome])).toBe(false)
   })
 })

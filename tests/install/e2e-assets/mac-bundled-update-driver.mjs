@@ -5,7 +5,7 @@
 // app process to close.
 //
 // What this driver deliberately does NOT do:
-//   - no internal apply call (no window.hermesDesktop.updates.apply or any
+//   - no internal apply call (no window.auroraDesktop.updates.apply or any
 //     bridge invocation that would bypass the user trigger);
 //   - no relaunch of the NEW app — Squirrel.Mac owns the swap and the
 //     relaunch, and the external watcher
@@ -15,7 +15,7 @@
 //     so ShipIt's detached relaunch of the NEW bundle survives our exit.
 //
 // Usage (Playwright resolves from the checkout's tests-js):
-//   node mac-bundled-update-driver.mjs --app-bin <.app/Contents/MacOS/Hermes> \
+//   node mac-bundled-update-driver.mjs --app-bin <.app/Contents/MacOS/Aurora> \
 //     --shots <dir> --close-timeout-ms 420000
 
 import fs from 'node:fs';
@@ -66,7 +66,7 @@ const launchEnv = updateWindowEnvironment(
 const app = await _electron.launch({
   executablePath: appBin,
   cwd: path.dirname(appBin),
-  // Inherit the driver env: HERMES_HOME / HOME / updates feed config must
+  // Inherit the driver env: AURORA_HOME / HOME / updates feed config must
   // reach the main process exactly as a user's double-click would.
   env: launchEnv,
   timeout: 120_000,
@@ -86,7 +86,7 @@ await runUpdateWindowChat(app, page, {
   expectCommit: values['old-sha'],
   origin: 'bundled', executable: appBin,
   root: path.resolve(path.dirname(appBin), '..', 'Resources', 'agent-payload'),
-  userData: launchEnv.HERMES_DESKTOP_USER_DATA_DIR,
+  userData: launchEnv.AURORA_DESKTOP_USER_DATA_DIR,
 });
 await shot(page, '01-app-booted');
 

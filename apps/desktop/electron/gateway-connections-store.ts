@@ -3,7 +3,7 @@
  *
  * The machine's ONE saved-gateways list, shared by native Desktop (this module)
  * and every browser on this machine's Webapp (the Python twin
- * `hermes_cli/gateway_connections.py`, over `/api/gateway-connections`).
+ * `aurora_cli/gateway_connections.py`, over `/api/gateway-connections`).
  *
  * File: `<root>/gateway-connections.json` beside `ui-preferences.json` (same
  * root rule), mode 0600. Document = the v2 registry of connection-registry.ts
@@ -88,7 +88,7 @@ export type RegistryChangeHandler = (
 ) => void
 
 export interface GatewayConnectionsStoreDeps {
-  /** The store directory (main's ROOT Hermes home, through symlinks). */
+  /** The store directory (main's ROOT Aurora home, through symlinks). */
   root: string
   /** Electron userData: where the pre-store connections.json / native-oauth-tokens.json live. */
   userData: string

@@ -57,7 +57,7 @@ function SideVersionRow({ label, value }: { label: string; value?: string }) {
 
 /**
  * Shared build-provenance display. Reads from `$desktopVersion`
- * (populated from the build stamp / `hermes:version` IPC), so every
+ * (populated from the build stamp / `aurora:version` IPC), so every
  * surface — the About settings page, the updates overlay — shows the
  * same version, branch, commit, distribution, runtime, and install id
  * from one source of truth.
@@ -84,11 +84,11 @@ export function VersionDetails({ version, channelAction }: { version: DesktopVer
           : null
 
   const runtime =
-    version.hermesRuntime?.type === 'embedded'
+    version.auroraRuntime?.type === 'embedded'
       ? u.versionDetailsRuntimeEmbedded
-      : version.hermesRuntime?.type === 'external' && version.hermesRuntime.source
-        ? runtimeSourceLabel(version.hermesRuntime.source)
-        : version.hermesRuntime?.type === 'external'
+      : version.auroraRuntime?.type === 'external' && version.auroraRuntime.source
+        ? runtimeSourceLabel(version.auroraRuntime.source)
+        : version.auroraRuntime?.type === 'external'
           ? u.versionDetailsRuntimeExternal
           : null
 
@@ -144,7 +144,7 @@ export function VersionDetails({ version, channelAction }: { version: DesktopVer
         <div className="flex justify-between gap-4">
           <dt className="text-muted-foreground">{u.versionDetailsInstallId}</dt>
           <dd className="break-all text-right font-mono text-xs">
-            {version.installId} ({version.hermesRoot})
+            {version.installId} ({version.auroraRoot})
           </dd>
         </div>
       )}

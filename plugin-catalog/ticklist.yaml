@@ -5,7 +5,7 @@ description: "A checklist the user ticks, in a Desktop pane — every tick, unti
 maintainer: mchevatheachiever
 tier: community
 category: desktop
-requires_hermes: ">=0.21.5"
+requires_aurora: ">=0.21.5"
 version: "1.8.6"
 title: "TickList"
 readme: true

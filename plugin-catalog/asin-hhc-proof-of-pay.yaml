@@ -6,7 +6,7 @@ description: "ASIN-HHC Proof of Pay: third-party verification for agent work —
 maintainer: dbottrader
 tier: community
 category: tools
-requires_hermes: ">=0.19"
+requires_aurora: ">=0.19"
 version: "0.1.0"
 capabilities:
   provides_tools: [asin_hhc_verify_receipt, asin_hhc_check_provenance, asin_hhc_board]

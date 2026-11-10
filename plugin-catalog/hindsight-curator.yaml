@@ -10,7 +10,7 @@ description: >-
   official hindsight memory-provider plugin — talks only to the public HTTP API.
   Disclosure — network calls only to the configured Hindsight base URL (list,
   GET, PATCH invalidate/restore, retain checkpoint); optional Bearer auth via
-  HINDSIGHT_API_KEY through Hermes secrets; writes invalidations, restores, and
+  HINDSIGHT_API_KEY through Aurora secrets; writes invalidations, restores, and
   one checkpoint fact to that server; stores plans/apply events/whitelist/history
   in the profile plugin-data directory; Desktop half uses ctx.rest to the plugin
   dashboard API; no shell, no background daemons, does not read other plugins'
@@ -18,7 +18,7 @@ description: >-
 maintainer: trenthalden
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_aurora: ">=0.22.0"
 docs_url: https://github.com/trenthalden/hindsight-curator#readme
 image: https://raw.githubusercontent.com/trenthalden/hindsight-curator/01087e27a85f71c572402e29447886ea464c970f/assets/banner.png
 screenshots:

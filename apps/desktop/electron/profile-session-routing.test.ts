@@ -902,7 +902,7 @@ test('registry sources: ssh backends use the shared cross-profile aggregate', as
   )
 
   assert.equal(calls.length, 1)
-  // One warm SSH backend serves the shared remote HERMES_HOME.
+  // One warm SSH backend serves the shared remote AURORA_HOME.
   assert.equal(calls[0].descriptor, 'spark-desc')
   assert.ok(calls[0].path.startsWith('/api/profiles/sessions?') && calls[0].path.includes('profile=all'))
   // Hidden Bot Mode chats must stay hidden — include_hidden is never requested.
@@ -1021,7 +1021,7 @@ test('registry sources: shared remote hosts read the cross-profile aggregate onc
 
       return {
         sessions: [
-          { id: 'r-1', profile: 'hermes-claude' },
+          { id: 'r-1', profile: 'aurora-claude' },
           { id: 'r-2', profile: '' }
         ],
         total: 2
@@ -1038,7 +1038,7 @@ test('registry sources: shared remote hosts read the cross-profile aggregate onc
   assert.deepEqual(
     rows.map(row => [(row as any).id, (row as any).profile, (row as any).connection_id]),
     [
-      ['r-1', 'hermes-claude', 'gw-cloud'],
+      ['r-1', 'aurora-claude', 'gw-cloud'],
       ['r-2', 'default', 'gw-cloud']
     ]
   )
@@ -1227,7 +1227,7 @@ test('splice: registry rows dedupe by id and extend per-profile totals', () => {
     merged,
     [
       { id: 'dupe', profile: 'work', connection_id: 'gw-1', last_active: 95 },
-      { id: 'remote-1', profile: 'hermes-claude', connection_id: 'gw-1', last_active: 120 },
+      { id: 'remote-1', profile: 'aurora-claude', connection_id: 'gw-1', last_active: 120 },
       { id: 'remote-2', connection_id: 'gw-1', last_active: 110 }
     ],
     totals
@@ -1238,7 +1238,7 @@ test('splice: registry rows dedupe by id and extend per-profile totals', () => {
     merged.map(row => (row as any).id),
     ['local-1', 'dupe', 'remote-1', 'remote-2']
   )
-  assert.equal(totals['hermes-claude'], 1)
+  assert.equal(totals['aurora-claude'], 1)
   assert.equal(totals.default, 2) // untagged registry row counts under default
   assert.equal(totals.work, 1) // deduped row does not double-count
 })
@@ -1836,7 +1836,7 @@ test('all-profiles cron list merges one read per profile like the gateway', asyn
 test('the primary aggregate names this device only for a local backend', async () => {
   assert.equal(await primaryAggregateConnectionId(async () => ({ connectionId: 'butler', mode: 'remote' })), 'butler')
   assert.equal(await primaryAggregateConnectionId(async () => ({ mode: 'local' })), 'local')
-  // HERMES_DESKTOP_REMOTE_URL: remote with no registry id. Its rows are not This device's.
+  // AURORA_DESKTOP_REMOTE_URL: remote with no registry id. Its rows are not This device's.
   assert.equal(await primaryAggregateConnectionId(async () => ({ mode: 'remote' })), null)
   assert.equal(await primaryAggregateConnectionId(async () => null), null)
   assert.equal(

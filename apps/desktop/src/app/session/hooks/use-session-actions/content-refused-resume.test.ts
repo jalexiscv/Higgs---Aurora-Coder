@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { type ChatMessage, chatMessageText, textPart, toChatMessages } from '@/lib/chat-messages'
-import type { SessionMessage } from '@/types/hermes'
+import type { SessionMessage } from '@/types/aurora'
 
 import { reconcileDurableHistory } from './utils'
 

@@ -2,7 +2,7 @@ import type {
   ConnectionOperationTarget,
   ConnectionRequestPayload,
   ConnectionUpdatePayload
-} from '@hermes/shared/gateway-events'
+} from '@aurora/shared/gateway-events'
 import { atom } from 'nanostores'
 
 import { t } from '../i18n/runtime.js'

@@ -5,7 +5,7 @@ description: "An agent never ends a turn on a promise. A final reply that says w
 maintainer: Agenziamaia
 tier: community
 category: automation
-requires_hermes: ">=0.21.6"
+requires_aurora: ">=0.21.6"
 version: "1.0.0"
 screenshots:
   - https://raw.githubusercontent.com/Agenziamaia/follow-through/e9bc1c1c8dcf575541c7c02f94a7f1302274411f/docs/demo.png

@@ -1,12 +1,12 @@
 /**
- * Sign the in-app Browser tab (`persist:hermes-preview`) in with the user's real browser profile.
+ * Sign the in-app Browser tab (`persist:aurora-preview`) in with the user's real browser profile.
  *
  * Gated by `browser.use_real_profile` and by a LOCAL backend: the real profile lives on the backend host,
  * so a remote/SSH/Cloud connection (another machine) never imports. Main decides "local" from the route's
  * resolved connection, never from a renderer flag.
  *
- * No cookie decryption here or in the backend: the user's real browser, running on the Hermes-owned profile
- * snapshot, decrypts its own store, and `hermes browser export-signins --json` (a local child of the owning
+ * No cookie decryption here or in the backend: the user's real browser, running on the Aurora-owned profile
+ * snapshot, decrypts its own store, and `aurora browser export-signins --json` (a local child of the owning
  * profile, which re-checks consent itself) reads it over CDP and writes the list to its stdout pipe. Values
  * go from that pipe straight into the partition's cookie jar; the renderer gets counts only. The identities
  * imported (url, name, domain, path; never values) are recorded under userData so consent-off removes
@@ -87,12 +87,12 @@ export function runSigninExport(
 ): Promise<ExportVerdict> {
   return new Promise(resolve => {
     if (!backend.command) {
-      resolve({ status: 'error', error: 'Hermes runtime is not available' })
+      resolve({ status: 'error', error: 'Aurora runtime is not available' })
 
       return
     }
 
-    const env = { ...parentEnv, HERMES_HOME: home, ...backend.env }
+    const env = { ...parentEnv, AURORA_HOME: home, ...backend.env }
     const child = spawn(windowsShellCommand(backend.command, Boolean(backend.shell)), backend.args, hiddenWindowsChildOptions({ cwd, env, shell: backend.shell, stdio: ['ignore', 'pipe', 'pipe'] }))
     const chunks: Buffer[] = []
     let size = 0
@@ -121,7 +121,7 @@ export function runSigninExport(
     })
     child.on('error', () => {
       clearTimeout(timer)
-      resolve({ status: 'error', error: 'could not run the Hermes sign-in export' })
+      resolve({ status: 'error', error: 'could not run the Aurora sign-in export' })
     })
     child.on('close', code => {
       clearTimeout(timer)
@@ -567,7 +567,7 @@ export function registerPreviewSigninsIpc(ipc: Pick<Electron.IpcMain, 'handle'>,
     return run
   }
 
-  ipc.handle('hermes:preview-signins:sync', (event, payload: unknown) => {
+  ipc.handle('aurora:preview-signins:sync', (event, payload: unknown) => {
     const body = payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : {}
     const profile = typeof body.profile === 'string' && body.profile.trim() ? body.profile.trim() : null
     const connectionId = typeof body.connectionId === 'string' && body.connectionId.trim() ? body.connectionId.trim() : null
@@ -581,7 +581,7 @@ export function registerPreviewSigninsIpc(ipc: Pick<Electron.IpcMain, 'handle'>,
   // P2-7: the renderer's local profile rename/delete flow (session-states.ts, beside
   // migrate/dropTilesForProfile) calls these so the per-profile cookie record + jar — which live in
   // Electron main (userData) — follow the profile. Fire-and-forget: the renderer does not block on it.
-  ipc.handle('hermes:preview-signins:profile-renamed', (_event, payload: unknown) => {
+  ipc.handle('aurora:preview-signins:profile-renamed', (_event, payload: unknown) => {
     const body = payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : {}
     const oldProfile = typeof body.oldProfile === 'string' ? body.oldProfile : ''
     const newProfile = typeof body.newProfile === 'string' ? body.newProfile : ''
@@ -596,7 +596,7 @@ export function registerPreviewSigninsIpc(ipc: Pick<Electron.IpcMain, 'handle'>,
     )
   })
 
-  ipc.handle('hermes:preview-signins:profile-deleted', (_event, payload: unknown) => {
+  ipc.handle('aurora:preview-signins:profile-deleted', (_event, payload: unknown) => {
     const body = payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : {}
     const profile = typeof body.profile === 'string' ? body.profile : ''
 

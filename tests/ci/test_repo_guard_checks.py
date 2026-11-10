@@ -132,14 +132,14 @@ def test_supply_chain_scan_flags_payload_lines_but_not_lockfiles(repo, step):
     decode, run = "base64." + "b64decode", "subprocess." + "run("
     payload = f"exec({decode}(blob))\n"
     head = commit(repo, {"uv.lock": payload, "ok.py": "print(1)\n"})
-    shas = {"_HERMES_PR_BASE_SHA": base, "_HERMES_PR_HEAD_SHA": head}
+    shas = {"_AURORA_PR_BASE_SHA": base, "_AURORA_PR_HEAD_SHA": head}
     assert step.run(repo, "scan_supply_chain.py", "patterns", **shas).returncode == 0
     assert step.outputs()["found"] == "false"
 
     head = commit(repo, {"evil.py": payload + run + "['sh', '-c', " + "chr" + "(65)])\n"})
     step.output.unlink()
-    assert step.run(repo, "scan_supply_chain.py", "patterns", _HERMES_PR_BASE_SHA=base,
-                    _HERMES_PR_HEAD_SHA=head).returncode == 0
+    assert step.run(repo, "scan_supply_chain.py", "patterns", _AURORA_PR_BASE_SHA=base,
+                    _AURORA_PR_HEAD_SHA=head).returncode == 0
     assert step.outputs()["found"] == "true"
     report = (step.runner_temp / "supply-chain-findings.md").read_text(encoding="utf-8")
     assert "base64 decode + exec/eval combo" in report
@@ -149,8 +149,8 @@ def test_supply_chain_scan_flags_payload_lines_but_not_lockfiles(repo, step):
 def test_dependency_bounds_report_lists_only_floor_only_specs(repo, step):
     base = commit(repo, {"pyproject.toml": 'deps = [\n  "old>=1",\n]\n'})
     head = commit(repo, {"pyproject.toml": 'deps = [\n  "old>=1",\n  "bounded>=2,<3", "loose>=2.1",\n]\n'})
-    assert step.run(repo, "scan_supply_chain.py", "dependency-bounds", _HERMES_PR_BASE_SHA=base,
-                    _HERMES_PR_HEAD_SHA=head).returncode == 0
+    assert step.run(repo, "scan_supply_chain.py", "dependency-bounds", _AURORA_PR_BASE_SHA=base,
+                    _AURORA_PR_HEAD_SHA=head).returncode == 0
     assert step.outputs()["found"] == "true"
     report = (step.runner_temp / "supply-chain-unbounded.txt").read_text(encoding="utf-8")
     assert report == '"loose>=2.1"\n'

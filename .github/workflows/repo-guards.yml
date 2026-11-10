@@ -238,8 +238,8 @@ jobs:
         if: ${{ !cancelled() && inputs.event_name == 'pull_request' && inputs.scan }}
         env:
           GH_TOKEN: ${{ github.token }}
-          _HERMES_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          _HERMES_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          _AURORA_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          _AURORA_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: python3 scripts/ci/scan_supply_chain.py patterns
 
       - name: Emit review_status (supply-chain scan)
@@ -259,8 +259,8 @@ jobs:
         id: bounds
         if: ${{ !cancelled() && inputs.event_name == 'pull_request' && inputs.deps }}
         env:
-          _HERMES_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          _HERMES_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          _AURORA_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          _AURORA_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: python3 scripts/ci/scan_supply_chain.py dependency-bounds
 
       - name: Emit review_status (dependency bounds)
@@ -316,9 +316,9 @@ jobs:
         with:
           scandir: ./docker
 
-      # ── Always: icon assets freshness (needs a Hermes runtime interpreter) ────────────────
+      # ── Always: icon assets freshness (needs an Aurora runtime interpreter) ────────────────
 
-      # The generator runs on a Hermes runtime interpreter; [] exports one as HERMES_PYTHON.
+      # The generator runs on an Aurora runtime interpreter; [] exports one as AURORA_PYTHON.
       # Its dependency phase also runs the frozen-lock check, so a stale uv.lock fails this step;
       # the uv.lock step below still runs and says why.
       - uses: ./.github/actions/setup-pm
@@ -336,7 +336,7 @@ jobs:
       # here rather than in docker.yml on main. On PRs this runs against the MERGED state
       # (refs/pull/<N>/merge): main's pyproject.toml plus the PR's changes. A branch that passes
       # `python -m pm.build_env --source . --check-lock` locally but fails here is usually behind
-      # main; fix with `git fetch origin main && git rebase origin/main && hermes pm lock`.
+      # main; fix with `git fetch origin main && git rebase origin/main && aurora pm lock`.
       # Gated on uv_lock: only pyproject.toml / uv.lock can desync the lock, and the check
       # re-resolves against PyPI. Needs only the toolchain, so it runs even when setup-pm's
       # dependency phase failed on that same stale lock.
@@ -361,7 +361,7 @@ jobs:
       # The committed icon outputs must match what scripts/generate_icons.py renders from
       # assets/nous-girl-*.svg + assets/backgrounds/*.svg. Regular builds and user installs consume
       # the committed files and never render, so this is what keeps them honest. Fix a red run
-      # with `node scripts/generate-icons.mjs` on a Hermes runtime interpreter and commit.
+      # with `node scripts/generate-icons.mjs` on an Aurora runtime interpreter and commit.
       #
       # Byte-determinism note: resvg renders the same SVG to identical bytes on any host for
       # pure-shape artwork. If the master ever contains <text>, font rendering can differ across

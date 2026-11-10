@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
-import type { MessagingPlatformInfo } from '@/types/hermes'
+import type { MessagingPlatformInfo } from '@/types/aurora'
 
 import { RelayLinkSetup } from './relay-link'
 
@@ -12,7 +12,7 @@ const notify = vi.fn()
 const noAccounts = { platforms: [{ platform: 'telegram', accounts: [], bot_url: null }] }
 const getRelayLinks = vi.fn(async (): Promise<unknown> => noAccounts)
 
-vi.mock('@/hermes', () => ({
+vi.mock('@/aurora', () => ({
   getRelayLinks: () => getRelayLinks(),
   getRelayLinkState: (code: string) => getRelayLinkState(code),
   requestRelayLink: (platform: string) => requestRelayLink(platform),
@@ -35,7 +35,7 @@ const telegram = { id: 'telegram', name: 'Telegram' } as MessagingPlatformInfo
 
 // What the Electron IPC bridge throws for a relay router refusal (real Desktop + connector readback).
 const ipcRefusal = (status: number, detail: unknown) =>
-  new Error(`Error invoking remote method 'hermes:api': Error: ${status}: ${JSON.stringify({ detail })}`)
+  new Error(`Error invoking remote method 'aurora:api': Error: ${status}: ${JSON.stringify({ detail })}`)
 
 test.each([
   [
@@ -53,7 +53,7 @@ test.each([
     'Start the gateway first: it holds the Team Gateway connection.'
   ],
   [
-    new Error("Error invoking remote method 'hermes:api': Error: Gateway ticket control socket missing"),
+    new Error("Error invoking remote method 'aurora:api': Error: Gateway ticket control socket missing"),
     'Gateway ticket control socket missing'
   ]
 ])('a refused link shows the backend sentence, not the IPC envelope', async (error, sentence) => {

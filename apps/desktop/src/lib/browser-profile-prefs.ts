@@ -1,4 +1,4 @@
-import { LOCAL_CONNECTION_ID } from '@hermes/shared'
+import { LOCAL_CONNECTION_ID } from '@aurora/shared'
 
 import { $defaultProfileRoute, noteDefaultProfileRoute } from '@/store/default-profile'
 import { $connection } from '@/store/session'

@@ -15,7 +15,7 @@ const setDefault = vi.fn()
 beforeEach(() => {
   openWindow.mockResolvedValue({ ok: true })
   setDefault.mockImplementation(async route => route)
-  Object.defineProperty(window, 'hermesDesktop', {
+  Object.defineProperty(window, 'auroraDesktop', {
     configurable: true,
     value: { openWindow, profile: { setDefault } }
   })
@@ -80,7 +80,7 @@ it('distinguishes the same profile on another source and reports a rejected defa
 
 it("offers a Webapp tab's window and default actions only for its own gateway's profiles", () => {
   // A tab and the windows it opens run on the gateway serving the page; Mini is one it relays to.
-  window.document.documentElement.dataset.hermesDesktopHost = 'browser'
+  window.document.documentElement.dataset.auroraDesktopHost = 'browser'
 
   try {
     render(
@@ -101,6 +101,6 @@ it("offers a Webapp tab's window and default actions only for its own gateway's 
     expect(screen.getByRole('menuitem', { name: 'Open in new window' })).toBeTruthy()
     expect(screen.getByRole('menuitem', { name: 'Set as default' })).toBeTruthy()
   } finally {
-    delete window.document.documentElement.dataset.hermesDesktopHost
+    delete window.document.documentElement.dataset.auroraDesktopHost
   }
 })

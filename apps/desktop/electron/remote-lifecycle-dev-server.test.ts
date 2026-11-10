@@ -27,19 +27,19 @@ const REUSE_TOKEN = 'stored-token'
 test.skipIf(process.platform === 'win32')(
   'a dev build hands its renderer origin to the remote serve (real sh parse)',
   async (): Promise<void> => {
-    // The backend trusts a dev renderer's http origin only when it inherits HERMES_DESKTOP_DEV_SERVER,
+    // The backend trusts a dev renderer's http origin only when it inherits AURORA_DESKTOP_DEV_SERVER,
     // as a locally spawned backend does. A packaged build (no dev server) must not set it at all.
     const shell: string = (await exec('command -v bash', { shell: 'bash' })).stdout.trim()
-    const directory: string = await mkdtemp(path.join(os.tmpdir(), 'hermes-dev-server-env-'))
-    const hermesPath: string = path.join(directory, 'hermes')
+    const directory: string = await mkdtemp(path.join(os.tmpdir(), 'aurora-dev-server-env-'))
+    const auroraPath: string = path.join(directory, 'aurora')
     const reportPath: string = path.join(directory, 'dev-server-report')
 
     try {
       // The serve is detached: it reports through a FIFO, whose read blocks until it has written.
       await execFile('mkfifo', [reportPath])
       await writeFile(
-        hermesPath,
-        `#!${shell}\nprintf '%s' "\${HERMES_DESKTOP_DEV_SERVER-unset}" > ${expandRemotePath(reportPath)}\n`,
+        auroraPath,
+        `#!${shell}\nprintf '%s' "\${AURORA_DESKTOP_DEV_SERVER-unset}" > ${expandRemotePath(reportPath)}\n`,
         { encoding: 'utf8', mode: 0o700 }
       )
 
@@ -51,18 +51,18 @@ test.skipIf(process.platform === 'win32')(
         ['', undefined, 'unset'],
         ['', 'http://127.0.0.1:5174', 'unset']
       ]) {
-        const command: string = buildSpawnCommand(hermesPath, '', {
+        const command: string = buildSpawnCommand(auroraPath, '', {
           devServer,
-          hermesHome: path.join(directory, 'home'),
+          auroraHome: path.join(directory, 'home'),
           logPath: path.join(directory, 'spawn.log')
         })
 
         // A runner launched from a dev shell may export the variable itself; only `remote` may reach the spawn.
-        const env: NodeJS.ProcessEnv = { ...process.env, HOME: directory, HERMES_HOME: directory }
-        delete env.HERMES_DESKTOP_DEV_SERVER
+        const env: NodeJS.ProcessEnv = { ...process.env, HOME: directory, AURORA_HOME: directory }
+        delete env.AURORA_DESKTOP_DEV_SERVER
 
         if (remote !== undefined) {
-          env.HERMES_DESKTOP_DEV_SERVER = remote
+          env.AURORA_DESKTOP_DEV_SERVER = remote
         }
 
         await exec(command, { shell, env })
@@ -85,8 +85,8 @@ function ownedLock(devServer?: string): Record<string, unknown> {
     pid: 333,
     port: 40000,
     profile: '',
-    hermesPath: '~/.local/bin/hermes',
-    hermesHome: '~/.hermes',
+    auroraPath: '~/.local/bin/aurora',
+    auroraHome: '~/.aurora',
     logPath: spawnLogPath(OWNERSHIP_ID, SPAWN_NONCE),
     tokenFingerprint: fingerprintToken(REUSE_TOKEN),
     startedAt: '2026-07-14T00:00:00.000Z',
@@ -110,7 +110,7 @@ function ownedBackendSsh(lock: Record<string, unknown>): { calls: string[]; exec
         return '890\n'
       }
 
-      if (cmd.includes('.hermes-update-in-progress')) {
+      if (cmd.includes('.aurora-update-in-progress')) {
         return 'CLEAR'
       }
 
@@ -126,7 +126,7 @@ function ownedBackendSsh(lock: Record<string, unknown>): { calls: string[]; exec
         [/print\("OWNED"/, 'OWNED\n'],
         [/pidfd_open/, 'TERMINATED\n'],
         [/grep -q ssh-session-token-file/, 'YES\n'],
-        [/cat .*\.log/, 'HERMES_DASHBOARD_READY port=52050\n']
+        [/cat .*\.log/, 'AURORA_DASHBOARD_READY port=52050\n']
       ]
 
       return rules.find(([matcher]) => matcher.test(cmd))?.[1] ?? ''
@@ -142,7 +142,7 @@ for (const [label, recorded, current, reused] of [
   ['a packaged build reuses a packaged backend', undefined, '', true]
 ] as const) {
   test(`SSH reuse: ${label}`, async (): Promise<void> => {
-    // The backend trusts the renderer's http origin only from the HERMES_DESKTOP_DEV_SERVER it was
+    // The backend trusts the renderer's http origin only from the AURORA_DESKTOP_DEV_SERVER it was
     // spawned with, so reusing one spawned for another renderer would refuse every renderer socket.
     const ssh = ownedBackendSsh(ownedLock(recorded))
 
@@ -156,7 +156,7 @@ for (const [label, recorded, current, reused] of [
       forward: async () => {},
       cancelForward: async () => {},
       pickLocalPort: async () => 50001,
-      waitForHermes: async () => {},
+      waitForAurora: async () => {},
       probeReuseProof: async () => 'authenticated-ok',
       adoptServedToken: async (_baseUrl: string, token: string) => token,
       readyTimeoutMs: 2000

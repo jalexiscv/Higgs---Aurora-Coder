@@ -21,8 +21,8 @@ from gateway.platforms.api_server_run_idempotency import RunIdempotencyStore
 from gateway.session_controls import AuthorityConnection
 from gateway.session_group_peers import room_link
 from gateway.session_hosted_service import CanonicalHostedRoomService
-from hermes_state import SessionDB
-from hermes_state_runtime import begin_runtime_epoch
+from aurora_state import SessionDB
+from aurora_state_runtime import begin_runtime_epoch
 from tui_gateway.contracts import groups_bot_relay as contract
 from tui_gateway.contracts.registry import CANONICAL_METHODS
 
@@ -32,8 +32,8 @@ def gateway(tmp_path, monkeypatch):
     """One gateway that hosts the Group Chat and also serves its peer member over loopback."""
     home = tmp_path / 'home'
     home.mkdir()
-    monkeypatch.setenv('HERMES_HOME', str(home))
-    monkeypatch.delenv('HERMES_ROOM_LINK_URL', raising=False)
+    monkeypatch.setenv('AURORA_HOME', str(home))
+    monkeypatch.delenv('AURORA_ROOM_LINK_URL', raising=False)
     db = SessionDB(home / 'state.db')
     adapter = APIServerAdapter(PlatformConfig(enabled=True, extra={'key': 'target-gateway-api-key'}))
     adapter._run_idempotency_store.close()
@@ -66,7 +66,7 @@ async def serve(gateway, monkeypatch, port=None, *, stop=False):
     server = TestServer(app, port=port)
     await server.start_server()
     url = str(server.make_url('')).rstrip('/')
-    monkeypatch.setenv('HERMES_ROOM_LINK_URL', url)
+    monkeypatch.setenv('AURORA_ROOM_LINK_URL', url)
     return server, url
 
 
@@ -107,7 +107,7 @@ def test_room_link_is_enabled_only_when_this_gateway_can_host_a_member(gateway, 
     # A named profile is lendable too (test_session_group_named_lender.py): here it lacks the endpoint.
     assert named_link == {'enabled': False, 'reason': 'endpoint_required'}
     assert room_link(authority) == {'enabled': False, 'reason': 'endpoint_required'}
-    monkeypatch.setenv('HERMES_ROOM_LINK_URL', 'http://127.0.0.1:9')
+    monkeypatch.setenv('AURORA_ROOM_LINK_URL', 'http://127.0.0.1:9')
     durable = adapter._run_idempotency_store
     adapter._run_idempotency_store = RunIdempotencyStore(':memory:')
     assert room_link(authority) == {'enabled': False, 'reason': 'durable_run_storage_required'}
@@ -128,7 +128,7 @@ def test_room_link_is_enabled_only_when_this_gateway_can_host_a_member(gateway, 
     assert not (gateway.home / '.room-link-grant-secret').exists()
     assert {'groups.peer.register', 'groups.peer.invite', 'groups.peer.revoke'} <= set(capabilities['methods'])
     contract.GroupsCapabilitiesResult.model_validate(capabilities)
-    monkeypatch.delenv('HERMES_ROOM_LINK_URL')
+    monkeypatch.delenv('AURORA_ROOM_LINK_URL')
     contract.GroupsCapabilitiesResult.model_validate(asyncio.run(call(gateway.owner, 'groups.capabilities')))
 
 
@@ -193,7 +193,7 @@ def test_peer_methods_enforce_operator_control_and_exact_params(gateway, monkeyp
         assert await call(member, 'groups.peer.revoke', grant='grant') == 'permission_denied'
         assert await call(reader, 'groups.peer.register', room_id='linked') == 'permission_denied'
         assert await call(gateway.owner, 'groups.peer.invite', **identity) == 'room_link_unavailable'
-        monkeypatch.setenv('HERMES_ROOM_LINK_URL', 'http://127.0.0.1:9')
+        monkeypatch.setenv('AURORA_ROOM_LINK_URL', 'http://127.0.0.1:9')
         # Grant ids are the target's to choose.
         for params in ({**identity, 'grant_id': 'chosen'}, {**identity, 'status_ttl_seconds': None},
                        {**identity, 'authority_epoch': '1'}, {**identity, 'authority_epoch': True},
@@ -399,7 +399,7 @@ def _owed(db_path):
 @pytest.mark.parametrize('room_id', ['linked', ' linked '])
 def test_disband_without_a_service_requires_coordination_for_peer_routes(tmp_path, monkeypatch, obligation, room_id):
     from gateway.hosted_room_peer import GatewayRoomCatalog, catalog_mapping
-    monkeypatch.setenv('HERMES_HOME', str(tmp_path))
+    monkeypatch.setenv('AURORA_HOME', str(tmp_path))
     with SessionDB(tmp_path / 'state.db') as db:
         authority = SimpleNamespace(profile_id=str(tmp_path), instance_id='owner', db=db, events={})
         owner = AuthorityConnection(authority, object(), {'user_id': 'owner'})

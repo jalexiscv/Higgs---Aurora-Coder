@@ -6,7 +6,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 
-import { resolveDesktopHermesHome } from '../../../apps/desktop/electron/data-paths.mjs'
+import { resolveDesktopAuroraHome } from '../../../apps/desktop/electron/data-paths.mjs'
 import { applyBundleEnvironment } from '../../../apps/desktop/scripts/bundle-env.mjs'
 import { type ChatIdentity, readChatIdentity, runDesktopChatSmoke, waitForChatReady } from '../../../tests-js/scripts/desktop-chat-smoke.ts'
 import { assertBackendOrigin, localBackendProcess, readBundledBundleEnv, readInstallationCommit, reusedDesktopBuildCommit } from '../../../tests-js/scripts/desktop-smoke-process.ts'
@@ -57,39 +57,39 @@ interface ElectronProcess extends NodeJS.Process {
 
 export { smokeEnvironment }
 
-/** The bundled app resolves its Hermes home the same way electron/data-paths.ts does:
- * an explicit HERMES_HOME wins, but a bundle-env clear (HERMES_HOME=null) empties it before
- * this runs, and the HERMES_DESKTOP_USER_DATA_DIR branch then resolves <userData>/hermes-home.
+/** The bundled app resolves its Aurora home the same way electron/data-paths.ts does:
+ * an explicit AURORA_HOME wins, but a bundle-env clear (AURORA_HOME=null) empties it before
+ * this runs, and the AURORA_DESKTOP_USER_DATA_DIR branch then resolves <userData>/aurora-home.
  * Seed both so the driver works against baked-clear bundles and plain source launches. */
-export function candidateSmokeHermesHomes(home: string, userData: string): string[] {
-  const fallback = path.join(userData, 'hermes-home')
+export function candidateSmokeAuroraHomes(home: string, userData: string): string[] {
+  const fallback = path.join(userData, 'aurora-home')
   return home === fallback ? [home] : [home, fallback]
 }
 
 /** The home the app will resolve for a bundled artifact whose env defaults/clears
  * are known from its stamp. Replays the bundle banner over the launch env, then
  * runs the same resolver the app runs, so the driver can seed the home before
- * boot instead of pinning HERMES_HOME and hoping the artifact honors it. */
-export function predictSmokeHermesHome(
+ * boot instead of pinning AURORA_HOME and hoping the artifact honors it. */
+export function predictSmokeAuroraHome(
   launchEnv: NodeJS.ProcessEnv,
   bundleEnv: Record<string, string | null>,
   platform: NodeJS.Platform = process.platform,
   home: string = platform === 'linux' ? launchEnv.HOME || os.homedir() : os.homedir(),
 ): string {
   const effective = applyBundleEnvironment(launchEnv, bundleEnv)
-  return resolveDesktopHermesHome({ home, env: effective, platform, directoryExists: (): boolean => false, readWindowsHome: (): null => null })
+  return resolveDesktopAuroraHome({ home, env: effective, platform, directoryExists: (): boolean => false, readWindowsHome: (): null => null })
 }
 
 /** A predicted home must be empty before the driver seeds it: the smoke tests a
  * fresh install, and a non-empty home means the prediction is wrong or the run
  * is dirty. Never wipe — a wrong prediction should fail loudly, not delete data. */
-function requireEmptyHermesHome(home: string): void {
+function requireEmptyAuroraHome(home: string): void {
   if (!fs.existsSync(home)) {
     return
   }
   const entries = fs.readdirSync(home)
   if (entries.length > 0) {
-    throw new Error(`Predicted Hermes home ${home} is not empty (${entries.length} entries); refusing to seed an existing profile`)
+    throw new Error(`Predicted Aurora home ${home} is not empty (${entries.length} entries); refusing to seed an existing profile`)
   }
 }
 
@@ -119,18 +119,18 @@ export function resolveSmokeLaunch(options: SmokeOptions): Launch {
       }
       args = spec.argv.slice(1)
     }
-    const editableRoot = spec.env.HERMES_PYTHON_SRC_ROOT
+    const editableRoot = spec.env.AURORA_PYTHON_SRC_ROOT
     if (editableRoot) {
       if (!path.isAbsolute(editableRoot) || fs.realpathSync(editableRoot) !== fs.realpathSync(options.root)) {
-        throw new Error('Captured HERMES_PYTHON_SRC_ROOT differs from the expected source installation')
+        throw new Error('Captured AURORA_PYTHON_SRC_ROOT differs from the expected source installation')
       }
-      env.HERMES_PYTHON_SRC_ROOT = editableRoot
+      env.AURORA_PYTHON_SRC_ROOT = editableRoot
     }
     // Retain the product-selected source interpreter, not the driver's activated Python.
-    for (const key of ['HERMES_DESKTOP_PYTHON', 'HERMES_DESKTOP_HERMES', 'HERMES_DESKTOP_HERMES_ROOT']) {
+    for (const key of ['AURORA_DESKTOP_PYTHON', 'AURORA_DESKTOP_AURORA', 'AURORA_DESKTOP_AURORA_ROOT']) {
       const value = spec.env[key]
       if (value) {
-        if (!path.isAbsolute(value) || (key !== 'HERMES_DESKTOP_PYTHON' && !within(options.root, value))) {
+        if (!path.isAbsolute(value) || (key !== 'AURORA_DESKTOP_PYTHON' && !within(options.root, value))) {
           throw new Error(`Captured ${key} escapes the expected source installation`)
         }
         fs.accessSync(value)
@@ -155,7 +155,7 @@ function selectLocal(userData: string): void {
 }
 
 interface BackendWindow extends Window {
-  hermesDesktop?: {
+  auroraDesktop?: {
     getConnection: () => Promise<{ baseUrl: string; mode?: string; logs: string[] }>
   }
 }
@@ -164,7 +164,7 @@ async function backendConnection(page: Page): Promise<{ baseUrl: string; mode?: 
   return z.object({ baseUrl: z.string(), mode: z.string().optional(), logs: z.array(z.string()) }).parse(
     await page.evaluate(async (): Promise<{ baseUrl: string; mode?: string; logs: string[] }> => {
       // SAFETY: the desktop preload owns this bridge; its result is validated at the boundary.
-      const bridge = (window as BackendWindow).hermesDesktop
+      const bridge = (window as BackendWindow).auroraDesktop
       if (!bridge) { throw new Error('Desktop connection bridge is unavailable') }
       const { baseUrl, mode, logs } = await bridge.getConnection()
       return { baseUrl, mode, logs }
@@ -235,7 +235,7 @@ async function verifyRunningDesktop(app: ElectronApplication, options: SmokeOpti
   // Chromium resolves DIR_HOME from the HOME env only on Linux; macOS
   // (NSHomeDirectory) and Windows (CSIDL_PROFILE) ignore it, so the home
   // equality is a contract only there. On those platforms the isolation proof
-  // is the userData pin plus the seeded Hermes home the backend booted from.
+  // is the userData pin plus the seeded Aurora home the backend booted from.
   // When the artifact bakes its own env (bundleEnv known from the stamp), the
   // driver's --user-data pin is not authoritative: the app may legitimately
   // resolve a different userData, and the home the driver predicted and seeded
@@ -258,15 +258,15 @@ async function verifyRunningDesktop(app: ElectronApplication, options: SmokeOpti
 }
 
 function assertResolvedIdentity(identity: ChatIdentity, options: SmokeOptions, predictedHome: string | undefined): void {
-  if (options.origin === 'source' && fs.realpathSync(identity.hermesRoot) !== fs.realpathSync(options.root)) {
+  if (options.origin === 'source' && fs.realpathSync(identity.auroraRoot) !== fs.realpathSync(options.root)) {
     throw new Error('Desktop resolved a different source installation')
   }
   // A bundled artifact that bakes its own env resolves its home itself; the
   // app must report the home the driver predicted and seeded, not some other
   // (possibly real, pre-existing) profile.
   if (predictedHome) {
-    if (!identity.hermesHome || fs.realpathSync(identity.hermesHome) !== fs.realpathSync(predictedHome)) {
-      throw new Error(`Desktop resolved Hermes home ${identity.hermesHome ?? '(unreported)'} instead of the predicted ${predictedHome}`)
+    if (!identity.auroraHome || fs.realpathSync(identity.auroraHome) !== fs.realpathSync(predictedHome)) {
+      throw new Error(`Desktop resolved Aurora home ${identity.auroraHome ?? '(unreported)'} instead of the predicted ${predictedHome}`)
     }
   }
 }
@@ -289,10 +289,10 @@ export async function runInstalledDesktopSmoke(options: SmokeOptions, launchApp:
     fs.accessSync(options.root)
     const launch: Launch = resolveSmokeLaunch(options)
     const bundleEnv: Record<string, string | null> | undefined = options.origin === 'bundled' ? readBundledBundleEnv(options.root) : undefined
-    predictedHome = bundleEnv ? predictSmokeHermesHome(launch.env, bundleEnv) : undefined
+    predictedHome = bundleEnv ? predictSmokeAuroraHome(launch.env, bundleEnv) : undefined
 
     // Check before the driver creates its sandbox folders inside this home.
-    if (predictedHome) { requireEmptyHermesHome(predictedHome) }
+    if (predictedHome) { requireEmptyAuroraHome(predictedHome) }
 
     fs.mkdirSync(options.home, { recursive: true })
     fs.mkdirSync(options['user-data'], { recursive: true })
@@ -309,12 +309,12 @@ export async function runInstalledDesktopSmoke(options: SmokeOptions, launchApp:
     selectLocal(options['user-data'])
     if (!options['mock-url']) { mock = await startMockServer() }
     const mockUrl = validateMockUrl(options['mock-url'] ?? mock!.url)
-    // A bundle-env HERMES_HOME clear (see candidateSmokeHermesHomes) can make the
+    // A bundle-env AURORA_HOME clear (see candidateSmokeAuroraHomes) can make the
     // app resolve a different home than --home, so every candidate gets the mock
     // provider config and .env. When the artifact's stamp carries its baked
     // bundle env, predict the home the app will actually resolve and seed that
     // too, refusing to seed a non-empty one.
-    for (const home of new Set([...candidateSmokeHermesHomes(options.home, options['user-data']), ...(predictedHome ? [predictedHome] : [])])) {
+    for (const home of new Set([...candidateSmokeAuroraHomes(options.home, options['user-data']), ...(predictedHome ? [predictedHome] : [])])) {
       writeMockProviderConfig(home, mockUrl)
       writeEnvFile(home, 'e2e-mock-key', mockUrl)
     }
@@ -335,19 +335,19 @@ export async function runInstalledDesktopSmoke(options: SmokeOptions, launchApp:
     const identity = await readChatIdentity(page)
     assertResolvedIdentity(identity, options, predictedHome)
     // The ordinary host-attach path may reuse the updater's relaunched app's
-    // backend, and `hermes gateway ensure` attaches to (or starts, detached) the
+    // backend, and `aurora gateway ensure` attaches to (or starts, detached) the
     // canonical gateway. Observe the ledger and gateway_state.json the app's home
     // resolves to (its machine root), not an arbitrary listener, and retain the
     // OS listener + installed-tree proof below.
     fs.writeFileSync(path.join(out, `desktop-backend-${options.phase}.log`), connection.logs.map(redact).join('\n'))
     const backend = localBackendProcess(Number(base.port), running.pid, predictedHome ?? options.home)
-    // `identity.hermesRoot` was asserted against options.root above. For a listener that
+    // `identity.auroraRoot` was asserted against options.root above. For a listener that
     // descends from this app process, on a platform that cannot read the backend's own
     // environment, those two facts are the available evidence; a ledger-attached host
     // backend is not tied to the app by ancestry and must prove its tree itself; a canonical
     // gateway whose cwd is unreadable must report the installed commit.
     const provenanceCommit = readInstallationCommit(options.root, options.origin)
-    assertBackendOrigin(backend, options.root, options.origin, { appReportedRoot: identity.hermesRoot, installedCommit: provenanceCommit })
+    assertBackendOrigin(backend, options.root, options.origin, { appReportedRoot: identity.auroraRoot, installedCommit: provenanceCommit })
     if (provenanceCommit !== options['expect-commit']) { throw new Error('Installed commit differs from --expect-commit') }
     // Trace only chat actions. Connection probes can return credential-bearing logs.
     await app.context().tracing.start({ screenshots: true, snapshots: false, sources: false })
@@ -369,7 +369,7 @@ export async function runInstalledDesktopSmoke(options: SmokeOptions, launchApp:
   } finally {
     fs.writeFileSync(path.join(out, `desktop-app-${options.phase}.log`), consoleLines.join('\n'))
     try {
-      captureBackendLogs([...new Set([...candidateSmokeHermesHomes(options.home, options['user-data']), ...(predictedHome ? [predictedHome] : [])])], out, options.phase)
+      captureBackendLogs([...new Set([...candidateSmokeAuroraHomes(options.home, options['user-data']), ...(predictedHome ? [predictedHome] : [])])], out, options.phase)
     } finally {
       if (app) { await gracefulClose(app).catch((error: Error): void => { console.error(redact(error.message)) }) }
       if (mock) { await mock.close() }

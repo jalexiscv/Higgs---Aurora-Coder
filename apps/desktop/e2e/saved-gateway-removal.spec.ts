@@ -20,7 +20,7 @@ import { buildAppEnv, createSandbox, launchDesktop } from './fixtures'
 import { allowErrorBanners, expect, test } from './test'
 
 const outPath = (file: string): string =>
-  process.env.HERMES_E2E_OUT ? path.join(process.env.HERMES_E2E_OUT, file) : test.info().outputPath(file)
+  process.env.AURORA_E2E_OUT ? path.join(process.env.AURORA_E2E_OUT, file) : test.info().outputPath(file)
 
 interface FakeSocket {
   send: (data: string) => void
@@ -140,7 +140,7 @@ async function startFakeGateway(
   }
 }
 
-const OAUTH_JAR = 'persist:hermes-remote-oauth-conn-signed-in'
+const OAUTH_JAR = 'persist:aurora-remote-oauth-conn-signed-in'
 
 test('a removed saved gateway stays removed after relaunch with a stale connection.json', async () => {
   test.setTimeout(300_000)
@@ -179,25 +179,25 @@ test('a removed saved gateway stays removed after relaunch with a stale connecti
     { mode: 0o600 }
   )
 
-  const env = buildAppEnv(sandbox, { HERMES_DESKTOP_DEV_SERVER: '' })
+  const env = buildAppEnv(sandbox, { AURORA_DESKTOP_DEV_SERVER: '' })
   const report: string[] = []
-  const store = path.join(sandbox.hermesHome, 'gateway-connections.json')
+  const store = path.join(sandbox.auroraHome, 'gateway-connections.json')
   const ids = (registry: any) => registry.connections.map((c: any) => c.id).join(',')
 
   try {
     let { app, page } = await launchDesktop(env)
-    const first = await page.evaluate(() => (window as any).hermesDesktop.connections.list())
+    const first = await page.evaluate(() => (window as any).auroraDesktop.connections.list())
     report.push(`launch 1 list: ${ids(first)} primary=${first.primary}`)
 
     await app.evaluate(
       async ({ session }, args) => {
-        await session.fromPartition(args.jar).cookies.set({ url: args.url, name: 'hermes_session', value: 'stale' })
+        await session.fromPartition(args.jar).cookies.set({ url: args.url, name: 'aurora_session', value: 'stale' })
       },
       { jar: OAUTH_JAR, url: signedIn.url }
     )
 
     await page.evaluate(async () => {
-      const c = (window as any).hermesDesktop.connections
+      const c = (window as any).auroraDesktop.connections
       await c.setPrimary('home-box')
       await c.remove('old-http')
       await c.remove('signed-in')
@@ -217,7 +217,7 @@ test('a removed saved gateway stays removed after relaunch with a stale connecti
     ;({ app, page } = await launchDesktop(env))
 
     try {
-      const second = await page.evaluate(() => (window as any).hermesDesktop.connections.list())
+      const second = await page.evaluate(() => (window as any).auroraDesktop.connections.list())
       const disk = JSON.parse(fs.readFileSync(store, 'utf8'))
       report.push(`launch 2 list: ${ids(second)} primary=${second.primary}`)
       report.push(`gateway-connections.json: ${ids(disk)} primary=${disk.primary}`)

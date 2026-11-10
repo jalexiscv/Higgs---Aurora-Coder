@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto'
 import { writeFileSync } from 'node:fs'
 
-import type { ScrollBoxHandle } from '@hermes/ink'
-import { evictInkCaches } from '@hermes/ink'
-import type { InflightTurn, SessionResumeResult, Usage } from '@hermes/shared/gateway-events'
+import type { ScrollBoxHandle } from '@aurora/ink'
+import { evictInkCaches } from '@aurora/ink'
+import type { InflightTurn, SessionResumeResult, Usage } from '@aurora/shared/gateway-events'
 import type {
   SessionActivateResponse,
   SessionCloseResponse,
@@ -12,7 +12,7 @@ import type {
   SessionInfo,
   SessionTitleResponse,
   SetupStatusResponse
-} from '@hermes/shared/gateway-types'
+} from '@aurora/shared/gateway-types'
 import { type RefObject, useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { STARTUP_WORKSPACE_CWD } from '../config/env.js'
@@ -69,7 +69,7 @@ const reportNewSessionNotices = (info: null | SessionInfo, msg: string | undefin
   }
 }
 
-export const writeActiveSessionFile = (sessionId: null | string, file = process.env.HERMES_TUI_ACTIVE_SESSION_FILE) => {
+export const writeActiveSessionFile = (sessionId: null | string, file = process.env.AURORA_TUI_ACTIVE_SESSION_FILE) => {
   if (!file || !sessionId) {
     return
   }
@@ -448,7 +448,7 @@ export function useSessionLifecycle(opts: UseSessionLifecycleOptions) {
           return null
         }
 
-        // HERMES_TUI_CWD is the dashboard-picked workspace: an explicit cwd on
+        // AURORA_TUI_CWD is the dashboard-picked workspace: an explicit cwd on
         // session.create on both transports, so /new stays in that workspace.
         const workspaceCwd = STARTUP_WORKSPACE_CWD ? { cwd: STARTUP_WORKSPACE_CWD } : {}
 

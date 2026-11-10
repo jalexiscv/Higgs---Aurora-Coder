@@ -1,4 +1,4 @@
-import type { PersistedTurn } from '@hermes/shared'
+import type { PersistedTurn } from '@aurora/shared'
 import { describe, expect, it } from 'vitest'
 
 import { graftRefreshedTailOntoBackfill } from '@/app/chat/transcript-backfill'
@@ -10,7 +10,7 @@ import {
   preserveLocalSystemNotices,
   toChatMessages
 } from '@/lib/chat-messages'
-import type { SessionMessage } from '@/types/hermes'
+import type { SessionMessage } from '@/types/aurora'
 
 /**
  * Rows the renderer draws and never stores (a /btw echo and its answer, a

@@ -8,7 +8,7 @@ import time
 
 import pytest
 
-from hermes_state import SessionDB
+from aurora_state import SessionDB
 
 PEER = dict(
     source="qqbot",

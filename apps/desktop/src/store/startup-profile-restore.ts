@@ -1,5 +1,5 @@
 import type { DesktopAgentRoster } from '@/global'
-import type { ProfileInfo } from '@/types/hermes'
+import type { ProfileInfo } from '@/types/aurora'
 
 /** The roster has reported the launch target down: the window has fallen back
  *  to the source already in front. Connect-on-demand SSH counts as reachable. */

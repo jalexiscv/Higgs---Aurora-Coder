@@ -1,4 +1,4 @@
-import type { HermesApiRequest, HermesSelectPathsOptions, HermesStagedUpload } from '@/global'
+import type { AuroraApiRequest, AuroraSelectPathsOptions, AuroraStagedUpload } from '@/global'
 import { blobToDataUrl } from '@/lib/base64'
 import { type BrowserBootstrap, browserFetch, endpointUrl } from '@/lib/browser-transport'
 
@@ -6,7 +6,7 @@ const STAGED_UPLOAD_CACHE_LIMIT = 256
 
 /** The largest file the browser stages on the host, and the largest image it can send: sending reads
  *  a staged image back through /api/fs/read-data-url. Mirrors WEBAPP_ATTACHMENT_MAX_BYTES
- *  (hermes_constants.py), the cap on both. */
+ *  (aurora_constants.py), the cap on both. */
 export const BROWSER_UPLOAD_MAX_BYTES = 16 * 1024 * 1024
 
 const IMAGE_MIME_BY_EXTENSION: Record<string, string> = {
@@ -96,7 +96,7 @@ function sandboxedHtmlBlob(bytes: Uint8Array, assetsBasePath: string): Blob {
 interface StageResponse {
   detail?: unknown
   path?: string
-  staged_upload?: HermesStagedUpload
+  staged_upload?: AuroraStagedUpload
 }
 
 /** A proxy's own error page (nginx's 413, a 502/504) is HTML, not the server's JSON. */
@@ -118,7 +118,7 @@ function uploadFailure(status: number, detail: unknown): string {
     : `File upload failed (${status})`
 }
 
-type OnStaged = (path: string, name: string, staged?: HermesStagedUpload) => void
+type OnStaged = (path: string, name: string, staged?: AuroraStagedUpload) => void
 
 async function stageBrowserFile(
   bootstrap: BrowserBootstrap,
@@ -158,7 +158,7 @@ async function stageBrowserFile(
 
 function selectBrowserFiles(
   bootstrap: BrowserBootstrap,
-  options: HermesSelectPathsOptions | undefined,
+  options: AuroraSelectPathsOptions | undefined,
   fallbackProfile: null | string,
   onStaged: OnStaged
 ): Promise<string[]> {
@@ -203,7 +203,7 @@ function selectBrowserFiles(
 }
 
 interface BrowserUploadsOptions {
-  api: <T>(request: HermesApiRequest) => Promise<T>
+  api: <T>(request: AuroraApiRequest) => Promise<T>
   bootstrap: BrowserBootstrap
   /** The serving gateway's base path. The preview wrapper runs on this origin, so its own scripts
    *  come from here even when *bootstrap* is a relayed gateway's. */
@@ -224,11 +224,11 @@ export function createBrowserUploadsBridge({
   objectUrls,
   previewUrls
 }: BrowserUploadsOptions): Pick<
-  Window['hermesDesktop'],
+  Window['auroraDesktop'],
   'getStagedFileDisplayName' | 'getStagedFileForAttach' | 'saveImageBuffer' | 'savePastedText' | 'selectPaths' | 'stageFileForAttach'
 > {
   const displayNames = new Map<string, string>()
-  const stagedUploads = new Map<string, HermesStagedUpload>()
+  const stagedUploads = new Map<string, AuroraStagedUpload>()
 
   const rememberStaged: OnStaged = (path, name, staged) => {
     // Keep the existing string-path bridge for pickers and drops. Composer chips

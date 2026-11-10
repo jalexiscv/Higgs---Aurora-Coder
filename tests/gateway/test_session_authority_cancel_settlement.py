@@ -6,15 +6,15 @@ import pytest
 
 from gateway.session_authority import LiveSession, SessionAuthority
 from gateway.session_contract import SessionActor, SessionRef, Submission
-from hermes_state import SessionDB
-from hermes_state_runtime import RuntimeStoreError, begin_runtime_epoch, list_session_admissions
+from aurora_state import SessionDB
+from aurora_state_runtime import RuntimeStoreError, begin_runtime_epoch, list_session_admissions
 
 ACTOR = SessionActor('human', 'owned', frozenset({'session:submit', 'session:control'}), 'cli')
 REF = SessionRef('owned', 's')
 
 
 def _authority(tmp_path, monkeypatch, platform=None):
-    monkeypatch.setenv('HERMES_HOME', str(tmp_path))
+    monkeypatch.setenv('AURORA_HOME', str(tmp_path))
     db = SessionDB(db_path=tmp_path / 'state.db')
     db.create_session('s', source='test')
     epoch = begin_runtime_epoch(db, instance_id='current')

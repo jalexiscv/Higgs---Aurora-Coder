@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { expect, it, vi } from 'vitest'
 
-import type { HermesGateway } from '@/hermes'
+import type { AuroraGateway } from '@/aurora'
 import { $daybreakByProfile, daybreakKey } from '@/store/daybreak'
 import { $notifications } from '@/store/notifications'
 import { $activeSessionId, $currentModel, $currentProvider } from '@/store/session'
@@ -76,7 +76,7 @@ it('a queued Daybreak flip goes to the connection that was clicked, not the one 
   const { rerender, result } = renderHook(
     ({ gateway, connection }: { connection: string; gateway: typeof local }) =>
       useModelMenuController({
-        gateway: gateway as unknown as HermesGateway,
+        gateway: gateway as unknown as AuroraGateway,
         onSelectModel: vi.fn(),
         ownerConnectionId: connection,
         profile: 'default',

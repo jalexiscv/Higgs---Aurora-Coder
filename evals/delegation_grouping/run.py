@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Battery runner + readout for the delegation result-grouping A/B.
 
-    DG_BASE_TREE=<checkout of the base SHA> DG_CAND_TREE=<checkout of the candidate SHA> DG_PYTHON=<hermes env python> \\
+    DG_BASE_TREE=<checkout of the base SHA> DG_CAND_TREE=<checkout of the candidate SHA> DG_PYTHON=<aurora env python> \\
     DG_CHILD_MODEL=<cheap model> python3 run.py <parent_model> <reps> [--parallel=N] [--only=task1,task2] [--arms=base,cand]
     python3 run.py --report
     python3 run.py --schema <tree> <on|off>      # the delegate_task definition a tree builds, as OpenAI tool JSON
 
 Inference: DG_INFERENCE_URL + DG_INFERENCE_KEY, or (default) the Nous Portal agent key read fresh from
-$HERMES_HOME/auth.json for every cell. Read-only: the harness never refreshes or copies the OAuth grant.
+$AURORA_HOME/auth.json for every cell. Read-only: the harness never refreshes or copies the OAuth grant.
 Resume-safe per (model, task, arm, rep). A cell that errors or times out scores 0 and stays in the denominator; a
 cell with no model turn (worker exit 3) is infra and is rerun, never scored.
 """
@@ -29,7 +29,7 @@ KINDS = {"all": "answer after all (1 unit expected)", "each": "act on each (3 un
 def _inference_env():
     env = dict(os.environ)
     if not env.get("DG_INFERENCE_KEY"):
-        home = Path(os.environ.get("HERMES_HOME") or Path.home() / ".hermes")
+        home = Path(os.environ.get("AURORA_HOME") or Path.home() / ".aurora")
         nous = json.loads((home / "auth.json").read_text())["providers"]["nous"]
         env["DG_INFERENCE_URL"], env["DG_INFERENCE_KEY"] = nous["inference_base_url"], nous["agent_key"]
     return env
@@ -130,7 +130,7 @@ def schema(tree, mode):
     with tempfile.TemporaryDirectory(prefix="dg-schema-") as home:
         Path(home, "config.yaml").write_text(
             "delegation:\n  independent_completions: %s\n" % ("true" if mode == "on" else "false"), encoding="utf-8")
-        env = {"HOME": home, "HERMES_HOME": home, "PATH": os.environ.get("PATH", ""), "HERMES_PLATFORM": "cli"}
+        env = {"HOME": home, "AURORA_HOME": home, "PATH": os.environ.get("PATH", ""), "AURORA_PLATFORM": "cli"}
         out = subprocess.run([os.environ.get("DG_PYTHON") or sys.executable, "-c", code, tree], capture_output=True,
                              text=True, env=env, cwd=home, check=True, timeout=120).stdout
     print(out.strip().splitlines()[-1])

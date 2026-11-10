@@ -6,7 +6,7 @@ description: Read-only project inventory, traceback leads, and tracked Git diffs
 maintainer: Archangel20
 tier: community
 category: tools
-requires_hermes: ">=0.23.0"
+requires_aurora: ">=0.23.0"
 version: "0.1.0"
 capabilities:
   provides_tools:

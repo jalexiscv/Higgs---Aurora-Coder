@@ -3,7 +3,7 @@ import { expect, test } from 'vitest'
 
 import { type FixtureFrame, type FixtureSocket, listen, publicUrl, readyFrame, reply, shut } from '../test/ws-gateway-fixture'
 
-import { HermesGateway } from './client'
+import { AuroraGateway } from './client'
 
 const controls = [
   { method: 'session.redirect', status: 'redirected' },
@@ -30,7 +30,7 @@ test.each(controls)('$method attaches to the current owner before fencing a busy
           session_id: 'same', stored_session_id: 'same', revision: 2, execution_generation: generation,
           authority_epoch: 1, replay_epoch: `${profile}-${dial}`, last_sequence: 0,
           subscription_id: `${profile}-${dial}`, running: true, message_count: 0,
-          messages: [], pending: [], prompts: [], info: { profile_name: profile, desktop_protocol: 'hermes-gateway-v1' }
+          messages: [], pending: [], prompts: [], info: { profile_name: profile, desktop_protocol: 'aurora-gateway-v1' }
         })
       } else if (frame.method === method) {
         const reason = frame.params.execution_generation !== generation ? 'stale_generation' : null
@@ -46,7 +46,7 @@ test.each(controls)('$method attaches to the current owner before fencing a busy
     })
     socket.send(readyFrame())
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   const url = publicUrl(server)
   const text = 'Keep the valid work; check café 🧭\nthen continue.'
 
@@ -114,7 +114,7 @@ test.each(controls.flatMap(control => [
     })
     socket.send(readyFrame({ session_authority: wire === 'canonical' }))
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
 
   const params = { session_id: 'same', profile: 'alpha', text: 'Preserve this correction',
     ...(wire === 'canonical' ? { execution_generation: 7 } : {}) }

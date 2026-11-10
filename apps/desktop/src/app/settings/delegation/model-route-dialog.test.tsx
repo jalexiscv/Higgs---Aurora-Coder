@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { DelegationModelRoute } from '@/api/delegation'
-import type { HermesApiRequest } from '@/global'
+import type { AuroraApiRequest } from '@/global'
 import { queryClient } from '@/lib/query-client'
 import { stubMenuDomApis, stubResizeObserver } from '@/test/jsdom'
 
@@ -28,16 +28,16 @@ beforeEach(() => {
   stubMenuDomApis()
   stubResizeObserver()
   queryClient.clear()
-  window.hermesDesktop = {
-    ...window.hermesDesktop,
-    api: async (request: HermesApiRequest) => {
+  window.auroraDesktop = {
+    ...window.auroraDesktop,
+    api: async (request: AuroraApiRequest) => {
       if (request.path.startsWith('/api/model/options')) {
         return structuredClone(CATALOG)
       }
 
       throw new Error('404: Not Found')
     }
-  } as typeof window.hermesDesktop
+  } as typeof window.auroraDesktop
 })
 
 afterEach(cleanup)

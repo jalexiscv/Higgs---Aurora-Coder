@@ -1,4 +1,4 @@
-import { skillCatalogInstallIdentifier } from "@hermes/shared";
+import { skillCatalogInstallIdentifier } from "@aurora/shared";
 
 import type { SkillHubInstalledEntry, SkillHubResult } from "@/lib/api";
 

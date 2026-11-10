@@ -22,12 +22,12 @@ from tests.waiting import async_wait_until
 
 
 def _homes(tmp_path, monkeypatch):
-    root = tmp_path / '.hermes'
+    root = tmp_path / '.aurora'
     root.mkdir(mode=0o700)
     monkeypatch.setattr(Path, 'home', lambda: tmp_path)
-    monkeypatch.setenv('HERMES_HOME', str(root))
-    import hermes_state
-    monkeypatch.setattr(hermes_state, 'DEFAULT_DB_PATH', hermes_state._IMPORT_DEFAULT_DB_PATH)
+    monkeypatch.setenv('AURORA_HOME', str(root))
+    import aurora_state
+    monkeypatch.setattr(aurora_state, 'DEFAULT_DB_PATH', aurora_state._IMPORT_DEFAULT_DB_PATH)
     beta = root / 'profiles' / 'beta'
     beta.mkdir(parents=True, mode=0o700)
     (beta / 'config.yaml').write_text('{}')

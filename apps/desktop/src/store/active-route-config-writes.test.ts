@@ -1,7 +1,7 @@
 import { atom } from 'nanostores'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import type * as HermesModule from '@/hermes'
+import type * as AuroraModule from '@/aurora'
 import { $activeGatewayProfile } from '@/store/profile'
 
 // Voice mode and the Appearance display toggles write `config.set` for the
@@ -12,9 +12,9 @@ import { $activeGatewayProfile } from '@/store/profile'
 
 const sockets = vi.hoisted(() => [] as Array<{ requests: Array<[string, unknown]>; wsUrl: string }>)
 
-vi.mock('@/hermes', async importOriginal => ({
-  ...(await importOriginal<typeof HermesModule>()),
-  HermesGateway: class {
+vi.mock('@/aurora', async importOriginal => ({
+  ...(await importOriginal<typeof AuroraModule>()),
+  AuroraGateway: class {
     connectionState = 'closed'
     record = { requests: [] as Array<[string, unknown]>, wsUrl: '' }
     constructor() {
@@ -46,7 +46,7 @@ const { setVoiceChatMode } = await import('./voice-live')
 const { mirrorDisplayToggle } = await import('./display-toggles')
 
 const $toggle = atom(true)
-mirrorDisplayToggle('display.in_app_tips', 'hermes.desktop.route-test-toggle.v1', $toggle)
+mirrorDisplayToggle('display.in_app_tips', 'aurora.desktop.route-test-toggle.v1', $toggle)
 
 const boxGamma = {
   authMode: 'token',
@@ -62,7 +62,7 @@ afterEach(() => {
   closeSecondaryGateways()
   sockets.length = 0
   $activeGatewayProfile.set('default')
-  delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as unknown as { auroraDesktop?: unknown }).auroraDesktop
 })
 
 describe('config writes on a remote-only profile', () => {
@@ -77,7 +77,7 @@ describe('config writes on a remote-only profile', () => {
 
     const primaryRequest = vi.fn(async () => ({}))
 
-    ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = {
+    ;(window as unknown as { auroraDesktop: unknown }).auroraDesktop = {
       getConnection,
       getConnectionFor: vi.fn(async () => boxGamma)
     }
@@ -113,7 +113,7 @@ describe('config writes on a remote-only profile', () => {
       wsUrl: profile === 'gamma' ? boxGamma.wsUrl : `ws://box.invalid/api/ws?profile=${profile}`
     }))
 
-    ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = {
+    ;(window as unknown as { auroraDesktop: unknown }).auroraDesktop = {
       getConnection: vi.fn(async () => ({ mode: 'local', port: 4242, token: 'primary-token' })),
       getConnectionFor
     }
@@ -121,7 +121,7 @@ describe('config writes on a remote-only profile', () => {
     configureGatewayRegistry({ onActiveRouteChanged: profile => $activeGatewayProfile.set(profile), onEvent: vi.fn() })
     setPrimaryGateway({ connectionState: 'open', request: primaryRequest } as never, 'default')
     // The user touched the toggle earlier: every socket change re-sends it.
-    localStorage.setItem('hermes.desktop.route-test-toggle.v1', 'true')
+    localStorage.setItem('aurora.desktop.route-test-toggle.v1', 'true')
 
     try {
       await expect(ensureGatewayForAgent('box', 'gamma')).resolves.toBe(true)
@@ -138,7 +138,7 @@ describe('config writes on a remote-only profile', () => {
       expect(sockets.filter(socket => socket !== box).flatMap(socket => socket.requests)).toEqual([])
       expect(primaryRequest).not.toHaveBeenCalledWith('config.set', expect.anything())
     } finally {
-      localStorage.removeItem('hermes.desktop.route-test-toggle.v1')
+      localStorage.removeItem('aurora.desktop.route-test-toggle.v1')
     }
   })
 })

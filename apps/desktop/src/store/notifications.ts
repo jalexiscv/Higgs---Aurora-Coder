@@ -1,8 +1,8 @@
 import { atom } from 'nanostores'
 
 import { translateNow } from '@/i18n'
+import { servedByAuroraCloud } from '@/lib/aurora-cloud-host'
 import { isOutOfSyncRpcParams } from '@/lib/gateway-rpc'
-import { servedByHermesCloud } from '@/lib/hermes-cloud-host'
 import { isTimeoutError } from '@/lib/with-timeout'
 import { type ErrorToastCategory, recordFriction } from '@/store/desktop-metrics'
 import { requestBackendRestart, requestRoute } from '@/store/recovery-requests'
@@ -124,15 +124,15 @@ const MAINTENANCE_ROUTE = '/command-center?section=maintenance'
 /** One-click recoveries reused by several rules. */
 export const RECOVERY_ACTIONS = {
   openUpdates: (): NotificationAction => ({
-    label: translateNow('notifications.updateHermes'),
+    label: translateNow('notifications.updateAurora'),
     onClick: () => void import('@/store/updates').then(({ openUpdatesWindow }) => openUpdatesWindow())
   }),
   reload: (): NotificationAction => ({
     label: translateNow('commandCenter.reloadWindow'),
     onClick: () => window.location.reload()
   }),
-  restartHermes: (): NotificationAction => ({
-    label: translateNow('notifications.actions.restartHermes'),
+  restartAurora: (): NotificationAction => ({
+    label: translateNow('notifications.actions.restartAurora'),
     onClick: requestBackendRestart
   }),
   openKeys: (envKey: string): NotificationAction => ({
@@ -150,7 +150,7 @@ export const RECOVERY_ACTIONS = {
 }
 
 /** Structured storage failure codes the backend puts in RPC/HTTP error data
- *  (`hermes_state_errors.classify_persistence_error`). */
+ *  (`aurora_state_errors.classify_persistence_error`). */
 const STORAGE_CODE_RE = /['"]code['"]\s*:\s*['"](storage_[a-z_]+|disk_full)['"]/i
 
 interface ErrorSummaryRule {
@@ -215,7 +215,7 @@ const ERROR_SUMMARIES: ErrorSummaryRule[] = [
     category: 'method_not_allowed',
     test: msg => /method not allowed/i.test(msg),
     summarize: () => translateNow('notifications.errors.methodNotAllowed'),
-    action: () => RECOVERY_ACTIONS.restartHermes()
+    action: () => RECOVERY_ACTIONS.restartAurora()
   },
   {
     category: 'microphone_permission',
@@ -226,14 +226,14 @@ const ERROR_SUMMARIES: ErrorSummaryRule[] = [
     category: 'rpc_out_of_sync',
     test: msg => isOutOfSyncRpcParams(msg),
     summarize: () => translateNow('notifications.errors.rpcOutOfSync'),
-    // A Webapp served by Hermes Cloud has no updater: reloading picks up the agent's new app.
-    action: () => (servedByHermesCloud() ? RECOVERY_ACTIONS.reload() : RECOVERY_ACTIONS.openUpdates())
+    // A Webapp served by Aurora Cloud has no updater: reloading picks up the agent's new app.
+    action: () => (servedByAuroraCloud() ? RECOVERY_ACTIONS.reload() : RECOVERY_ACTIONS.openUpdates())
   },
   {
     category: 'restart_required',
     test: msg => /Restart required:/i.test(msg),
     summarize: () => translateNow('notifications.errors.codeSkewRestartRequired'),
-    action: () => RECOVERY_ACTIONS.restartHermes()
+    action: () => RECOVERY_ACTIONS.restartAurora()
   }
 ]
 
@@ -252,7 +252,7 @@ function summarizeErrorMessage(message: string, fallback: string) {
 }
 
 // The owner's refusal of an edit, restore or regenerate whose target is not a live user turn
-// (hermes_state_mutations._rewind): invalid_params on target_message_id. Its detail starts with
+// (aurora_state_mutations._rewind): invalid_params on target_message_id. Its detail starts with
 // `compacted:` only when compaction summarized the turn; a turn another window already undid, an
 // assistant row or an unknown id is stale for another reason. Every other invalid_params keeps the
 // generic toast.
@@ -384,7 +384,7 @@ function logErrorToDesktopLog(error: unknown, fallback: string): void {
     const raw: string =
       error instanceof Error ? (error.stack ?? error.message) : typeof error === 'string' ? error : fallback
 
-    window.hermesDesktop?.logLine?.(`[renderer error:${label}] ${fallback}: ${raw}`)
+    window.auroraDesktop?.logLine?.(`[renderer error:${label}] ${fallback}: ${raw}`)
   } catch {
     // A missing or closed IPC bridge must not prevent the error toast.
   }

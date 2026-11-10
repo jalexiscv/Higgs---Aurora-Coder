@@ -1,4 +1,4 @@
-// The standalone desktop-plugin root (`<HERMES_HOME>/desktop-plugins`) and the
+// The standalone desktop-plugin root (`<AURORA_HOME>/desktop-plugins`) and the
 // one-time migrations that make it the ONLY place desktop code loads from.
 //
 // A desktop plugin extends THIS APP — panes, palette commands, themes — not an
@@ -13,7 +13,7 @@
 //   2. `plugins/<name>/desktop/plugin.js` (default home AND every profile) —
 //      the desktop half of a unified agent+desktop package. The agent half
 //      stays where it is (it runs in that profile's gateway); the desktop half
-//      is COPIED out as `<root>/<name>/` with a `.hermes-package.json` marker
+//      is COPIED out as `<root>/<name>/` with a `.aurora-package.json` marker
 //      so the UI can pair it back to the agent row and re-copy on update.
 import fs from 'node:fs'
 import path from 'node:path'
@@ -46,7 +46,7 @@ export interface DesktopHalfMarker {
  *  git remote. Undefined for a folder that was copied in by hand. */
 async function packageOrigin(packageDir: string): Promise<Pick<DesktopHalfMarker, 'catalogName' | 'repo' | 'sha'>> {
   try {
-    const sidecar = JSON.parse(await fs.promises.readFile(path.join(packageDir, '.hermes-catalog.json'), 'utf8')) as {
+    const sidecar = JSON.parse(await fs.promises.readFile(path.join(packageDir, '.aurora-catalog.json'), 'utf8')) as {
       catalog_name?: string
       repo?: string
       sha?: string
@@ -113,7 +113,7 @@ async function listDirs(dir: string, followLinks = false): Promise<string[]> {
     const entries = await fs.promises.readdir(dir, { withFileTypes: true })
 
     // `Dirent.isDirectory()` is false for a symlink. A package root follows
-    // links to directories: `ln -s ~/src/my-plugin ~/.hermes/plugins/` is how a
+    // links to directories: `ln -s ~/src/my-plugin ~/.aurora/plugins/` is how a
     // plugin is developed in place, and the Python loader already follows it.
     const linkedDir = async (name: string) => {
       try {
@@ -137,11 +137,11 @@ async function listDirs(dir: string, followLinks = false): Promise<string[]> {
   }
 }
 
-/** Every hermes home the app knows about locally: the default plus each profile. */
-export async function localHomes(hermesHome: string): Promise<string[]> {
-  const profiles = await listDirs(path.join(hermesHome, 'profiles'))
+/** Every aurora home the app knows about locally: the default plus each profile. */
+export async function localHomes(auroraHome: string): Promise<string[]> {
+  const profiles = await listDirs(path.join(auroraHome, 'profiles'))
 
-  return [hermesHome, ...profiles.map(name => path.join(hermesHome, 'profiles', name))]
+  return [auroraHome, ...profiles.map(name => path.join(auroraHome, 'profiles', name))]
 }
 
 /** Move every `profiles/<name>/desktop-plugins/<id>` folder into the app-level
@@ -149,15 +149,15 @@ export async function localHomes(hermesHome: string): Promise<string[]> {
  *  id, so a duplicate is the same plugin installed twice); the profile copy is
  *  left in place for the user to delete rather than destroyed. Emptied profile
  *  roots are removed so the migration is a no-op on the next launch. */
-export function migrateProfileScopedDesktopPlugins(hermesHome: string, appRoot: string): Promise<string[]> {
-  return withDesktopPluginsRoot(appRoot, () => migrateProfileScoped(hermesHome, appRoot))
+export function migrateProfileScopedDesktopPlugins(auroraHome: string, appRoot: string): Promise<string[]> {
+  return withDesktopPluginsRoot(appRoot, () => migrateProfileScoped(auroraHome, appRoot))
 }
 
-async function migrateProfileScoped(hermesHome: string, appRoot: string): Promise<string[]> {
+async function migrateProfileScoped(auroraHome: string, appRoot: string): Promise<string[]> {
   const moved: string[] = []
 
-  for (const profile of await listDirs(path.join(hermesHome, 'profiles'))) {
-    const scopedRoot = path.join(hermesHome, 'profiles', profile, DESKTOP_PLUGINS_DIR)
+  for (const profile of await listDirs(path.join(auroraHome, 'profiles'))) {
+    const scopedRoot = path.join(auroraHome, 'profiles', profile, DESKTOP_PLUGINS_DIR)
 
     for (const entry of await listDirs(scopedRoot)) {
       const from = path.join(scopedRoot, entry)
@@ -545,8 +545,8 @@ async function sourceGone(name: string, entry: string): Promise<boolean> {
  *  desktop half. First home wins for a name that appears in several profiles
  *  (the default home is first). Also drops root copies whose source package
  *  is gone — an uninstalled agent package must not leave a ghost pane. */
-export async function reconcileUnifiedDesktopHalves(hermesHome: string, appRoot: string): Promise<string[]> {
-  return (await reconcileDesktopHalvesReport(hermesHome, appRoot)).published
+export async function reconcileUnifiedDesktopHalves(auroraHome: string, appRoot: string): Promise<string[]> {
+  return (await reconcileDesktopHalvesReport(auroraHome, appRoot)).published
 }
 
 /** A package whose desktop half this pass did not publish, and why (the plain-tree check, an unreadable folder). */
@@ -563,16 +563,16 @@ export interface DesktopReconcileReport {
 
 /** `reconcileUnifiedDesktopHalves`, also naming each package it refused, so an install that just put one
  *  down can report its desktop half as failed instead of done. */
-export function reconcileDesktopHalvesReport(hermesHome: string, appRoot: string): Promise<DesktopReconcileReport> {
-  return withDesktopPluginsRoot(appRoot, () => reconcilePass(hermesHome, appRoot))
+export function reconcileDesktopHalvesReport(auroraHome: string, appRoot: string): Promise<DesktopReconcileReport> {
+  return withDesktopPluginsRoot(appRoot, () => reconcilePass(auroraHome, appRoot))
 }
 
-async function reconcilePass(hermesHome: string, appRoot: string): Promise<DesktopReconcileReport> {
+async function reconcilePass(auroraHome: string, appRoot: string): Promise<DesktopReconcileReport> {
   const touched: string[] = []
   const refused: RefusedDesktopHalf[] = []
   const seen = new Set<string>()
 
-  for (const home of await localHomes(hermesHome)) {
+  for (const home of await localHomes(auroraHome)) {
     const pluginsRoot = path.join(home, 'plugins')
 
     for (const name of await listDirs(pluginsRoot, true)) {

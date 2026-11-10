@@ -1,25 +1,25 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import type { HermesConnection } from '@/global'
+import type { AuroraConnection } from '@/global'
 import { $connection } from '@/store/session'
 
 import { $cloudOwnsUpdates, cloudOwnsUpdates, updateTargetFor } from './cloud-updates'
 
-const remote = (baseUrl: string, remoteKind?: HermesConnection['remoteKind']): HermesConnection =>
-  ({ baseUrl, mode: 'remote', remoteKind }) as HermesConnection
+const remote = (baseUrl: string, remoteKind?: AuroraConnection['remoteKind']): AuroraConnection =>
+  ({ baseUrl, mode: 'remote', remoteKind }) as AuroraConnection
 
 afterEach(() => {
   $connection.set(null)
   vi.unstubAllGlobals()
-  document.documentElement.removeAttribute('data-hermes-desktop-host')
+  document.documentElement.removeAttribute('data-aurora-desktop-host')
 })
 
-describe('Hermes Cloud owns updates', () => {
+describe('Aurora Cloud owns updates', () => {
   it('native Desktop connected to a Cloud agent: only the backend is Cloud-owned', () => {
     $connection.set(remote('https://lab.agents.nousresearch.com', 'cloud'))
     expect($cloudOwnsUpdates.get()).toEqual({ backend: true, client: false })
-    // The generic "Update Hermes" command then updates this machine's app.
+    // The generic "Update Aurora" command then updates this machine's app.
     expect(updateTargetFor($connection.get())).toBe('client')
 
     // A Cloud agent saved as a plain URL remote is still Cloud's.
@@ -32,7 +32,7 @@ describe('Hermes Cloud owns updates', () => {
   })
 
   it('a Webapp tab served by a Cloud agent hides every update target', () => {
-    document.documentElement.dataset.hermesDesktopHost = 'browser'
+    document.documentElement.dataset.auroraDesktopHost = 'browser'
     vi.stubGlobal('location', new URL('https://lab--app.agents.nousresearch.com/'))
     expect(cloudOwnsUpdates('client', null)).toBe(true)
     expect(cloudOwnsUpdates('backend', null)).toBe(true)

@@ -17,7 +17,7 @@ import type {
   ConnectionTargetState,
   ConnectionUpdatePayload,
   InstallPhase
-} from '@hermes/shared'
+} from '@aurora/shared'
 import { atom, computed } from 'nanostores'
 
 import { resolveSessionOwner } from '@/app/session/hooks/use-session-actions/utils'
@@ -60,8 +60,8 @@ export interface CatalogEntry {
   sha: string | null
   subdir: string | null
   scan: CatalogScan | null
-  /** The Hermes version range the plugin needs; its env vars are the target's `requiredEnv`. */
-  requiresHermes: string | null
+  /** The Aurora version range the plugin needs; its env vars are the target's `requiredEnv`. */
+  requiresAurora: string | null
   hasDesktopHalf: boolean
   /** The profile the row installs into; null when the chat's home is no named profile. */
   targetProfile: string | null
@@ -148,7 +148,7 @@ const $keptConnectionRequests = atom<Record<string, ConnectionRequest[]>>({})
 
 /** The key a tool row's args carry its operation id under, written when `connection.request` arrives.
  *  Models reuse call ids (`call_0` on every turn), so the op id, not the call id, names a row's card. */
-export const CONNECTION_OP_ARG = 'hermes_connection_op'
+export const CONNECTION_OP_ARG = 'aurora_connection_op'
 
 export const connectionOpOf = (args: ToolCallMessagePart['args']): null | string =>
   connectorText(args[CONNECTION_OP_ARG]) || null
@@ -232,7 +232,7 @@ function catalogEntry(entry: ConnectionOperationTarget, name: string): CatalogEn
     phase: entry.phase ?? null,
     platforms: entry.platforms ?? [],
     repo: entry.repo ?? null,
-    requiresHermes: entry.requires_hermes ?? null,
+    requiresAurora: entry.requires_aurora ?? null,
     resolved: entry.resolved ?? false,
     scan: entry.scan ?? null,
     sha: entry.sha ?? null,

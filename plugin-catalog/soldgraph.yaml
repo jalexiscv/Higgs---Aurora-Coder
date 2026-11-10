@@ -5,7 +5,7 @@ sha: 8b65c678a0bc477aae251755a2c5e1baae15833a
 maintainer: soldgraph
 tier: community
 category: tools
-requires_hermes: ">=0.23.0"
+requires_aurora: ">=0.23.0"
 version: "1.0.0"
 docs_url: https://soldgraph.com/docs/guides/mcp
 readme: true

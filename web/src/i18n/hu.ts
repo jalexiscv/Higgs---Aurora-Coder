@@ -50,7 +50,7 @@ export const hu: Translations = {
   },
 
   app: {
-    brand: "Hermes Agent",
+    brand: "Aurora Agent",
     brandShort: "HA",
     closeNavigation: "Navigáció bezárása",
     closeModelTools: "Modell és eszközök bezárása",
@@ -97,13 +97,13 @@ export const hu: Translations = {
     activeProvider: "Aktív memóriaszolgáltató",
     noProvider: "nincs — csak beépített",
     builtinLayer: "Beépített réteg",
-    builtinNote: "A MEMORY.md és a USER.md a Hermes saját memóriája, független minden külső szolgáltatótól. Alapértelmezés szerint mindkettő betöltődik a munkamenetekbe; a (memory.memory_enabled / memory.user_profile_enabled) beállítások külön-külön kikapcsolják őket. A szolgáltató kiegészíti őket, de sosem helyettesíti.",
+    builtinNote: "A MEMORY.md és a USER.md az Aurora saját memóriája, független minden külső szolgáltatótól. Alapértelmezés szerint mindkettő betöltődik a munkamenetekbe; a (memory.memory_enabled / memory.user_profile_enabled) beállítások külön-külön kikapcsolják őket. A szolgáltató kiegészíti őket, de sosem helyettesíti.",
   },
 
   status: {
     actionFailed: "Művelet sikertelen",
     actionFinished: "Befejezve",
-    actionFinishedOwed: "Frissítve, de még függőben (futtasd újra a `hermes update` parancsot a befejezéshez)",
+    actionFinishedOwed: "Frissítve, de még függőben (futtasd újra az `aurora update` parancsot a befejezéshez)",
     actions: "Műveletek",
     agent: "Ügynök",
     activeSessions: "Aktív munkamenetek",
@@ -129,8 +129,8 @@ export const hu: Translations = {
     starting: "Indul",
     startedInBackground: "Háttérben elindítva — kövesse a naplókat a folyamathoz",
     stopped: "Leállítva",
-    updateHermes: "Hermes frissítése",
-    updatingHermes: "Hermes frissítése…",
+    updateAurora: "Aurora frissítése",
+    updatingAurora: "Aurora frissítése…",
     waitingForOutput: "Várakozás a kimenetre…",
   },
 
@@ -342,7 +342,7 @@ export const hu: Translations = {
       "Mentve — indítsa újra az átjárót a módosítás alkalmazásához.",
     forceReinstall: "Kényszerített újratelepítés (a meglévő mappa előbb törlődik)",
     headline:
-      "Hermes-bővítmények felfedezése, telepítése, engedélyezése és frissítése (a `hermes plugins` paritás).",
+      "Aurora-bővítmények felfedezése, telepítése, engedélyezése és frissítése (az `aurora plugins` paritás).",
     identifierLabel: "Git URL vagy owner/repo",
     inactive: "inaktív",
     installBtn: "Telepítés",
@@ -359,8 +359,8 @@ export const hu: Translations = {
     providersHint:
       "A memory.provider (üres = beépített) és a context.engine értékét írja a config.yaml fájlba. A következő munkamenetben lép életbe.",
     refreshDashboard: "Vezérlőpult-bővítmények újraolvasása",
-    removeConfirm: "Eltávolítja ezt a bővítményt a ~/.hermes/plugins/ mappából?",
-    removeHint: "Csak a felhasználó által a ~/.hermes/plugins alá telepített bővítmények távolíthatók el.",
+    removeConfirm: "Eltávolítja ezt a bővítményt a ~/.aurora/plugins/ mappából?",
+    removeHint: "Csak a felhasználó által a ~/.aurora/plugins alá telepített bővítmények távolíthatók el.",
     rescanHeading: "SPA-bővítményregiszter",
     rescanHint: "Olvassa újra a fájlokat a lemezen történő hozzáadás után, hogy az oldalsáv felvegye az új manifesteket.",
     runtimeHeading: "Átjáró-futási idő (YAML-bővítmények)",
@@ -389,7 +389,7 @@ export const hu: Translations = {
     all: "Összes",
     categories: "Kategóriák",
     filters: "Szűrők",
-    noSkills: "Nem található készség. A készségek a ~/.hermes/skills/ mappából töltődnek be",
+    noSkills: "Nem található készség. A készségek a ~/.aurora/skills/ mappából töltődnek be",
     noSkillsMatch: "Nincs a keresésnek vagy szűrőnek megfelelő készség.",
     skillCount: "{count} készség{s}",
     resultCount: "{count} találat{s}",
@@ -403,7 +403,7 @@ export const hu: Translations = {
   },
 
   config: {
-    configPath: "~/.hermes/config.yaml",
+    configPath: "~/.aurora/config.yaml",
     filters: "Szűrők",
     sections: "Szakaszok",
     exportConfig: "Konfiguráció exportálása JSON-ba",
@@ -463,7 +463,7 @@ export const hu: Translations = {
     showValue: "Tényleges érték megjelenítése",
     hideValue: "Érték elrejtése",
     customTitle: "Egyéni kulcsok",
-    customHint: "A .env fájlban tárolt tetszőleges környezeti változók, amelyeket a Hermes nem ismer fel. Használd ezeket környezeti változók beillesztésére képességekhez, MCP-kiszolgálókhoz vagy saját eszközeidhez.",
+    customHint: "A .env fájlban tárolt tetszőleges környezeti változók, amelyeket az Aurora nem ismer fel. Használd ezeket környezeti változók beillesztésére képességekhez, MCP-kiszolgálókhoz vagy saját eszközeidhez.",
     customConfigured: "{count} egyéni kulcs beállítva",
     addCustomKey: "Egyéni kulcs hozzáadása",
     customKeyName: "Változó neve",
@@ -528,11 +528,11 @@ export const hu: Translations = {
   achievements: {
     hero: {
       kicker: "Agentic Gamerscore",
-      title: "Hermes Achievements",
+      title: "Aurora Achievements",
       subtitle:
-        "Gyűjthető Hermes-jelvények, valós munkamenet-előzmények alapján szerezve. Az ismert, de még nem szerzett teljesítmények Felfedezettként jelennek meg; a Titkos teljesítmények rejtve maradnak az első egyező viselkedésig.",
+        "Gyűjthető Aurora-jelvények, valós munkamenet-előzmények alapján szerezve. Az ismert, de még nem szerzett teljesítmények Felfedezettként jelennek meg; a Titkos teljesítmények rejtve maradnak az első egyező viselkedésig.",
       scan_subtitle:
-        "Hermes munkamenet-előzmények vizsgálata. Az első vizsgálat 5–10 másodpercig is eltarthat nagy előzmények esetén.",
+        "Aurora munkamenet-előzmények vizsgálata. Az első vizsgálat 5–10 másodpercig is eltarthat nagy előzmények esetén.",
     },
     actions: {
       rescan: "Újravizsgálat",
@@ -547,7 +547,7 @@ export const hu: Translations = {
       highest_tier: "Legmagasabb szint",
       highest_tier_hint: "Copper → Silver → Gold → Diamond → Olympian",
       latest: "Legutóbbi",
-      latest_hint_empty: "futtasd többet a Hermest",
+      latest_hint_empty: "futtasd többet az Aurorat",
       none_yet: "Még semmi",
     },
     state: {
@@ -578,10 +578,10 @@ export const hu: Translations = {
       tiers_header: "Szintek",
       secret_header: "Titkos teljesítmények",
       secret_body:
-        "A titkos teljesítmények elrejtik a pontos kiváltó eseményt. Amint a Hermes kapcsolódó jelet észlel, a kártya Felfedezettre vált, és megjeleníti a követelményt.",
+        "A titkos teljesítmények elrejtik a pontos kiváltó eseményt. Amint az Aurora kapcsolódó jelet észlel, a kártya Felfedezettre vált, és megjeleníti a követelményt.",
       scan_status_header: "Vizsgálat állapota",
       scan_status_body:
-        "A Hermes egyszer átvizsgálja a helyi előzményeket, majd a kártyák automatikusan megjelennek. Semmi sem akadt el, ha ez néhány másodpercig tart.",
+        "Az Aurora egyszer átvizsgálja a helyi előzményeket, majd a kártyák automatikusan megjelennek. Semmi sem akadt el, ha ez néhány másodpercig tart.",
       what_scanned_header: "Mit vizsgálunk",
       what_scanned_body:
         "Munkamenetek, eszközhívások, modell-metaadatok, hibák, teljesítmények és helyi feloldási állapot.",
@@ -628,7 +628,7 @@ export const hu: Translations = {
         "A „Megosztás az X-en” új lapon nyit meg egy előre kitöltött bejegyzést. Először kattints a „Kép másolása” gombra, ha az 1200×630-as jelvényt is csatolnád — az X engedi, hogy közvetlenül beillesszd a bejegyzésszerkesztőbe. A „PNG letöltése” bárhol felhasználható fájlként menti.",
       clipboard_unsupported:
         "A kép vágólapra másolása nem támogatott ebben a böngészőben — használd inkább a Letöltést.",
-      tweet_text: "Just unlocked {tier_part}\"{name}\" in Hermes Agent ☤",
+      tweet_text: "Just unlocked {tier_part}\"{name}\" in Aurora Agent ☤",
     },
   },
   kanban: {

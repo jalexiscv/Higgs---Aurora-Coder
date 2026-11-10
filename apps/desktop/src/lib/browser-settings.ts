@@ -1,4 +1,4 @@
-import { LOCAL_CONNECTION_ID, normalizeBasePath } from '@hermes/shared'
+import { LOCAL_CONNECTION_ID, normalizeBasePath } from '@aurora/shared'
 
 import { type BrowserHostGlobals, browserLaunchProfileOrDefault } from './platform'
 import { readKey, writeKey } from './storage'
@@ -11,7 +11,7 @@ interface BrowserSettingsOptions {
 
 /** This page's hosted gateway, the same scope `createBrowserSettings` keys on. */
 export function browserPageBasePath(): string {
-  return normalizeBasePath((window as Window & BrowserHostGlobals).__HERMES_BASE_PATH__)
+  return normalizeBasePath((window as Window & BrowserHostGlobals).__AURORA_BASE_PATH__)
 }
 
 /**
@@ -31,7 +31,7 @@ export function browserFolderBasePath(connectionId?: null | string): string {
 export function browserDefaultProjectDirKey(basePath: string, profile: string): string {
   const owner = profile.trim() || browserLaunchProfileOrDefault()
 
-  return `hermes:browser:default-project-dir:${JSON.stringify([basePath || '/', owner])}`
+  return `aurora:browser:default-project-dir:${JSON.stringify([basePath || '/', owner])}`
 }
 
 /**
@@ -45,7 +45,7 @@ export function browserDefaultProjectDirKey(basePath: string, profile: string): 
  * keeps a later launch as another profile from taking default's own folder.
  */
 function adoptLegacyLaunchFolder(basePath: string): void {
-  const marker = `hermes:browser:default-project-dir-adopted:${JSON.stringify([basePath || '/'])}`
+  const marker = `aurora:browser:default-project-dir-adopted:${JSON.stringify([basePath || '/'])}`
 
   if (readKey(marker)) {
     return
@@ -109,7 +109,7 @@ export function dropBrowserFolderPref(basePath: string, profile: string): void {
 export function createBrowserSettings({
   basePath,
   currentProfile
-}: BrowserSettingsOptions): Window['hermesDesktop']['settings'] {
+}: BrowserSettingsOptions): Window['auroraDesktop']['settings'] {
   const key = () => folderKey(basePath(), currentProfile() ?? '')
 
   return {

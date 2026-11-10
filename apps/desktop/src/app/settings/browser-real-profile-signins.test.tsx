@@ -12,8 +12,8 @@ const mocks = vi.hoisted(() => ({
   sync: vi.fn()
 }))
 
-vi.mock('@/hermes', () => ({
-  saveHermesConfigRecord: async (config: Record<string, unknown>) => {
+vi.mock('@/aurora', () => ({
+  saveAuroraConfigRecord: async (config: Record<string, unknown>) => {
     mocks.order.push(`save:${JSON.stringify(config)}`)
 
     return mocks.save(config)
@@ -51,8 +51,8 @@ vi.mock('@/store/notifications', () => ({
 }))
 
 vi.mock('../hooks/use-config-record', () => ({
-  hermesConfigCacheWriter: () => () => undefined,
-  useHermesConfigRecord: () => ({ data: mocks.loadedConfig, writeScope: { profile: 'work' } })
+  auroraConfigCacheWriter: () => () => undefined,
+  useAuroraConfigRecord: () => ({ data: mocks.loadedConfig, writeScope: { profile: 'work' } })
 }))
 
 describe('BrowserRealProfilePanel in-app browser sign-ins', () => {
@@ -64,7 +64,7 @@ describe('BrowserRealProfilePanel in-app browser sign-ins', () => {
 
       return { status: 'imported', imported: 2, skipped: 0, failed: 0, cleared: 0 }
     })
-    window.hermesDesktop = { syncPreviewSignins: mocks.sync } as unknown as typeof window.hermesDesktop
+    window.auroraDesktop = { syncPreviewSignins: mocks.sync } as unknown as typeof window.auroraDesktop
   })
 
   afterEach(() => {

@@ -1,6 +1,6 @@
 // The update error box's support affordances: the updater output the user
 // just watched scroll by, and a one-click debug share whose private link lands
-// right here instead of in a terminal (`hermes debug share --nous`). The upload
+// right here instead of in a terminal (`aurora debug share --nous`). The upload
 // runs backend-side (diagnostics.share_nous collects that runtime's update.log
 // and hand-off log); the output shown here rides along as a client file.
 import { useStore } from '@nanostores/react'

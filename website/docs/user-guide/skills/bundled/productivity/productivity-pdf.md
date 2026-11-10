@@ -26,7 +26,7 @@ PDF files: create, read, merge, fill, OCR, edit text.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Aurora loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # PDF Skill
@@ -50,45 +50,45 @@ Create PDFs from structured specs, build and fill AcroForm forms (with layout li
 
 - Python 3.10+ with `pypdf`, `reportlab`, `pdfplumber`.
 - Pick the interpreter with `terminal`. Use `python` when it already imports
-  the libraries (the Hermes Docker image ships them). Otherwise, when `hermes`
-  is on PATH, let Hermes build its shared, pinned documents environment under
-  the Hermes home: it survives container restarts, never touches the Hermes
+  the libraries (the Aurora Docker image ships them). Otherwise, when `aurora`
+  is on PATH, let Aurora build its shared, pinned documents environment under
+  the Aurora home: it survives container restarts, never touches the Aurora
   install itself, and is safe to run from several agents at once. When it is
-  not (the terminal runs in a Docker sandbox, which has no Hermes), the block
+  not (the terminal runs in a Docker sandbox, which has no Aurora), the block
   builds a venv in the sandbox home with the same pinned versions. Use this
   exact block in every document skill so they all share one environment:
 
   ```bash
-  python -c "import pypdf, reportlab, pdfplumber" 2>/dev/null && PY=python || if command -v hermes >/dev/null 2>&1; then
-    PY="$(hermes pm environment documents --extra documents --extra documents-pdf)"
+  python -c "import pypdf, reportlab, pdfplumber" 2>/dev/null && PY=python || if command -v aurora >/dev/null 2>&1; then
+    PY="$(aurora pm environment documents --extra documents --extra documents-pdf)"
   else
-    PY="$HOME/.cache/hermes-docs-venv/bin/python"
+    PY="$HOME/.cache/aurora-docs-venv/bin/python"
     "$PY" -c "import docx, openpyxl, pptx, reportlab, pypdf, pdfplumber, pypdfium2" 2>/dev/null || (
       # Safe to run from several agents at once: each caller builds a private venv,
       # a symlink publishes the first finished one atomically, the others delete theirs;
       # a published build is replaced and deleted only while it still fails to import.
-      mkdir -p "$HOME/.cache" && cd "$HOME/.cache" && stage="$(mktemp -d hermes-docs-venv.XXXXXX)" || exit 1
-      old="$(readlink hermes-docs-venv)"  # the published build, if any (another agent may have just published it)
+      mkdir -p "$HOME/.cache" && cd "$HOME/.cache" && stage="$(mktemp -d aurora-docs-venv.XXXXXX)" || exit 1
+      old="$(readlink aurora-docs-venv)"  # the published build, if any (another agent may have just published it)
       python3 -m venv "$stage" &&
         "$stage/bin/python" -m pip install -q --disable-pip-version-check python-docx==1.2.0 openpyxl==3.1.5 python-pptx==1.0.2 reportlab==5.1.0 pypdf==6.21.4 pdfplumber==0.11.10 pypdfium2==5.14.0 &&
         "$stage/bin/python" -c "import docx, openpyxl, pptx, reportlab, pypdf, pdfplumber, pypdfium2" &&
-        if [ -z "$old" ]; then python3 -c 'import os, sys; os.symlink(*sys.argv[1:])' "$stage" hermes-docs-venv
-        elif [ "$(readlink hermes-docs-venv)" = "$old" ] && ! "$old/bin/python" -c "import docx, openpyxl, pptx, reportlab, pypdf, pdfplumber, pypdfium2" 2>/dev/null; then
-          ln -s "$stage" "$stage.lnk" && python3 -c 'import os, sys; os.replace(*sys.argv[1:])' "$stage.lnk" hermes-docs-venv &&
-            case "$old" in hermes-docs-venv.??????) rm -rf "$old" ;; esac
+        if [ -z "$old" ]; then python3 -c 'import os, sys; os.symlink(*sys.argv[1:])' "$stage" aurora-docs-venv
+        elif [ "$(readlink aurora-docs-venv)" = "$old" ] && ! "$old/bin/python" -c "import docx, openpyxl, pptx, reportlab, pypdf, pdfplumber, pypdfium2" 2>/dev/null; then
+          ln -s "$stage" "$stage.lnk" && python3 -c 'import os, sys; os.replace(*sys.argv[1:])' "$stage.lnk" aurora-docs-venv &&
+            case "$old" in aurora-docs-venv.??????) rm -rf "$old" ;; esac
         fi 2>/dev/null
-      [ "$(readlink hermes-docs-venv)" = "$stage" ] || rm -rf "$stage" "$stage.lnk"
+      [ "$(readlink aurora-docs-venv)" = "$stage" ] || rm -rf "$stage" "$stage.lnk"
     )
   fi
   export PY
   "$PY" scripts/pdf_create.py --help
   ```
 
-  Run every helper below with `"$PY"`. In PowerShell (Hermes runs on that
+  Run every helper below with `"$PY"`. In PowerShell (Aurora runs on that
   host, so it is on PATH):
-  `$env:PY = hermes pm environment documents --extra documents --extra documents-pdf`.
-  Never `pip install` into the interpreter that runs Hermes or into the
-  `hermes pm environment` one; Hermes owns both.
+  `$env:PY = aurora pm environment documents --extra documents --extra documents-pdf`.
+  Never `pip install` into the interpreter that runs Aurora or into the
+  `aurora pm environment` one; Aurora owns both.
 - Page rasterization (`pdf_page_image.py`, overlay rendering) uses `pypdfium2`, which the documents environment already has (if your `python` lacks it, switch `PY` to that environment with the command above), or poppler's `pdftoppm` on PATH. Scripts fall back pypdfium2 → pdftoppm and report `{"rendered": false, "missing": [...]}` (exit 0) when neither exists.
 - Each helper script checks imports lazily and prints an install hint if a dependency is missing.
 

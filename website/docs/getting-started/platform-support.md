@@ -1,12 +1,12 @@
 ---
 sidebar_position: 2.5
 title: "Platform Support"
-description: "Which operating systems, distribution methods, and features Hermes Agent supports."
+description: "Which operating systems, distribution methods, and features Aurora Agent supports."
 ---
 
 # Platform Support
 
-Hermes Agent maintains support for many platforms and distribution methods, but we can't support every possible install method.
+Aurora Agent maintains support for many platforms and distribution methods, but we can't support every possible install method.
 
 ---
 
@@ -16,10 +16,10 @@ We strive to never break installations and updates for these. Issues & regressio
 
 | OS / Architecture                                                             | Installation methods                                                                                                           | Notes                                                                                                                                                     |
 | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **macOS** (Apple Silicon)                                                     | [Hermes Desktop](https://hermes-agent.nousresearch.com/), [`install.sh`](./installation.md) |
+| **macOS** (Apple Silicon)                                                     | [Aurora Desktop](https://hermes-agent.nousresearch.com/), [`install.sh`](./installation.md) |
 | [**Windows 10 / 11**](../user-guide/windows-native.md) (x86_64, aarch64) | [`install.ps1`](./installation.md), [MSIX desktop](../user-guide/windows-native.md) | The MSIX package requires Windows 11 22H2 or later. Optional dependencies have [architecture limits](../user-guide/windows-native.md). |
 | **Linux / [WSL2](../user-guide/windows-wsl-quickstart.md)** (x86_64, aarch64) | [`install.sh`](./installation.md)                                                           | We test on the latest Ubuntu and WSL2. If your distro has glibc, systemd, and follows the Filesystem Hierarchy Standard, it's likely to work pretty well. |
-| [**Docker Container**](../user-guide/docker.md) (x86_64, aarch64) | [`docker pull`](../user-guide/docker.md)                                                                           | Docker installs do not support `hermes update`. Updating is done by running a new image.                                                                  |
+| [**Docker Container**](../user-guide/docker.md) (x86_64, aarch64) | [`docker pull`](../user-guide/docker.md)                                                                           | Docker installs do not support `aurora update`. Updating is done by running a new image.                                                                  |
 
 ---
 
@@ -33,7 +33,7 @@ PRs will be accepted to fix issues with them, but they will take precedence belo
 | OS / Architecture              | Installation methods                                                 | Notes                                                                        |
 | ------------------------------ | -------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | **Nix** (macOS, Linux, NixOS) | [Nix flake and modules](./nix-setup.md) | Nix owns runtime installation and updates. |
-| **Android / [Termux](./termux.md)** (aarch64) | [Signed APT repository](./termux.md), then `pkg install hermes-agent` | Prerelease package with Python, Node, and TUI. Not built by default: only releases cut with `--with termux` (and `windows` and `macos-arm64`) update the APT channel. Run the gateway in a Termux session; Android can terminate background processes. |
+| **Android / [Termux](./termux.md)** (aarch64) | [Signed APT repository](./termux.md), then `pkg install aurora-agent` | Prerelease package with Python, Node, and TUI. Not built by default: only releases cut with `--with termux` (and `windows` and `macos-arm64`) update the APT channel. Run the gateway in a Termux session; Android can terminate background processes. |
 
 ### Build targets and support priority
 
@@ -43,9 +43,9 @@ update feed is arm64-only, so Intel Macs installed from an older desktop bundle
 get no update. The Termux APT package is **not built by default**: a release
 includes it only when it is cut with `release.py release --with termux`. A
 release without Termux leaves the Termux APT channel on its previous release.
-The `Hermes-Setup.dmg` bootstrap installer is built for Apple Silicon only, so
+The `Aurora-Setup.dmg` bootstrap installer is built for Apple Silicon only, so
 on an Intel Mac it reports "not supported on this Mac". Intel Macs can install
-the [CLI](./installation.md#linux--macos--wsl2) and run `hermes desktop`.
+the [CLI](./installation.md#linux--macos--wsl2) and run `aurora desktop`.
 Linux desktop packaging is disabled in the release workflow, although local
 AppImage builds and native Linux PM bundle checks exist.
 
@@ -59,7 +59,7 @@ PRs to fix them will _not_ be accepted, and any code that keeps compatibility wi
 - Android / Termux on non-aarch64 devices (aarch64 is [supported](./termux.md) via our APT package)
 - installs via the AUR (we might upstream patches if it helps out &lt;3)
 - 32-bit x86 macOS, and Intel x86_64 macOS desktop bundles (none are built).
-- installs via `pypi` (e.g. `uv tool install hermes-agent`, `pip install hermes-agent`, etc.)
-- installs via `brew` (`brew install hermes-agent`)
+- installs via `pypi` (e.g. `uv tool install aurora-agent`, `pip install aurora-agent`, etc.)
+- installs via `brew` (`brew install aurora-agent`)
 
 If you are using an unsupported distribution method, please read the [the installation guide](./installation.md) to learn how to switch to a supported one.

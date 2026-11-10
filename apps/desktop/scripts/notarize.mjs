@@ -55,7 +55,7 @@ function resolveApiKeyPath(rawValue) {
     throw new Error('APPLE_API_KEY must be a file path or inline .p8 key content')
   }
 
-  const tempPath = path.join(os.tmpdir(), `hermes-notary-${Date.now()}-${process.pid}.p8`)
+  const tempPath = path.join(os.tmpdir(), `aurora-notary-${Date.now()}-${process.pid}.p8`)
   fs.writeFileSync(tempPath, value, 'utf8')
   return {
     keyPath: tempPath,

@@ -74,7 +74,7 @@ logger = logging.getLogger(__name__)
 # deliberate main-model retry that must NOT re-issue the pin). The summary call is the ONLY auxiliary LLM
 # call a lean compaction attempt makes (#96603) — there are no sibling digest calls.
 _SUMMARY_ROUTE_PIN: contextvars.ContextVar[Optional[dict[str, Any]]] = (
-    contextvars.ContextVar("hermes_summary_route_pin", default=None)
+    contextvars.ContextVar("aurora_summary_route_pin", default=None)
 )
 
 # ``timeout`` is included so a fallback entry keeps its own deadline.
@@ -319,7 +319,7 @@ MODEL_ONLY_DISPLAY_METADATA_KEY = "model_only"
 # agent/chat_completion_helpers.py) strip every top-level ``_``-prefixed key before the request leaves the
 # process, so this never reaches a strict OpenAI-compatible gateway. CONTRACT (#92231): the marker asserts
 # "this dict's CONTENT is durable as written". Loaded rows are stamped at materialization time
-# (hermes_state._rows_to_conversation), so any code that mutates a loaded or flushed dict's content in place
+# (aurora_state._rows_to_conversation), so any code that mutates a loaded or flushed dict's content in place
 # and needs the change persisted MUST pop the marker (and invalidate _db_flush_scan_prefix if the dict may
 # sit inside the bounded-scan prefix) — see agent/turn_finalizer.py (fill-empty-tail) and
 # agent/context_compressor.py (micro-compaction defrag) for the two canonical pop sites. Mutating without
@@ -1732,7 +1732,7 @@ _CLARIFY_NON_RESPONSE_PREFIXES = (
     "The user did not provide a response",  # tools/clarify_tool.TIMEOUT_RESPONSE
     "[user did not respond",  # gateway clarify delivery timeout
     "[clarify prompt could not be delivered",  # gateway UNDELIVERED*
-    "[oneshot mode:",  # the former in-process `hermes -z` runner
+    "[oneshot mode:",  # the former in-process `aurora -z` runner
 )
 # Matched whole: as a prefix these would also swallow real answers that start the same way.
 _CLARIFY_NON_RESPONSE_TEXTS = (
@@ -4368,7 +4368,7 @@ Write only the summary body. Do not include any preamble or prefix."""
                 # and cut the request.
                 text = _redact_compaction_text(_authored_request_text(msg.get("content"))) or text
             text = re.sub(r"\s+", " ", text)
-            # Elide AFTER repr: repr would escape the marker's "Hermes's" and hide a copy from the
+            # Elide AFTER repr: repr would escape the marker's "Aurora's" and hide a copy from the
             # guard. Authored text within the cap stays whole; a longer request split out of an
             # oversized turn is restated verbatim by _reappend_inflight_user_task, not by this snapshot.
             text = repr(text) if len(text) <= _ACTIVE_TASK_MAX_CHARS else elide(repr(text), _ACTIVE_TASK_MAX_CHARS)
@@ -5390,7 +5390,7 @@ Write only the summary body. Do not include any preamble or prefix."""
             # compressed-away message dicts), which makes this the natural point to hand allocator pages
             # back to the OS. #76905's trim lifecycle covers the gateway/TUI housekeeping loops but not the
             # CLI compression path, so RSS keeps the pre-compaction high-water mark until exit. (#70782)
-            from hermes_cli.mem_trim import trim_memory
+            from aurora_cli.mem_trim import trim_memory
             trim_memory(reason="post-compression", collect=False)  # a full GC freezes every thread (#146375)
         except Exception as exc:
             logger.debug("post-compression memory trim failed: %s: %s", type(exc).__name__, exc)

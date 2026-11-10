@@ -1,18 +1,18 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
-import type { DesktopConnectionsRegistry, HermesConnection } from '@/global'
-import type * as Hermes from '@/hermes'
+import type * as Aurora from '@/aurora'
+import type { AuroraConnection, DesktopConnectionsRegistry } from '@/global'
 
 vi.mock('@/app/contrib/hooks/use-background-sync', () => ({ resetLiveRuntimeTracking: vi.fn() }))
-vi.mock('@/hermes', async importOriginal => {
-  const actual = await importOriginal<typeof Hermes>()
+vi.mock('@/aurora', async importOriginal => {
+  const actual = await importOriginal<typeof Aurora>()
 
   return {
     ...actual,
     getProfiles: vi.fn(async () => ({ profiles: [{ name: 'default' }] })),
     getStarmapGraph: vi.fn(async () => ({ nodes: [], edges: [] })),
-    hermesApi: vi.fn(async () => ({ current: 'default', profiles: [{ name: 'default' }] })),
-    HermesGateway: class {
+    auroraApi: vi.fn(async () => ({ current: 'default', profiles: [{ name: 'default' }] })),
+    AuroraGateway: class {
       connectionState = 'closed'
       wsUrl = ''
       connect = async (url: string) => {
@@ -62,7 +62,7 @@ const registry: DesktopConnectionsRegistry = {
   ]
 }
 
-function descriptor(connectionId: string, profile = 'default'): HermesConnection {
+function descriptor(connectionId: string, profile = 'default'): AuroraConnection {
   return {
     connectionId,
     profile,
@@ -87,7 +87,7 @@ beforeEach(async () => {
   _resetConnectionsForTests()
   getConnectionFor.mockReset()
   getConnectionFor.mockImplementation(async ({ connectionId, profile }) => descriptor(connectionId, profile))
-  Object.defineProperty(window, 'hermesDesktop', {
+  Object.defineProperty(window, 'auroraDesktop', {
     configurable: true,
     value: {
       getConnectionFor,

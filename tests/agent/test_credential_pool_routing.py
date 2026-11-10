@@ -37,8 +37,8 @@ class TestCliTurnRoutePool:
             service_tier=None,
         )
 
-        from cli import HermesCLI
-        bound = HermesCLI._resolve_turn_agent_config.__get__(shell)
+        from cli import AuroraCLI
+        bound = AuroraCLI._resolve_turn_agent_config.__get__(shell)
         route = bound("test message")
 
         assert route["runtime"]["credential_pool"] is fake_pool
@@ -228,9 +228,9 @@ class TestApiKeyHintRealPool:
     def _seed_pool(self, tmp_path, monkeypatch):
         import json
 
-        hermes_home = tmp_path / "hermes"
-        hermes_home.mkdir(parents=True, exist_ok=True)
-        (hermes_home / "auth.json").write_text(
+        aurora_home = tmp_path / "aurora"
+        aurora_home.mkdir(parents=True, exist_ok=True)
+        (aurora_home / "auth.json").write_text(
             json.dumps(
                 {
                     "version": 1,
@@ -258,7 +258,7 @@ class TestApiKeyHintRealPool:
                 }
             )
         )
-        monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+        monkeypatch.setenv("AURORA_HOME", str(aurora_home))
         from agent.credential_pool import load_pool
 
         return load_pool("openrouter")
@@ -309,9 +309,9 @@ class TestFailureAttribution:
     """
 
     def _make_pool(self, tmp_path, monkeypatch, entries):
-        hermes_home = tmp_path / "hermes"
-        hermes_home.mkdir(parents=True, exist_ok=True)
-        monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+        aurora_home = tmp_path / "aurora"
+        aurora_home.mkdir(parents=True, exist_ok=True)
+        monkeypatch.setenv("AURORA_HOME", str(aurora_home))
         # Keep host Anthropic/Claude credentials out of this fixture. load_pool()
         # auto-seeds ~/.claude/.credentials.json and env keys when anthropic is
         # explicitly configured on the machine, which turns a deliberate
@@ -324,10 +324,10 @@ class TestFailureAttribution:
         ):
             monkeypatch.delenv(env_var, raising=False)
         monkeypatch.setattr(
-            "hermes_cli.auth.is_provider_explicitly_configured",
+            "aurora_cli.auth.is_provider_explicitly_configured",
             lambda provider: False,
         )
-        (hermes_home / "auth.json").write_text(
+        (aurora_home / "auth.json").write_text(
             json.dumps({"version": 1, "credential_pool": {"anthropic": entries}}),
             encoding="utf-8",
         )

@@ -20,7 +20,7 @@ const remote = {
 test('only a successful authoritative roster moves the primary, onto a profile that gateway serves', async ({
   onTestFinished
 }) => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-profile-restore-'))
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'aurora-profile-restore-'))
   const preferencePath = path.join(home, 'active-profile.json')
   const preferences = createDesktopProfilePreferences(preferencePath)
   onTestFinished(() => fs.rmSync(home, { recursive: true, force: true }))
@@ -145,7 +145,7 @@ test('only a successful authoritative roster moves the primary, onto a profile t
 })
 
 test('connection memory is pruned with its connection and ignores invalid names', ({ onTestFinished }) => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-profile-memory-'))
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'aurora-profile-memory-'))
   const preferences = createDesktopProfilePreferences(path.join(home, 'active-profile.json'))
   onTestFinished(() => fs.rmSync(home, { recursive: true, force: true }))
 
@@ -201,7 +201,7 @@ test('a superseded or aborted roster probe cannot publish or mutate the primary 
 test('windows change one connection at a time; an older window cannot erase or resurrect entries', ({
   onTestFinished
 }) => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-profile-windows-'))
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'aurora-profile-windows-'))
   const preferences = createDesktopProfilePreferences(path.join(home, 'active-profile.json'))
   onTestFinished(() => fs.rmSync(home, { recursive: true, force: true }))
   const registered = new Set(['lab', 'vps', 'cloud'])

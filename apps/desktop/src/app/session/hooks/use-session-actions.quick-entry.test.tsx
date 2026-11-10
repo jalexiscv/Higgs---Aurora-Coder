@@ -1,4 +1,4 @@
-import { JsonRpcGatewayError } from '@hermes/shared'
+import { JsonRpcGatewayError } from '@aurora/shared'
 import { act, cleanup, render } from '@testing-library/react'
 import type { MutableRefObject } from 'react'
 import { useEffect } from 'react'
@@ -14,7 +14,7 @@ import type { ClientSessionState } from '../../types'
 import { pinnedOwnerCount } from './session-context-drift'
 import { useSessionActions } from './use-session-actions'
 
-vi.mock('@/hermes', async importOriginal => ({
+vi.mock('@/aurora', async importOriginal => ({
   ...(await importOriginal<Record<string, unknown>>()),
   deleteSession: vi.fn(),
   getSession: vi.fn(),

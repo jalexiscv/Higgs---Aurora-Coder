@@ -57,7 +57,7 @@ it('dials the grant, describes the owner, creates a session and redials through 
   vi.stubGlobal('WebSocket', FakeSocket)
 
   const connect = vi.fn(async () => ({
-    url: 'ws://127.0.0.1:9/api/ws', protocols: ['hermes-gateway-v1', 'hermes-gateway-ticket.t'],
+    url: 'ws://127.0.0.1:9/api/ws', protocols: ['aurora-gateway-v1', 'aurora-gateway-ticket.t'],
     profile_id: '/home/p', instance_id: 'owner'
   }))
 
@@ -71,7 +71,7 @@ it('dials the grant, describes the owner, creates a session and redials through 
   const socket = FakeSocket.instances[0]!
 
   expect(connect).toHaveBeenLastCalledWith(true, false)
-  expect([socket.url, socket.protocols]).toEqual(['ws://127.0.0.1:9/api/ws', ['hermes-gateway-v1', 'hermes-gateway-ticket.t']])
+  expect([socket.url, socket.protocols]).toEqual(['ws://127.0.0.1:9/api/ws', ['aurora-gateway-v1', 'aurora-gateway-ticket.t']])
   socket.open()
   await vi.waitFor(() => expect(socket.sent.some(frame => frame.method === 'runtime.describe')).toBe(true))
   socket.reply('runtime.describe', { session_create: { sources: ['tui'], parameters: ['request_id', 'source'] } })

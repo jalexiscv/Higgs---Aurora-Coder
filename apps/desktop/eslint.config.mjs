@@ -16,7 +16,7 @@ export default [
     }
   },
   {
-    // THE PLUGIN FENCE: plugins speak @hermes/plugin-sdk (+ react), never `@/…`
+    // THE PLUGIN FENCE: plugins speak @aurora/plugin-sdk (+ react), never `@/…`
     // internals — the same isolation a runtime-fetched published plugin gets,
     // enforced on bundled ones so the SDK surface stays honest and sufficient.
     files: ['src/plugins/**/*.{ts,tsx}'],
@@ -26,8 +26,8 @@ export default [
         {
           patterns: [
             {
-              group: ['@/*', '../*', '@hermes/shared'],
-              message: 'Plugins import only @hermes/plugin-sdk (and react). Missing something? Add it to the SDK.'
+              group: ['@/*', '../*', '@aurora/shared'],
+              message: 'Plugins import only @aurora/plugin-sdk (and react). Missing something? Add it to the SDK.'
             }
           ]
         }
@@ -50,7 +50,7 @@ export default [
         'error',
         {
           property: 'randomUUID',
-          message: 'Use randomUuid from @hermes/shared (plugins: @hermes/plugin-sdk); it works on insecure origins.'
+          message: 'Use randomUuid from @aurora/shared (plugins: @aurora/plugin-sdk); it works on insecure origins.'
         }
       ]
     }

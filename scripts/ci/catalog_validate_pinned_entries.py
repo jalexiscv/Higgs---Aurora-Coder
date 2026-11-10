@@ -9,14 +9,14 @@ The supply-chain half of the plugin-catalog admission gate. For every entry path
 * a repo that does not clone, or a pin that is not a reachable commit object;
 * a subdir or any symlink in the clone that resolves outside the pinned clone;
 * a subdir with no ``plugin.yaml``/``plugin.yml``/``plugin.json``;
-* a failing ``hermes plugins validate --install-deps``;
+* a failing ``aurora plugins validate --install-deps``;
 * an ``attested_binaries`` path that is not a regular file, or has no build-provenance attestation
   from the entry's repo at the pinned sha (README rule 17);
 * an unscannable payload: compiled binary, bytecode or archive hiding either (README rule 17);
 * a self-updater (README rule 3).
 
 Entries arrive in the environment, not on stdin, and every child runs with stdin closed:
-``hermes plugins validate`` executes plugin-declared install code that could otherwise read stdin
+``aurora plugins validate`` executes plugin-declared install code that could otherwise read stdin
 and silently drain the remaining entry list. Run it with ``python3 -I``: cwd is the PR tree.
 
 Exit 0 = every entry passed, 1 = at least one failed (one ``::error file=<entry>::`` line each).
@@ -68,7 +68,7 @@ def _file_fetches_github(path: str) -> bool:
 _SELF_UPDATE_WRITE = (r"writeTextFile|renamePath|writeFile\(|writeFileSync|renameSync|copyFileSync"
                       r"|cpSync|createWriteStream")
 _SCRIPT_GLOBS = ("*.js", "*.mjs", "*.cjs", "*.ts", "*.jsx", "*.tsx", "*.mts", "*.cts")
-# 600s: listed repos reach >1 GB (hermes-jackal-verified 1.43 GB, hindsight 741 MB); 120s would
+# 600s: listed repos reach >1 GB (aurora-jackal-verified 1.43 GB, hindsight 741 MB); 120s would
 # false-fail a re-pin on a slow runner.
 _CLONE_SECONDS = 600
 _VALIDATE_SECONDS = 600
@@ -246,9 +246,9 @@ def validate_entry(entry: str, workroot: str) -> None:
     if not any(os.path.isfile(f"{plugin_dir}/{name}") for name in _MANIFESTS):
         raise EntryRejected(f"no plugin.yaml or plugin.json at subdir '{subdir}' of {repo}@{sha}")
     # Manifest schema + declared-vs-registered capability check.
-    validate = ["hermes", "plugins", "validate", "--install-deps", plugin_dir]
+    validate = ["aurora", "plugins", "validate", "--install-deps", plugin_dir]
     if _run(validate, timeout=_VALIDATE_SECONDS).returncode != 0:
-        raise EntryRejected("hermes plugins validate failed")
+        raise EntryRejected("aurora plugins validate failed")
     _check_self_updater(plugin_dir)
     _check_attested(fields["ATTESTED"], plugin_dir, repo, sha)
     _check_payloads(plugin_dir)

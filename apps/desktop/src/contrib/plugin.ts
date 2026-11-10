@@ -1,6 +1,6 @@
 /**
  * The plugin authoring contract. A plugin is a file that default-exports a
- * `HermesPlugin`; it never touches the registry directly — it receives a
+ * `AuroraPlugin`; it never touches the registry directly — it receives a
  * scoped `PluginContext` whose `register` auto-tags provenance
  * (`source: 'plugin:<id>'`) and namespaces the contribution id
  * (`<id>:<localId>`), so authors write plain contributions and collisions
@@ -14,7 +14,7 @@
 
 import type { ReadableAtom } from 'nanostores'
 
-import { pluginRest, type PluginRestOptions, pluginSocket } from '@/hermes'
+import { pluginRest, type PluginRestOptions, pluginSocket } from '@/aurora'
 import { createPluginI18n, type PluginI18n } from '@/i18n'
 import {
   listPluginAppActions,
@@ -40,8 +40,8 @@ export type { PluginPreview } from './plugin-preview'
 import type { Contribution } from './types'
 
 export type { PluginSettingsPage, PluginSettingsSubpage } from './settings-pages'
-export type { PluginRestOptions } from '@/hermes'
-export type { HermesOpenTarget } from '@/lib/hermes-open-target'
+export type { PluginRestOptions } from '@/aurora'
+export type { AuroraOpenTarget } from '@/lib/aurora-open-target'
 export type { PluginAppActionId, PluginAppActionInfo, PluginRunActionResult } from '@/lib/keybinds/plugin-actions'
 export type { PluginNativeNotificationInput, PluginNotificationAction } from '@/store/native-notifications'
 export type { PetMessageTone, PetSayOptions } from '@/store/pet-plugin-messages'
@@ -51,7 +51,7 @@ export type { PetMessageTone, PetSayOptions } from '@/store/pet-plugin-messages'
 export type PluginContribution = Omit<Contribution, 'source' | 'id'> & { id: string }
 
 /** Namespaced JSON persistence (the VS Code `globalState` analog). Keys live
- *  under `hermes.plugin.<id>.` — plugins can't read or clobber each other. */
+ *  under `aurora.plugin.<id>.` — plugins can't read or clobber each other. */
 export interface PluginStorage {
   get<T>(key: string, fallback: T): T
   set(key: string, value: unknown): void
@@ -59,16 +59,16 @@ export interface PluginStorage {
 }
 
 /** The curated OS door — every way a plugin reaches outside the app window,
- *  in one attributed namespace instead of the raw `window.hermesDesktop`
+ *  in one attributed namespace instead of the raw `window.auroraDesktop`
  *  bridge. Every member resolves a result instead of throwing when the
  *  capability can't apply (no Electron shell, older desktop build), so
  *  callers branch on the return value rather than sniffing the bridge. */
 export interface PluginOs {
   /** Native OS notification (Electron), attributed to this plugin. Gated by
    *  Settings ▸ Notifications ▸ "Plugin notifications" and fires only while
-   *  the user is away from Hermes — use `host.notify` for the in-app toast.
+   *  the user is away from Aurora — use `host.notify` for the in-app toast.
    *  Throttled per plugin; reserve it for genuinely notable events.
-   *  Supports `icon`, `activate` (e.g. `hermes://index-network/intent/1`),
+   *  Supports `icon`, `activate` (e.g. `aurora://index-network/intent/1`),
    *  action buttons, and renderer `onActivate` / `onAction` callbacks. */
   notify: (input: PluginNativeNotificationInput) => void
   /** Open a URL with the OS default handler (browser, mail client, custom
@@ -184,7 +184,7 @@ export interface PluginContext {
   storage: PluginStorage
   /** Folder-scoped file access: this plugin's own data folder plus folders
    *  the user grants it through the app's picker, by relative path. The app
-   *  checks every call; nothing outside those folders (or inside Hermes'
+   *  checks every call; nothing outside those folders (or inside Aurora's
    *  own data) is reachable. Feature-detect on older hosts: `ctx.files?.…`. */
   files: PluginFiles
   /** Plugin-scoped i18n: ship + register locale bundles under this plugin,
@@ -192,7 +192,7 @@ export interface PluginContext {
   i18n: PluginI18n
 }
 
-export interface HermesPlugin {
+export interface AuroraPlugin {
   /** Stable slug — becomes the `plugin:<id>` source and the id namespace. */
   id: string
   /** Human name for settings / about UI. */
@@ -212,7 +212,7 @@ export interface HermesPlugin {
 }
 
 function createPluginStorage(pluginId: string): PluginStorage {
-  const scoped = (key: string) => `hermes.plugin.${pluginId}.${key}`
+  const scoped = (key: string) => `aurora.plugin.${pluginId}.${key}`
 
   return {
     get(key, fallback) {
@@ -237,8 +237,8 @@ function createPluginStorage(pluginId: string): PluginStorage {
 // Electron shell (or run in a plain browser), so every door degrades to a
 // false result the plugin can branch on.
 function createPluginOs(pluginId: string): PluginOs {
-  const attempt = async (run: (bridge: NonNullable<typeof window.hermesDesktop>) => Promise<boolean>) => {
-    const bridge = typeof window === 'undefined' ? undefined : window.hermesDesktop
+  const attempt = async (run: (bridge: NonNullable<typeof window.auroraDesktop>) => Promise<boolean>) => {
+    const bridge = typeof window === 'undefined' ? undefined : window.auroraDesktop
 
     if (!bridge) {
       return false
@@ -252,8 +252,8 @@ function createPluginOs(pluginId: string): PluginOs {
   }
 
   // Same shape as `attempt`, for the pickers that answer with a path.
-  const attemptPath = async (run: (bridge: NonNullable<typeof window.hermesDesktop>) => Promise<null | string>) => {
-    const bridge = typeof window === 'undefined' ? undefined : window.hermesDesktop
+  const attemptPath = async (run: (bridge: NonNullable<typeof window.auroraDesktop>) => Promise<null | string>) => {
+    const bridge = typeof window === 'undefined' ? undefined : window.auroraDesktop
 
     if (!bridge) {
       return null
@@ -362,7 +362,7 @@ function createPluginLifetime(track: (dispose: () => void) => () => void) {
 }
 
 /** The declared capabilities of a plugin export, strings only. */
-export function declaredCapabilities(plugin: Pick<HermesPlugin, 'capabilities'>): string[] {
+export function declaredCapabilities(plugin: Pick<AuroraPlugin, 'capabilities'>): string[] {
   return Array.isArray(plugin.capabilities)
     ? plugin.capabilities.filter((entry): entry is string => typeof entry === 'string')
     : []

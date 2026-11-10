@@ -1,4 +1,4 @@
-"""``$HERMES_HOME/cache/<kind>/`` materialisation helpers for the image/video
+"""``$AURORA_HOME/cache/<kind>/`` materialisation helpers for the image/video
 generation provider ABCs.
 
 Several backends return *ephemeral* delivery URLs that expire before a downstream
@@ -29,9 +29,9 @@ _MAX_SAVE_URL_REDIRECTS = 5
 
 
 def cache_dir(kind: str) -> Path:
-    """Return ``$HERMES_HOME/cache/<kind>/``, creating parents as needed."""
-    from hermes_constants import get_hermes_home
-    path = get_hermes_home() / "cache" / kind
+    """Return ``$AURORA_HOME/cache/<kind>/``, creating parents as needed."""
+    from aurora_constants import get_aurora_home
+    path = get_aurora_home() / "cache" / kind
     path.mkdir(parents=True, exist_ok=True)
     return path
 

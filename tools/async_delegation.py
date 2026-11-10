@@ -21,7 +21,7 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Callable, Dict, List, Optional
 
-from hermes_constants import get_hermes_home, hermes_home_key
+from aurora_constants import get_aurora_home, aurora_home_key
 from tools.daemon_pool import DaemonThreadPoolExecutor
 from tools.thread_context import propagate_context_to_thread
 from tools.async_delegation_worker import worker_ledger, require_ledger_owner
@@ -114,23 +114,23 @@ _STALL_FIELD_MAP = (("_stall_quiet_seconds", "stalled_after_quiet_seconds"),
 
 # ── Durable ledger (state.db / async_delegations) ───────────────────────────
 def _db_path():
-    return get_hermes_home() / "state.db"
+    return get_aurora_home() / "state.db"
 
 
 def _connect() -> sqlite3.Connection:
     from agent.runtime_session_store import WorkerPersistenceError, is_worker_process
     if is_worker_process():
         raise WorkerPersistenceError('worker_delegation_ledger_unavailable')
-    from hermes_cli.sqlite_util import open_db
-    # Same state.db as hermes_state.SessionDB -- reuse its owner-only (0600)
+    from aurora_cli.sqlite_util import open_db
+    # Same state.db as aurora_state.SessionDB -- reuse its owner-only (0600)
     # hardening so this writer doesn't create/leave the file (and its WAL
-    # sidecars) at the process umask. See hermes_state._secure_state_db_files.
-    from hermes_constants import mkdir_under_hermes_home
-    from hermes_state import _secure_state_db_files
+    # sidecars) at the process umask. See aurora_state._secure_state_db_files.
+    from aurora_constants import mkdir_under_aurora_home
+    from aurora_state import _secure_state_db_files
 
     path = _db_path()
     # A late replay or writer must not resurrect a removed named profile (#123265).
-    mkdir_under_hermes_home(path.parent)
+    mkdir_under_aurora_home(path.parent)
     _secure_state_db_files(path, create_main=True)
     # wal=False: SessionDB owns state.db's journal mode (_initialize_schema applies the barriers).
     conn = open_db(path, db_label="state.db (async_delegation)", busy_timeout_ms=10_000,
@@ -140,8 +140,8 @@ def _connect() -> sqlite3.Connection:
 
 
 def _initialize_schema(conn: sqlite3.Connection) -> None:
-    from hermes_state_repair import apply_durability_barriers
-    from hermes_state_schema import reconcile_state_schema
+    from aurora_state_repair import apply_durability_barriers
+    from aurora_state_schema import reconcile_state_schema
     # Preserve the journal mode SessionDB configured on state.db: forcing WAL from
     # every short-lived connection collides with live transcript/FTS writers.
     apply_durability_barriers(conn)
@@ -156,7 +156,7 @@ def _initialize_schema(conn: sqlite3.Connection) -> None:
 
 
 def _transaction():
-    from hermes_cli.sqlite_util import transaction
+    from aurora_cli.sqlite_util import transaction
 
     return transaction(_connect())
 
@@ -167,7 +167,7 @@ def _capture_routing_origin() -> dict[str, Any]:
     Best-effort: empty values are omitted."""
     try:
         from gateway.session_context import get_session_env
-        return {k: v for k in _ROUTING_KEYS if (v := get_session_env(f"HERMES_SESSION_{k.upper()}", ""))}
+        return {k: v for k in _ROUTING_KEYS if (v := get_session_env(f"AURORA_SESSION_{k.upper()}", ""))}
     except Exception:
         return {}
 
@@ -379,7 +379,7 @@ def _replay_pending(conn, rows, target_queue, now: float, *, startup: bool = Fal
     """Put each pending ``(delegation_id, event_json, completed_at, dispatched_at)`` row on ``target_queue``
     stamped ``restored``, or terminally drop it past ``_MAX_COMPLETION_REPLAY_AGE_S``. Records the offer so
     the orphan sweep skips the row until the copy is handed back (``return_completion_offer``)."""
-    home, restored = hermes_home_key(get_hermes_home()), 0
+    home, restored = aurora_home_key(get_aurora_home()), 0
     for delegation_id, payload, completed_at, dispatched_at in rows:
         age_basis = completed_at or dispatched_at
         if age_basis and (now - age_basis) > _MAX_COMPLETION_REPLAY_AGE_S:
@@ -515,7 +515,7 @@ def sweep_orphaned_completions(target_queue, *, now: Optional[float] = None) -> 
         return 0  # never create a ledger just to sweep it
     recover_abandoned_delegations()
     now = time.time() if now is None else now
-    home = hermes_home_key(get_hermes_home())
+    home = aurora_home_key(get_aurora_home())
     from tools.process_registry import process_registry
     live = _queued_completion_ids(target_queue, process_registry.completion_queue)
     with _orphan_lock:
@@ -554,7 +554,7 @@ def sweep_orphaned_completions(target_queue, *, now: Optional[float] = None) -> 
 def maybe_sweep_orphaned_completions(target_queue, *, now: Optional[float] = None) -> int:
     """``sweep_orphaned_completions`` at most once per ``ORPHAN_SWEEP_INTERVAL_S`` per home (``now`` is
     monotonic), for delivery loops that tick far more often. Never raises into the loop."""
-    home = hermes_home_key(get_hermes_home())
+    home = aurora_home_key(get_aurora_home())
     now = time.monotonic() if now is None else now
     with _orphan_lock:
         last = _last_orphan_sweep.get(home)
@@ -877,15 +877,15 @@ def _prune_completed_locked() -> None:
 
 
 def _current_origin_session_id() -> str:
-    """Raw session id of the ORIGINATING api_server request, or ``""``. ``HERMES_SESSION_ID``
+    """Raw session id of the ORIGINATING api_server request, or ``""``. ``AURORA_SESSION_ID``
     is unsafe here: building the child agent calls ``set_current_session_id(child.session_id)``
     just before dispatch, so the wake would self-post into the subagent's own session. The
-    request-scoped ``HERMES_SESSION_CHAT_ID`` (raw X-Hermes-Session-Id on api_server) survives
+    request-scoped ``AURORA_SESSION_CHAT_ID`` (raw X-Aurora-Session-Id on api_server) survives
     child construction; on push platforms chat_id is a chat, not a session => ``""``."""
     try:
         from gateway.session_context import get_session_env
-        is_api = get_session_env("HERMES_SESSION_PLATFORM", "") == "api_server"
-        return (get_session_env("HERMES_SESSION_CHAT_ID", "") or "") if is_api else ""
+        is_api = get_session_env("AURORA_SESSION_PLATFORM", "") == "api_server"
+        return (get_session_env("AURORA_SESSION_CHAT_ID", "") or "") if is_api else ""
     except Exception:
         return ""
 
@@ -907,7 +907,7 @@ def _batch_status(combined: dict[str, Any]) -> str:
 
 
 def _dispatch(**kwargs) -> dict[str, Any]:
-    from hermes_cli.backend_retirement import retirement
+    from aurora_cli.backend_retirement import retirement
 
     with retirement.work() as admitted:
         if not admitted:
@@ -983,7 +983,7 @@ def _dispatch_admitted(
         finally:
             _finalize(delegation_id, result, status)
 
-    from hermes_cli.backend_retirement import retirement
+    from aurora_cli.backend_retirement import retirement
 
     # The outer dispatch reservation prevents a freeze during this handoff. Retain a worker
     # reservation too: the stall monitor may finalize its registry record before it really exits.

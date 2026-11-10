@@ -11,7 +11,7 @@ import {
   loadGatewayProjectLooks
 } from '@/store/gateway-project-looks'
 import type { AgentProfileRoute } from '@/store/profile'
-import type { SessionInfo } from '@/types/hermes'
+import type { SessionInfo } from '@/types/aurora'
 
 import { gatewayLabel } from '../gateway-group-model'
 

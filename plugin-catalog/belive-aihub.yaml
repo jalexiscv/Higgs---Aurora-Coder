@@ -5,7 +5,7 @@ description: BeLive AI Hub inference provider with live tool-capable chat model 
 maintainer: belivetech
 tier: community
 category: models
-requires_hermes: ">=0.22.7"
+requires_aurora: ">=0.22.7"
 docs_url: https://github.com/belivetech/hermes-belive-aihub#readme
 version: "0.2.3"
 readme: true

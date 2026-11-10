@@ -1,5 +1,5 @@
 import type { Translations } from '@/i18n'
-import { servedByHermesCloud } from '@/lib/hermes-cloud-host'
+import { servedByAuroraCloud } from '@/lib/aurora-cloud-host'
 import { hostHas } from '@/lib/host-capabilities'
 import { NATIVE_NOTIFICATION_KINDS } from '@/store/native-notifications'
 import { canUseQuickEntry } from '@/store/quick-entry'
@@ -98,7 +98,7 @@ export const SETTINGS_MANIFEST = {
     minimizeToTray: {
       subpage: 'window-layout',
       keywords: ['tray', 'background', 'minimize', 'dock', 'taskbar', 'menu bar'],
-      available: () => Boolean(window.hermesDesktop?.minimizeToTray),
+      available: () => Boolean(window.auroraDesktop?.minimizeToTray),
       copy: t => ({ label: t.settings.config.minimizeToTrayTitle, description: t.settings.config.minimizeToTrayDesc })
     },
     translucency: {
@@ -182,13 +182,13 @@ export const SETTINGS_MANIFEST = {
     hudModifier: {
       subpage: 'hud-gesture',
       keywords: ['HUD', 'summon', 'modifier', 'tap', 'Ctrl', 'Alt', 'Command', 'Option'],
-      available: () => Boolean(window.hermesDesktop?.hudModifier),
+      available: () => Boolean(window.auroraDesktop?.hudModifier),
       copy: t => ({ label: t.settings.hudModifier.title, description: t.settings.hudModifier.description })
     },
     screenshot: {
       subpage: 'screen-capture',
       keywords: ['screenshot', 'screen capture', 'window', 'attach', 'command keys'],
-      available: () => Boolean(window.hermesDesktop?.screenshot),
+      available: () => Boolean(window.auroraDesktop?.screenshot),
       copy: t => ({ label: t.settings.screenshot.enabledTitle, description: t.settings.screenshot.enabledDesc })
     }
   },
@@ -269,8 +269,8 @@ export const SETTINGS_MANIFEST = {
   },
   about: {
     updates: {
-      // A Webapp served by Hermes Cloud renders no Updates section.
-      available: () => !servedByHermesCloud(),
+      // A Webapp served by Aurora Cloud renders no Updates section.
+      available: () => !servedByAuroraCloud(),
       subpage: 'updates',
       keywords: ['update', 'auto update', 'download', 'release', 'version'],
       copy: t => ({ label: t.settings.about.updates })

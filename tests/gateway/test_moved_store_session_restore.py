@@ -3,7 +3,7 @@
 A ``state.db`` that moved with its profile (another machine, a moved home) keeps receipts whose
 ``profile_id`` names the old path. Restoring one is that store's own row, but an API receipt's
 stored origin still places the turn's runtime scope, so one naming another profile is refused. A
-``hermes profile rename`` moves the store AND changes the name, so its identity migration must move
+``aurora profile rename`` moves the store AND changes the name, so its identity migration must move
 the receipts' origin and route namespace too, API and local receipts alike (#150651, #149384).
 """
 import contextlib
@@ -11,8 +11,8 @@ import json
 
 import pytest
 
-from hermes_state_local import API_BINDING_PREFIX
-from hermes_state_runtime import RuntimeStoreError
+from aurora_state_local import API_BINDING_PREFIX
+from aurora_state_runtime import RuntimeStoreError
 from tests.gateway.test_session_authorities_multiplex import _reserve_homes, _runner
 
 
@@ -59,7 +59,7 @@ async def _serving(root, homes, home):
 def _rename_alpha(root, homes):
     """What ``rename_profile`` does with no live multiplexer: move ``alpha``'s home to ``gamma``,
     then migrate its identity. Returns the renamed homes and gamma's home."""
-    from hermes_cli.profile_identity import _migrate_profile_identity
+    from aurora_cli.profile_identity import _migrate_profile_identity
     renamed = root / 'profiles' / 'gamma'
     homes[1][1].rename(renamed)
     assert _migrate_profile_identity('alpha', 'gamma', False)

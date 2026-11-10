@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from gateway.session_contract import SessionActor, SessionRef, Submission
-from hermes_state_runtime import RuntimeStoreError
+from aurora_state_runtime import RuntimeStoreError
 
 
 @pytest.mark.asyncio

@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react'
 
+import { type ProfileScope, saveAuroraConfigRecord } from '@/aurora'
 import type { PreviewSigninsResult } from '@/global'
-import { type ProfileScope, saveHermesConfigRecord } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { claimPreviewSigninsSync, syncPreviewSignins } from '@/lib/preview-signins'
 import { notify, notifyError } from '@/store/notifications'
 
-import { hermesConfigCacheWriter, useHermesConfigRecord } from '../hooks/use-config-record'
+import { auroraConfigCacheWriter, useAuroraConfigRecord } from '../hooks/use-config-record'
 
 import { RowFootnoteAction, ToggleRow } from './primitives'
 
@@ -36,7 +36,7 @@ export function readUseRealProfile(record: Record<string, unknown> | undefined):
  * users reasonably never found ("no toggle in the browser section").
  *
  * Semantics mirror the config comment: turning it ON consents to snapshotting
- * the default browser's profile (cookies/logins) into a Hermes-owned copy;
+ * the default browser's profile (cookies/logins) into an Aurora-owned copy;
  * turning it OFF deletes the snapshot store on next use. The toggle writes
  * config.yaml through the same deep-merging PUT /api/config every other
  * settings surface uses — applies to new sessions. It also signs the in-app
@@ -46,8 +46,8 @@ export function readUseRealProfile(record: Record<string, unknown> | undefined):
 export function BrowserRealProfilePanel({ profile }: BrowserRealProfilePanelProps) {
   const { t } = useI18n()
   const copy = t.settings.toolsets.browserRealProfile
-  const { data: config, writeScope } = useHermesConfigRecord(profile)
-  const setConfig = hermesConfigCacheWriter(profile)
+  const { data: config, writeScope } = useAuroraConfigRecord(profile)
+  const setConfig = auroraConfigCacheWriter(profile)
   const [busy, setBusy] = useState(false)
 
   const enabled = readUseRealProfile(config)
@@ -101,7 +101,7 @@ export function BrowserRealProfilePanel({ profile }: BrowserRealProfilePanelProp
       try {
         // Sparse patch: PUT /api/config deep-merges, and echoing the cached
         // snapshot would overwrite keys other surfaces changed since it loaded.
-        await saveHermesConfigRecord({ browser: { use_real_profile: on } }, writeScope ?? profile)
+        await saveAuroraConfigRecord({ browser: { use_real_profile: on } }, writeScope ?? profile)
 
         notify({
           kind: 'info',

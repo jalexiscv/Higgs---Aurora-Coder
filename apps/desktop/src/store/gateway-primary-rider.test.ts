@@ -6,9 +6,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 // a different backend, and keying it under the new primary would merge two
 // owners into one roster source and skip a backend.
 
-vi.mock('@/hermes', () => ({
+vi.mock('@/aurora', () => ({
   setApiRequestConnection: vi.fn(),
-  HermesGateway: class {
+  AuroraGateway: class {
     connectionState = 'closed'
     connect = vi.fn()
     close = vi.fn()
@@ -36,12 +36,12 @@ const primary = () => ({ connectionState: 'open', request: vi.fn(async () => ({}
 
 beforeEach(() => {
   configureGatewayRegistry({ onEvent: vi.fn(), primaryProfile: 'default' } as never)
-  ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = shared()
+  ;(window as unknown as { auroraDesktop: unknown }).auroraDesktop = shared()
 })
 
 afterEach(() => {
   closeSecondaryGateways()
-  delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as unknown as { auroraDesktop?: unknown }).auroraDesktop
 })
 
 describe('primary rider hint', () => {

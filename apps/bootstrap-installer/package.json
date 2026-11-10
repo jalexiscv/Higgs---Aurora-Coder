@@ -1,11 +1,11 @@
 {
-  "name": "@hermes/bootstrap-installer",
+  "name": "@aurora/bootstrap-installer",
   "private": true,
   "engines": {
     "npm": "npm is refused here: run pnpm install --frozen-lockfile at the repository root"
   },
   "version": "0.0.0",
-  "description": "Hermes Setup — signed installer that drives scripts/install.ps1 with a polished native UI.",
+  "description": "Aurora Setup — signed installer that drives scripts/install.ps1 with a polished native UI.",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5175",

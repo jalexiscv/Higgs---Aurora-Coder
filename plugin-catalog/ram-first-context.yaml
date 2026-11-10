@@ -6,7 +6,7 @@ description: Read-only RAM-first context memory — FTS5 keyword recall over the
 maintainer: ether-btc
 tier: community
 category: tools
-requires_hermes: ">=0.19"
+requires_aurora: ">=0.19"
 version: "0.2.0"
 known_issues:
   - "Reads the Mnemosyne SQLite schema directly (mode=ro); a Mnemosyne schema change degrades recall to the safe fallback"

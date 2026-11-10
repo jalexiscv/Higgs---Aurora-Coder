@@ -5,7 +5,7 @@ description: "Ambient retro-recall from the user's local Screenpipe screen+audio
 maintainer: vdimarco
 tier: community
 category: memory
-requires_hermes: ">=0.22.0"
+requires_aurora: ">=0.22.0"
 version: "1.0.0"
 capabilities:
   provides_tools: [screenpipe_search, screenpipe_around, screenpipe_status]

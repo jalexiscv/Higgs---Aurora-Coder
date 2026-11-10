@@ -6,7 +6,7 @@ description: "VRAM fit-check, call queue, keep-warm and idle eviction for local 
 maintainer: jimmy77733
 tier: community
 category: models
-requires_hermes: ">=0.22.0"
+requires_aurora: ">=0.22.0"
 version: "0.1.0"
 capabilities:
   provides_tools: [vram_status]

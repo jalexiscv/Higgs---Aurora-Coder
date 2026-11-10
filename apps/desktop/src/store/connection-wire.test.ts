@@ -1,6 +1,6 @@
 import { afterEach, expect, it } from 'vitest'
 
-import type { HermesConnection } from '@/global'
+import type { AuroraConnection } from '@/global'
 
 import { serverOwnsComposerQueue } from './composer-queue'
 import { $connectionWires, connectionWire, primaryWireSource, recordConnectionWire, recordSecondaryWire, UNNAMED_REMOTE_WIRE_KEY } from './connection-wire'
@@ -15,7 +15,7 @@ afterEach(() => {
 // A foregrounded secondary keeps `$connection` while the primary reconnects in the background. An
 // anonymous (local) primary's ready frame must not overwrite the foreground connection's wire.
 it('records an anonymous primary under the local source, not the foreground connection', () => {
-  $connection.set({ connectionId: 'vps', mode: 'remote', wsUrl: 'wss://vps.example/api/ws?ticket=public' } as HermesConnection)
+  $connection.set({ connectionId: 'vps', mode: 'remote', wsUrl: 'wss://vps.example/api/ws?ticket=public' } as AuroraConnection)
   setSessionOwnerHint('chat', { connectionId: 'vps', mode: 'remote', profile: 'default' })
   recordConnectionWire('vps', 'legacy')
 
@@ -33,7 +33,7 @@ it('names an established primary by its own route and an unrecorded one by the w
   expect(primaryWireSource({ connectionId: null, mode: null }, vps)).toBe(vps)
 })
 
-// `HERMES_DESKTOP_REMOTE_URL` gives the primary a remote with no registry id, while a real local
+// `AURORA_DESKTOP_REMOTE_URL` gives the primary a remote with no registry id, while a real local
 // source can stay connected as a secondary. Neither may overwrite the other's wire.
 it('keeps an unnamed remote primary apart from the local source', () => {
   recordConnectionWire('local', 'canonical')
@@ -45,7 +45,7 @@ it('keeps an unnamed remote primary apart from the local source', () => {
   expect(serverOwnsComposerQueue('native')).toBe(true)
 
   // A chat with no recorded owner on the unnamed remote window reads that remote's wire.
-  $connection.set({ mode: 'remote', wsUrl: 'wss://remote.example/api/ws?token=t' } as HermesConnection)
+  $connection.set({ mode: 'remote', wsUrl: 'wss://remote.example/api/ws?token=t' } as AuroraConnection)
   expect(serverOwnsComposerQueue('remote-chat')).toBe(false)
   recordConnectionWire({ mode: 'remote' }, 'canonical')
   expect(serverOwnsComposerQueue('remote-chat')).toBe(true)

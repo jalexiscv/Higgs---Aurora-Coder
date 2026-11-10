@@ -21,11 +21,11 @@ def test_replayed_stop_leaves_a_new_message_queued(tmp_path, restart):
     db = tmp_path / "state.db"
     service = _service(db)
     service.create_room(room_id="room", name="Stop replay", members=[
-        {"member_id": "default", "profile": "default", "handle": "hermes"},
+        {"member_id": "default", "profile": "default", "handle": "aurora"},
         {"member_id": "ops", "profile": "ops", "handle": "ops"}])
-    service.send(room_id="room", event_id="first", payload={"text": "@hermes First", "thread_id": "first"})
+    service.send(room_id="room", event_id="first", payload={"text": "@aurora First", "thread_id": "first"})
     assert service.stop_room("room", cancel_id="old-stop") == 1
-    service.send(room_id="room", event_id="next", payload={"text": "@hermes Next", "thread_id": "next"})
+    service.send(room_id="room", event_id="next", payload={"text": "@aurora Next", "thread_id": "next"})
     queued = driver.list_tasks(db, room_id="room", status="queued")
     assert len(queued) == 1
     if restart:
@@ -40,13 +40,13 @@ def test_message_admitted_between_stop_fence_and_task_scan_survives(tmp_path, mo
     db = tmp_path / "state.db"
     service = _service(db)
     service.create_room(room_id="room", name="Concurrent Stop", members=[
-        {"member_id": "default", "profile": "default", "handle": "hermes"},
+        {"member_id": "default", "profile": "default", "handle": "aurora"},
         {"member_id": "ops", "profile": "ops", "handle": "ops"}])
     append_stop = hosted_rooms.request_room_stop
 
     def append_then_send(*args, **kwargs):
         fence = append_stop(*args, **kwargs)
-        service.send(room_id="room", event_id="next", payload={"text": "@hermes Next", "thread_id": "next"})
+        service.send(room_id="room", event_id="next", payload={"text": "@aurora Next", "thread_id": "next"})
         return fence
 
     monkeypatch.setattr(hosted_rooms, "request_room_stop", append_then_send)

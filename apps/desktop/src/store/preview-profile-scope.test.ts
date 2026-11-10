@@ -25,9 +25,9 @@ describe('preview per-profile cookie scoping (#150283)', () => {
   // a remote profile wipes the local profile's imported sign-ins.
   it('clears the local cookie jar for a local delete but not a remote one', () => {
     const drop = vi.fn(() => Promise.resolve({ ok: true }))
-    const desktopWindow = window as unknown as { hermesDesktop?: { dropPreviewSigninsForProfile?: typeof drop } }
-    const previous = desktopWindow.hermesDesktop
-    desktopWindow.hermesDesktop = { dropPreviewSigninsForProfile: drop }
+    const desktopWindow = window as unknown as { auroraDesktop?: { dropPreviewSigninsForProfile?: typeof drop } }
+    const previous = desktopWindow.auroraDesktop
+    desktopWindow.auroraDesktop = { dropPreviewSigninsForProfile: drop }
 
     try {
       dropPreviewTabsForProfile('shared-name', false) // remote delete
@@ -37,7 +37,7 @@ describe('preview per-profile cookie scoping (#150283)', () => {
       expect(drop).toHaveBeenCalledWith({ profile: 'shared-name' })
       expect(drop).toHaveBeenCalledTimes(1)
     } finally {
-      desktopWindow.hermesDesktop = previous
+      desktopWindow.auroraDesktop = previous
     }
   })
 

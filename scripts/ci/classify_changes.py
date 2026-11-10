@@ -112,7 +112,7 @@ _NIX_FILES = {"flake.nix", "flake.lock"} # base nix files
 _SITE = ("website/", "skills/", "optional-skills/")  # docs site + skill pages
 # CI configuration outside .github/: workflows run their commands as just recipes
 # through this wrapper, so a change here can break any lane, as a workflow edit can.
-_CI_CONFIG_FILES = {"justfile", "scripts/hermes-python"}
+_CI_CONFIG_FILES = {"justfile", "scripts/aurora-python"}
 # Prose/frontend trees that can't touch Python. skills/ is excluded on purpose.
 _PY_SKIP = ("docs/", "website/") + _FRONTEND
 # Published artifacts that live under website/ but that Python asserts about.
@@ -121,8 +121,8 @@ _PY_SKIP = ("docs/", "website/") + _FRONTEND
 # Python lane — otherwise dropping a redirect URI goes green here and breaks
 # every CIMD login on main.
 # website/docs/ and website/scripts/ are asserted about the same way. The docs
-# tree generates llms.txt — the index every LLM (Hermes included, via the
-# hermes-agent skill) reads to learn what Hermes can do — and
+# tree generates llms.txt — the index every LLM (Aurora included, via the
+# aurora-agent skill) reads to learn what Aurora can do — and
 # tests/website/test_generate_llms_txt.py holds every page to appearing in it.
 # Skipping Python on a docs-only PR is how the index drifted to 53% coverage.
 _PY_RELEVANT_SITE = (
@@ -140,13 +140,13 @@ _PY_RELEVANT_CONTRACT_FILES = {
     "apps/shared/src/gateway-contract.openrpc.json",
     # tests/gateway/test_control_socket_vectors.py (the public control-socket contract)
     "apps/shared/src/node/control-socket.vectors.json",
-    # tests/hermes_cli/test_desktop_slash_registry.py
+    # tests/aurora_cli/test_desktop_slash_registry.py
     "apps/desktop/src/lib/desktop-slash-registry.json",
     # tests/tui_gateway/test_show_reasoning_display_gate.py (card-tool names vs the gateway lifecycle set)
     "apps/desktop/src/lib/tool-render-class.ts",
     # tests/website/test_catalog_rules_mirror.py (docs page mirrors the canonical rules)
     "plugin-catalog/README.md",
-    # tests/hermes_cli/test_plugin_docs_public_imports.py (its examples import only the plugin API)
+    # tests/aurora_cli/test_plugin_docs_public_imports.py (its examples import only the plugin API)
     "plugins/AGENTS.md",
 }
 
@@ -163,7 +163,7 @@ _SCAN_FILES = {"setup.cfg", "pyproject.toml"}
 # (the .rs/Cargo files are the ``rust`` lane's job). Changes here get the
 # bootstrap-installer.yml lane — a real sandboxed install + stamp check.
 _BOOTSTRAP_PATHS = ("apps/bootstrap-installer/",)
-_BOOTSTRAP_FILES = {"scripts/install.sh", "setup-hermes.sh"}
+_BOOTSTRAP_FILES = {"scripts/install.sh", "setup-aurora.sh"}
 # Windows desktop-update hand-off (scripts/desktop-update/windows.ps1 + the
 # Electron side that launches it) and the pytest files that spawn it.
 # tests/_fixtures/ holds the conftest's platform gating, so it re-arms the lane too.
@@ -182,8 +182,8 @@ _DESKTOP_UPDATER_FILES = {
     "apps/desktop/electron/remote-update-marker-programs.ts",
     "apps/desktop/electron/remote-update-marker-programs.test.ts",
     # Python the script runs: the post-update verify and the staged app swap.
-    "hermes_cli/desktop_update_verify.py",
-    "hermes_cli/main_desktop.py",
+    "aurora_cli/desktop_update_verify.py",
+    "aurora_cli/main_desktop.py",
     "tests/conftest.py",
     "pyproject.toml",
 }
@@ -197,7 +197,7 @@ _DESKTOP_UPDATER_FILES = {
 _SHARED_FIXTURE_CONSUMERS: dict[str, tuple[str, ...]] = {
     # A7 rule 7: the update-marker parse / judge / release corpus.
     "tests/fixtures/update_marker_corpus.json": (
-        "tests/hermes_cli/test_update_marker_corpus.py",  # Python: update_lock
+        "tests/aurora_cli/test_update_marker_corpus.py",  # Python: update_lock
         "apps/bootstrap-installer/src-tauri/src/marker_tests.rs",  # Rust: cargo test
         "apps/desktop/electron/update-marker-corpus.test.ts",  # Electron: vitest
         "tests/scripts/desktop_update/test_desktop_update_posix_marker_corpus.py",  # marker.sh
@@ -207,7 +207,7 @@ _SHARED_FIXTURE_CONSUMERS: dict[str, tuple[str, ...]] = {
     ),
     # Which halves a plugin folder ships: the gateway's and native Desktop's inspectors.
     "tests/fixtures/plugin_component_detection.json": (
-        "tests/hermes_cli/test_plugins_cmd_inspect.py",  # Python: detect_components
+        "tests/aurora_cli/test_plugins_cmd_inspect.py",  # Python: detect_components
         "apps/desktop/electron/desktop-plugin-install.test.ts",  # Electron: detectPluginComponents
     ),
 }
@@ -216,7 +216,7 @@ _SHARED_FIXTURE_CONSUMERS: dict[str, tuple[str, ...]] = {
 # electron/update-* starts the Desktop update E2E, which never reads the corpus).
 _FIXTURE_CONSUMER_LANES = ("python", "rust", "frontend", "desktop_updater")
 
-# Rust crates — currently just the Tauri bootstrap installer (Hermes-Setup).
+# Rust crates — currently just the Tauri bootstrap installer (Aurora-Setup).
 # These live under ``apps/``, so before this lane existed a ``.rs`` edit matched
 # ``frontend`` and nothing more: the TypeScript matrix built, cargo never ran,
 # and the crate's unit tests had never executed in CI at all.
@@ -269,44 +269,44 @@ _DESKTOP_E2E_SHARED = (
 # The Tauri updater (update.rs, its marker claim marker.rs, the paths.rs both resolve) is
 # compiled and tested by ``cargo test`` alone (the ``rust`` lane, via ``.rs``): no slow lane
 # builds the bootstrap installer, so none of the three starts one.
-# What `hermes update` runs outside the update_* module family: the steps of the
+# What `aurora update` runs outside the update_* module family: the steps of the
 # pipeline (entry, lock, early recovery, completion tail, launchers, fleet
 # restart/verify, Windows pause/resume) and the lock / marker / recovery state
 # the update_* modules import. Editing any of these changes what a real update
 # does, so the real-update suites (Linux e2e-upgrade and the Windows
 # install + update journey, including its crash cells) must run on the PR.
 _UPDATE_PIPELINE = (
-    "hermes_cli/main.py",  # cmd_update: lock, pre-update backup, receipt boundary
-    "hermes_cli/main_dashboard.py",  # hangup protection + update.log mirror
-    "hermes_cli/main_web_build.py",  # completion's bytecode sweep and dropped-folder prune
+    "aurora_cli/main.py",  # cmd_update: lock, pre-update backup, receipt boundary
+    "aurora_cli/main_dashboard.py",  # hangup protection + update.log mirror
+    "aurora_cli/main_web_build.py",  # completion's bytecode sweep and dropped-folder prune
     # Prefix: main_desktop.py (staged Desktop swap / rebuild in the tail) and the
     # main_desktop_* siblings it imports (macOS signing identity).
-    "hermes_cli/main_desktop",
+    "aurora_cli/main_desktop",
     # Prefix: _early_recovery.py and its _early_recovery_* siblings (ZIP swap journal).
-    "hermes_cli/_early_recovery",  # interrupted pull / shim restore at launch
-    "hermes_cli/venv_sync.py",  # completion obligation + launch-time tail
-    "hermes_cli/source_",  # source_completion/_build/_releases/_check/_stamp
-    "hermes_cli/_launchers.py",
-    "hermes_cli/release_channels.py",
-    "hermes_cli/gitlock.py",  # git self-heal + partial-clone fetch
-    "hermes_cli/git_commit_graph.py",  # every update starts the install checkout's graph refresh
-    "hermes_cli/process_identity.py",  # marker owner liveness
-    "hermes_cli/runtime_state.py",
-    "hermes_cli/relaunch.py",
-    "hermes_cli/managed_uv.py",
-    "hermes_cli/npm_engine.py",
-    "hermes_cli/_scan_venv_blockers.py",
-    "hermes_cli/dashboard_procs.py",
-    "hermes_cli/desktop_update",  # desktop_update_verify
-    "hermes_cli/gateway.py",  # fleet restart / verify
-    "hermes_cli/gateway_windows",  # Windows pause / resume
-    "hermes_cli/gateway_launchd.py",
-    "hermes_cli/gateway_migrate",
-    "hermes_cli/gateway_supervised_restart.py",
-    "hermes_cli/git_pack_tidy.py",  # partial-clone pack tidy: every update's pre-fetch runs it
-    "hermes_bootstrap.py",  # every launch's prepare_launch
-    "hermes_constants.py",  # root home = update marker location
-    "hermes_dir_acl.py",  # update restores the Windows user ACL on the home after elevation
+    "aurora_cli/_early_recovery",  # interrupted pull / shim restore at launch
+    "aurora_cli/venv_sync.py",  # completion obligation + launch-time tail
+    "aurora_cli/source_",  # source_completion/_build/_releases/_check/_stamp
+    "aurora_cli/_launchers.py",
+    "aurora_cli/release_channels.py",
+    "aurora_cli/gitlock.py",  # git self-heal + partial-clone fetch
+    "aurora_cli/git_commit_graph.py",  # every update starts the install checkout's graph refresh
+    "aurora_cli/process_identity.py",  # marker owner liveness
+    "aurora_cli/runtime_state.py",
+    "aurora_cli/relaunch.py",
+    "aurora_cli/managed_uv.py",
+    "aurora_cli/npm_engine.py",
+    "aurora_cli/_scan_venv_blockers.py",
+    "aurora_cli/dashboard_procs.py",
+    "aurora_cli/desktop_update",  # desktop_update_verify
+    "aurora_cli/gateway.py",  # fleet restart / verify
+    "aurora_cli/gateway_windows",  # Windows pause / resume
+    "aurora_cli/gateway_launchd.py",
+    "aurora_cli/gateway_migrate",
+    "aurora_cli/gateway_supervised_restart.py",
+    "aurora_cli/git_pack_tidy.py",  # partial-clone pack tidy: every update's pre-fetch runs it
+    "aurora_bootstrap.py",  # every launch's prepare_launch
+    "aurora_constants.py",  # root home = update marker location
+    "aurora_dir_acl.py",  # update restores the Windows user ACL on the home after elevation
     "gateway/status.py",  # code_sha stamp the fleet verify reads
     "gateway/status_inline_source.py",  # the Windows pause identifies inline-bootstrapped gateways
     "gateway/status_lock_dir.py",  # gateway/status.py imports it at module level
@@ -315,41 +315,41 @@ _UPDATE_PIPELINE = (
     "gateway/host_rendezvous.py",
     "gateway/shutdown_forensics.py",
     "gateway/restart.py",
-    "scripts/desktop-update/",  # the hand-off scripts run `hermes update`
+    "scripts/desktop-update/",  # the hand-off scripts run `aurora update`
 )
 # Selectors are owned by the import graph, not remembered. The update
-# transaction's own modules (what `hermes update` and the launch-time completion
+# transaction's own modules (what `aurora update` and the launch-time completion
 # run between the lock and the receipt) are the entry points;
 # tests/ci/test_update_ci_routing.py reads every repo module they import (AST,
 # module level and lazy) and every build script they run, and fails until each
 # one is routed to the suite below or is a _SHARED_HUBS entry.
 _UPDATE_ENTRY_POINTS = (
-    "hermes_cli/update_",
-    "hermes_cli/_update_",
-    "hermes_cli/source_",
-    "hermes_cli/old_updater",
-    "hermes_cli/_old_updater",
-    "hermes_cli/post_update",
-    "hermes_cli/venv_sync.py",
-    "hermes_cli/_early_recovery",
-    "hermes_cli/main_desktop.py",
-    "hermes_cli/desktop_update_verify.py",
-    "hermes_cli/desktop_build_lock.py",
-    "hermes_cli/subcommands/update",
+    "aurora_cli/update_",
+    "aurora_cli/_update_",
+    "aurora_cli/source_",
+    "aurora_cli/old_updater",
+    "aurora_cli/_old_updater",
+    "aurora_cli/post_update",
+    "aurora_cli/venv_sync.py",
+    "aurora_cli/_early_recovery",
+    "aurora_cli/main_desktop.py",
+    "aurora_cli/desktop_update_verify.py",
+    "aurora_cli/desktop_build_lock.py",
+    "aurora_cli/subcommands/update",
 )
 # The entry points that build or verify the Desktop app inside an update
-# (`hermes desktop --build-only`, the source build/completion that feeds it).
+# (`aurora desktop --build-only`, the source build/completion that feeds it).
 _DESKTOP_BUILD_ENTRY_POINTS = (
-    "hermes_cli/source_build.py",
-    "hermes_cli/source_completion.py",
-    "hermes_cli/main_desktop.py",
-    "hermes_cli/desktop_update_verify.py",
-    "hermes_cli/desktop_build_lock.py",
+    "aurora_cli/source_build.py",
+    "aurora_cli/source_completion.py",
+    "aurora_cli/main_desktop.py",
+    "aurora_cli/desktop_update_verify.py",
+    "aurora_cli/desktop_build_lock.py",
 )
 # What the entry points import, outside the update_* family and the pipeline above.
 _UPDATE_DEPENDENCIES = (
-    "hermes_cli/_subprocess_compat.py",  # update git env, process-tree kill, PM git exposure
-    "hermes_cli/local_runtime/processes.py",  # bounded probes' spawn_server/job custody
+    "aurora_cli/_subprocess_compat.py",  # update git env, process-tree kill, PM git exposure
+    "aurora_cli/local_runtime/processes.py",  # bounded probes' spawn_server/job custody
     "agent/deadline.py",  # bounded probes' process-tree timeout cleanup
     # migrate_all_homes' second-hop provider/profile decisions, run on every update. Its
     # plugin-install branch (plugins_cmd, plugins_cmd_install) runs only for a home whose
@@ -359,48 +359,48 @@ _UPDATE_DEPENDENCIES = (
     "pm/plugins_state.py",
     "pm/install.py",  # also sealed()/lazy_installs_allowed(): every update's default-tool install
     "pm/packages.py",  # source_build's pnpm environment (pnpm_env)
-    "pm/index_config.py",  # source_build's npmrc bridge (read_npmrc, user_npmrc, hermes_npmrc)
-    "hermes_cli/desktop_build_lock.py",
-    "hermes_cli/desktop_build_reuse.py",  # source_build keeps the packaged app when no input changed
-    "hermes_cli/desktop_release_holders.py",  # main_desktop names/closes a holder of release/ on a failed swap
-    "hermes_cli/memory_provider_migration.py",
-    "hermes_cli/left_core_migration.py",  # source_build migrates plugins that left core
-    "hermes_cli/config_version_stamp.py",  # post_update converts legacy AGENT_BROWSER_* before stamping
-    "hermes_cli/web_build_limits.py",  # source_build caps the dashboard Node build
-    "hermes_cli/desktop_console.py",
-    "hermes_cli/bundled_app.py",
-    "hermes_cli/gui_uninstall.py",
-    "hermes_cli/linux_desktop_entry.py",
-    "hermes_cli/github_api.py",  # source_check's release lookup
-    "hermes_cli/build_info.py",
-    "hermes_cli/image_provenance.py",
-    "hermes_cli/backup.py",  # pre-update backup
-    "hermes_cli/backup_cron_prompts.py",  # restore_cron_prompt_fields_if_degraded (update_cmd_config)
-    "hermes_cli/backup_restore.py",
-    "hermes_cli/config_backend.py",  # update_channel writes the channel key through the seam
-    "hermes_cli/env_loader.py",  # update_proxy_env keeps proxy keys a .env load wrote
+    "pm/index_config.py",  # source_build's npmrc bridge (read_npmrc, user_npmrc, aurora_npmrc)
+    "aurora_cli/desktop_build_lock.py",
+    "aurora_cli/desktop_build_reuse.py",  # source_build keeps the packaged app when no input changed
+    "aurora_cli/desktop_release_holders.py",  # main_desktop names/closes a holder of release/ on a failed swap
+    "aurora_cli/memory_provider_migration.py",
+    "aurora_cli/left_core_migration.py",  # source_build migrates plugins that left core
+    "aurora_cli/config_version_stamp.py",  # post_update converts legacy AGENT_BROWSER_* before stamping
+    "aurora_cli/web_build_limits.py",  # source_build caps the dashboard Node build
+    "aurora_cli/desktop_console.py",
+    "aurora_cli/bundled_app.py",
+    "aurora_cli/gui_uninstall.py",
+    "aurora_cli/linux_desktop_entry.py",
+    "aurora_cli/github_api.py",  # source_check's release lookup
+    "aurora_cli/build_info.py",
+    "aurora_cli/image_provenance.py",
+    "aurora_cli/backup.py",  # pre-update backup
+    "aurora_cli/backup_cron_prompts.py",  # restore_cron_prompt_fields_if_degraded (update_cmd_config)
+    "aurora_cli/backup_restore.py",
+    "aurora_cli/config_backend.py",  # update_channel writes the channel key through the seam
+    "aurora_cli/env_loader.py",  # update_proxy_env keeps proxy keys a .env load wrote
     "agent/proxy_bypass.py",  # update_proxy_env reads NO_PROXY entries with it
-    "hermes_cli/relay_plugin_migrate.py",
-    "hermes_cli/macos_tcc_anchor.py",
-    "hermes_cli/model_catalog.py",
-    "hermes_cli/sqlite_runtime.py",
-    "hermes_cli/sqlite_safe_read.py",
-    "hermes_cli/sizefmt.py",
-    "hermes_cli/tools_config_cua.py",
-    "hermes_cli/_startup_fast.py",
-    "hermes_cli/_parser.py",
-    "hermes_cli/gateway_multiplex_mode.py",
-    "hermes_cli/plugin_catalog.py",
-    "hermes_cli/plugins_auto_update.py",  # update_cmd_maint's catalog-pin notice after the code swap
-    "hermes_cli/steward.py",
-    "hermes_cli/observability/shared_metrics_update.py",
-    "hermes_cli/main_install_repair.py",
-    "hermes_logging.py",
-    "hermes_platform/host/__init__.py",
-    "hermes_platform/host/facts.py",
-    "hermes_platform/resolver/__init__.py",  # update_cmd_commit's interpreter lookup
-    "hermes_platform/resolver/base.py",
-    "hermes_platform/resolver/core.py",
+    "aurora_cli/relay_plugin_migrate.py",
+    "aurora_cli/macos_tcc_anchor.py",
+    "aurora_cli/model_catalog.py",
+    "aurora_cli/sqlite_runtime.py",
+    "aurora_cli/sqlite_safe_read.py",
+    "aurora_cli/sizefmt.py",
+    "aurora_cli/tools_config_cua.py",
+    "aurora_cli/_startup_fast.py",
+    "aurora_cli/_parser.py",
+    "aurora_cli/gateway_multiplex_mode.py",
+    "aurora_cli/plugin_catalog.py",
+    "aurora_cli/plugins_auto_update.py",  # update_cmd_maint's catalog-pin notice after the code swap
+    "aurora_cli/steward.py",
+    "aurora_cli/observability/shared_metrics_update.py",
+    "aurora_cli/main_install_repair.py",
+    "aurora_logging.py",
+    "aurora_platform/host/__init__.py",
+    "aurora_platform/host/facts.py",
+    "aurora_platform/resolver/__init__.py",  # update_cmd_commit's interpreter lookup
+    "aurora_platform/resolver/base.py",
+    "aurora_platform/resolver/core.py",
     "agent/curator.py",
     "plugins/memory/__init__.py",
     "tools/checkpoint_maintenance.py",
@@ -411,7 +411,7 @@ _UPDATE_DEPENDENCIES = (
     # tui, web, desktop and their shared frontend-common).
     "scripts/build/",
     "apps/desktop/scripts/build-webapp.mjs",  # source_build's Webapp renderer build
-    "hermes_cli/webapp.py",  # source_build rebuilds the Webapp bundle a home serves
+    "aurora_cli/webapp.py",  # source_build rebuilds the Webapp bundle a home serves
     "gateway/webapp_listener.py",  # source_build reads which homes serve the Webapp
 )
 # General-purpose modules an entry point imports but that half the product
@@ -421,17 +421,17 @@ _UPDATE_DEPENDENCIES = (
 # them run on most PRs. Never an update-specific module: own those above.
 HUB_MIN_IMPORTERS = 25
 _SHARED_HUBS = frozenset({
-    "hermes_cli/__init__.py",
-    "hermes_cli/config.py",
-    "hermes_cli/profiles.py",
-    "hermes_cli/version_info.py",
+    "aurora_cli/__init__.py",
+    "aurora_cli/config.py",
+    "aurora_cli/profiles.py",
+    "aurora_cli/version_info.py",
     "utils.py",
-    "hermes_state.py",
+    "aurora_state.py",
     "agent/__init__.py",
     "cron/jobs.py",
     "tools/environments/local.py",
     # Desktop lane only (the upgrade lane owns these outright):
-    "hermes_constants.py",
+    "aurora_constants.py",
     "gateway/status.py",
     "pm/__init__.py",
     "pm/paths.py",
@@ -443,7 +443,7 @@ _E2E_LANES: dict[str, tuple[str, ...]] = {
         "tests/e2e/",
         # The state.db torture chamber and the compaction/exactly-once
         # suites are the only tests that run real concurrent writers.
-        "hermes_state",
+        "aurora_state",
         # Messaging-gated gateway cases: only the e2e job installs the real
         # Discord/Telegram SDKs (tests.yml "Run messaging-gated gateway cases").
         "tests/gateway/test_native_role_reauthorization.py",
@@ -459,21 +459,21 @@ _E2E_LANES: dict[str, tuple[str, ...]] = {
         "tests/compat/",
         "pm/",
         "scripts/install.",
-        "setup-hermes.sh",
-        "hermes_cli/update_",
-        "hermes_cli/_update_",
-        "hermes_cli/old_updater",
-        # The downgrade refusal (hermes_cli/update_downgrade_guard.py) reads state.db through it.
-        "hermes_state_holders.py",
-        # The search-index notice (hermes_cli/update_cmd_maint.py) reads the stored FTS layout through it.
-        "hermes_state_fts.py",
-        "hermes_cli/_old_updater",
-        "hermes_cli/post_update",
-        "hermes_cli/config_migrations",
-        "hermes_cli/subcommands/update",
-        "hermes_cli/install_",
-        "hermes_cli/_install_",
-        "hermes_cli/main_install",
+        "setup-aurora.sh",
+        "aurora_cli/update_",
+        "aurora_cli/_update_",
+        "aurora_cli/old_updater",
+        # The downgrade refusal (aurora_cli/update_downgrade_guard.py) reads state.db through it.
+        "aurora_state_holders.py",
+        # The search-index notice (aurora_cli/update_cmd_maint.py) reads the stored FTS layout through it.
+        "aurora_state_fts.py",
+        "aurora_cli/_old_updater",
+        "aurora_cli/post_update",
+        "aurora_cli/config_migrations",
+        "aurora_cli/subcommands/update",
+        "aurora_cli/install_",
+        "aurora_cli/_install_",
+        "aurora_cli/main_install",
         *_UPDATE_PIPELINE,
         *_UPDATE_ENTRY_POINTS,
         *_UPDATE_DEPENDENCIES,
@@ -517,22 +517,22 @@ _E2E_LANES: dict[str, tuple[str, ...]] = {
         "apps/desktop/electron/app-installer-file",
         "scripts/desktop-update/",
         "scripts/install.sh",
-        "hermes_cli/update_",
-        "hermes_cli/main_desktop",  # the entry point and the main_desktop_* siblings it imports
+        "aurora_cli/update_",
+        "aurora_cli/main_desktop",  # the entry point and the main_desktop_* siblings it imports
         *_DESKTOP_BUILD_ENTRY_POINTS,
         *_UPDATE_DEPENDENCIES,
         # Pipeline modules the Desktop build entry points import directly.
-        "hermes_cli/main.py",  # `hermes desktop --build-only`
-        "hermes_cli/venv_sync.py",
-        "hermes_cli/source_stamp.py",
+        "aurora_cli/main.py",  # `aurora desktop --build-only`
+        "aurora_cli/venv_sync.py",
+        "aurora_cli/source_stamp.py",
         # Imported by the Desktop build's scripts (scripts/build/desktop.mjs closure).
         "apps/desktop/product-identity.cjs",
         "scripts/msix-shared.mjs",
         # The launchers the Desktop relaunches through reach the launch-time repair first.
-        "hermes_cli/_launchers.py",
+        "aurora_cli/_launchers.py",
         # The backend's /api/health `commit`, which the Desktop compares to the checkout
         # before attaching to a running backend after an update.
-        "hermes_cli/web_routers/status.py",
+        "aurora_cli/web_routers/status.py",
     ),
 }
 
@@ -596,7 +596,7 @@ def _is_catalog_data(p: str) -> bool:
 def _py_test_only(p: str) -> bool:
     """Is ``p`` inside the test suite (never shipped / imported by the product)?
 
-    Product jobs (Desktop E2E's ``hermes serve`` backend, the Docker image)
+    Product jobs (Desktop E2E's ``aurora serve`` backend, the Docker image)
     run installed code — nothing under ``tests/`` is packaged or importable
     there. scripts/run_tests.sh and scripts/run_tests_parallel.py are deliberately
     NOT test-only: they are runner infrastructure, and a bad edit there can

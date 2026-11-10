@@ -104,15 +104,15 @@ def _check_frontmatter(frontmatter: dict[str, Any], skill_dir: Optional[Path]) -
         if key not in frontmatter:
             yield _warn("missing-metadata", f"frontmatter is missing '{key}'; every peer skill has it.")
     meta = frontmatter.get("metadata")
-    hermes_meta = meta.get("hermes") if isinstance(meta, dict) else None
-    if not isinstance(hermes_meta, dict):
-        yield _warn("missing-metadata", "frontmatter is missing metadata.hermes.{tags, related_skills}.")
-    elif "tags" not in hermes_meta:
-        yield _warn("missing-metadata", "metadata.hermes.tags is missing.")
+    aurora_meta = meta.get("aurora") if isinstance(meta, dict) else None
+    if not isinstance(aurora_meta, dict):
+        yield _warn("missing-metadata", "frontmatter is missing metadata.aurora.{tags, related_skills}.")
+    elif "tags" not in aurora_meta:
+        yield _warn("missing-metadata", "metadata.aurora.tags is missing.")
     author = str(frontmatter.get("author", ""))
-    if author and author.strip().lower() in ("hermes", "agent", "hermes agent") and (
-        author != "Hermes Agent"):
-        yield _warn("author-caps", f"author '{author}' should be 'Hermes Agent' (proper caps) "
+    if author and author.strip().lower() in ("aurora", "agent", "aurora agent") and (
+        author != "Aurora Agent"):
+        yield _warn("author-caps", f"author '{author}' should be 'Aurora Agent' (proper caps) "
                     f"or a real contributor name.")
     platforms = frontmatter.get("platforms")
     if platforms:

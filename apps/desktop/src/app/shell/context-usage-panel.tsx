@@ -1,4 +1,4 @@
-import { compactNumber } from '@hermes/shared'
+import { compactNumber } from '@aurora/shared'
 import { useContext, useMemo } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -6,7 +6,7 @@ import { Codicon } from '@/components/ui/codicon'
 import { useI18n } from '@/i18n'
 import { Loader2 } from '@/lib/icons'
 import { cn } from '@/lib/utils'
-import type { ContextBreakdown, ContextUsageCategory, UsageStats } from '@/types/hermes'
+import type { ContextBreakdown, ContextUsageCategory, UsageStats } from '@/types/aurora'
 
 import type { CompactConversationAction } from './hooks/use-compact-conversation'
 import { StatusbarMenuCloseContext } from './statusbar-controls'

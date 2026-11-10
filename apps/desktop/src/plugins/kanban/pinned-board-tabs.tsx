@@ -1,4 +1,4 @@
-import { Button, Tip, useValue } from '@hermes/plugin-sdk'
+import { Button, Tip, useValue } from '@aurora/plugin-sdk'
 import { useRef, useState } from 'react'
 
 import { $boardSlug, $pinnedBoards, kanbanConnectionScope, movePinnedBoard } from './api'

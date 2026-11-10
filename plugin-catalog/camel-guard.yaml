@@ -7,7 +7,7 @@ description: Gate sensitive tools on trusted user capabilities after untrusted t
 maintainer: nativ3ai
 tier: community
 category: tools
-requires_hermes: ">=0.22.7"
+requires_aurora: ">=0.22.7"
 version: "1.1.1"
 docs_url: https://github.com/nativ3ai/hermes-camel-guard-plugin/blob/4cbfca3a5f1d46f5d152280cccc496d0df14d097/README.md
 readme: true

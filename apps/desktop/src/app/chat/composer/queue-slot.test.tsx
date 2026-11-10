@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 
-import type { HermesGateway } from '@/hermes'
+import type { AuroraGateway } from '@/aurora'
 import { I18nProvider } from '@/i18n/context'
 import { en } from '@/i18n/en'
 import { $queuedPromptsBySession, enqueueQueuedPrompt, getQueuedPrompts } from '@/store/composer-queue'
@@ -21,7 +21,7 @@ function renderSlot(
     busy: true,
     drainNextQueued: vi.fn(async () => undefined),
     exitQueuedEdit: vi.fn(),
-    gateway: { request } as unknown as HermesGateway,
+    gateway: { request } as unknown as AuroraGateway,
     queueEdit: null,
     queueParked: false,
     queuedPrompts: getQueuedPrompts('stored'),

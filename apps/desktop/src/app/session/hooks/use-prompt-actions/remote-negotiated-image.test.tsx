@@ -1,7 +1,7 @@
 import { cleanup } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
-import { hermesApi, HermesGateway } from '@/api/client'
+import { auroraApi, AuroraGateway } from '@/api/client'
 import { $composerAttachments } from '@/store/composer'
 import { $connectionWires, recordConnectionWire } from '@/store/connection-wire'
 import { requestGatewayForAgent } from '@/store/gateway'
@@ -15,9 +15,9 @@ interface FixtureSocket {
 }
 
 vi.mock('@/api/client', async importOriginal => ({
-  ...(await importOriginal<Record<string, unknown>>()), hermesApi: vi.fn()
+  ...(await importOriginal<Record<string, unknown>>()), auroraApi: vi.fn()
 }))
-vi.mock('@/hermes', () => ({
+vi.mock('@/aurora', () => ({
   getLatestSessionMessages: vi.fn(async () => ({ messages: [], session_id: RUNTIME_SESSION_ID })),
   getProfiles: vi.fn(async () => ({ profiles: [] })), getSession: vi.fn(),
   PROMPT_SUBMIT_REQUEST_TIMEOUT_MS: 1_800_000, setApiRequestProfile: vi.fn(), transcribeAudio: vi.fn()
@@ -78,13 +78,13 @@ test.each(['public-canonical', 'public-legacy', 'native-canonical'] as const)('%
       type: 'gateway.ready', payload: canonical ? { session_authority: true } : {}
     } }))
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   const ready = new Promise<void>(resolve => client.on('gateway.ready', () => resolve()))
   const { port } = server.address() as { port: number }
   // The public cases have no native_dial marker or locally patched resolver.
   const wsUrl = `ws://127.0.0.1:${port}/api/ws?ticket=fixture${native ? '&native_dial=1' : ''}`
-  const previous = window.hermesDesktop
-  window.hermesDesktop = { ...previous, readFileDataUrl: vi.fn(async () => 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jC5sAAAAASUVORK5CYII=') }
+  const previous = window.auroraDesktop
+  window.auroraDesktop = { ...previous, readFileDataUrl: vi.fn(async () => 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jC5sAAAAASUVORK5CYII=') }
 
   try {
     await client.connect(wsUrl)
@@ -96,7 +96,7 @@ test.each(['public-canonical', 'public-legacy', 'native-canonical'] as const)('%
     setSessionOwnerHint(RUNTIME_SESSION_ID, { connectionId: 'remote', profile: 'work', mode: native ? 'local' : 'remote' })
     vi.mocked(requestGatewayForAgent).mockImplementation((_connectionId, profile, method, params, timeout, signal) =>
       client.request(method, { ...params, profile }, timeout, signal))
-    vi.mocked(hermesApi).mockResolvedValue({ path: '/gateway/cache/images/fixture.png', mime_type: 'image/png' })
+    vi.mocked(auroraApi).mockResolvedValue({ path: '/gateway/cache/images/fixture.png', mime_type: 'image/png' })
 
     // Positive control: the real client negotiated and adapts an ordinary send.
     const receipt = await client.request('prompt.submit', {
@@ -116,18 +116,18 @@ test.each(['public-canonical', 'public-legacy', 'native-canonical'] as const)('%
 
     if (canonical) {
       expect(imageSubmit.params.attachments).toEqual([{ path: '/gateway/cache/images/fixture.png', mime: 'image/png' }])
-      expect(hermesApi).toHaveBeenCalledWith(expect.objectContaining({
+      expect(auroraApi).toHaveBeenCalledWith(expect.objectContaining({
         path: '/api/chat/image-upload', connectionId: 'remote', profile: 'work'
       }))
       expect(frames.some(frame => frame.method === 'image.attach_bytes')).toBe(false)
     } else {
       expect(frames.some(frame => frame.method === 'image.attach_bytes')).toBe(true)
       expect(imageSubmit.params).not.toHaveProperty('attachments')
-      expect(hermesApi).not.toHaveBeenCalled()
+      expect(auroraApi).not.toHaveBeenCalled()
     }
 
   } finally {
-    window.hermesDesktop = previous
+    window.auroraDesktop = previous
     client.close()
 
     for (const socket of server.clients) { socket.terminate() }

@@ -1,4 +1,4 @@
-"""Canonical ``hermes-gateway-v1`` methods that only the session authority serves.
+"""Canonical ``aurora-gateway-v1`` methods that only the session authority serves.
 
 ``gateway/session_controls.py::AuthorityConnection.dispatch`` answers these on the authenticated
 native socket; the TUI sidecar (``server._methods``) never registers them, so they live in
@@ -84,7 +84,7 @@ canonical_method("prompt.resolve_unknown", params=PromptResolveUnknownParams, re
 
 
 class SessionMutateParams(Params):
-    """``operation`` + ``payload`` are validated by ``hermes_state_mutations.validate_action``;
+    """``operation`` + ``payload`` are validated by ``aurora_state_mutations.validate_action``;
     ``expected_generation`` is required for delete/rewind/reset/branch/model/compress/reasoning/workspace.
     ``reasoning`` (``{effort}``) and ``workspace`` (``{cwd}``, refused ``session_busy`` mid-turn) rewrite
     the session's frozen policy: session-scope ``/reasoning`` and Desktop's Move to project. ``edit_policy``
@@ -115,7 +115,7 @@ canonical_method("session.mutate", params=SessionMutateParams, result=SessionMut
 
 class SessionPruneParams(Params):
     """Exactly one of ``filters`` (``SessionDB.prune_sessions`` keyword filters, as
-    ``hermes sessions prune`` builds them) or ``never_active_days`` (``--never-active``)."""
+    ``aurora sessions prune`` builds them) or ``never_active_days`` (``--never-active``)."""
 
     filters: dict[str, JsonValue] | None = None
     never_active_days: float | None = None
@@ -128,7 +128,7 @@ class SessionPruneResult(Result):
 
 
 canonical_method("session.prune", params=SessionPruneParams, result=SessionPruneResult,
-                 doc="Local operator only: the owner deletes the ended sessions `hermes sessions prune` "
+                 doc="Local operator only: the owner deletes the ended sessions `aurora sessions prune` "
                      "selected, skipping busy sessions and retained reset owners.")
 
 

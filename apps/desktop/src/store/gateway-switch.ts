@@ -1,7 +1,7 @@
 import { atom } from 'nanostores'
 
 import { resetLiveRuntimeTracking } from '@/app/contrib/hooks/use-background-sync'
-import { resetSidebarBatchCapability } from '@/hermes'
+import { resetSidebarBatchCapability } from '@/aurora'
 import { invalidateProfileScopedQueries } from '@/lib/query-client'
 import { clearArtifactRegistry } from '@/store/artifacts'
 import { invalidateCronJobsRequests, setCronJobs } from '@/store/cron'
@@ -44,7 +44,7 @@ import { clearTranscriptTails } from '@/store/transcript-tail-cache'
 // Sessions is not a switch: every gateway stays connected and the pick is a
 // live activation (store/connections selectConnection). Lets the boot hook suppress the
 // backend-exit toast, keeps the cold-boot CONNECTING overlay from resurrecting
-// when startHermes re-emits boot progress, and tells the resume path that a
+// when startAurora re-emits boot progress, and tells the resume path that a
 // "session not found" mid-switch means "retry once things settle", not "gone".
 export const $gatewaySwitching = atom(false)
 

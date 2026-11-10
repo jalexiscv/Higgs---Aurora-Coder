@@ -1,4 +1,4 @@
-import { LOCAL_CONNECTION_ID } from '@hermes/shared'
+import { LOCAL_CONNECTION_ID } from '@aurora/shared'
 import { useStore } from '@nanostores/react'
 import type { ReactNode } from 'react'
 
@@ -52,7 +52,7 @@ export function ProfileLaunchMenuItems({ connectionId, label, profile }: Profile
         </ContextMenuItem>
       )}
       <ContextMenuItem
-        disabled={isDefault || !window.hermesDesktop?.profile?.setDefault}
+        disabled={isDefault || !window.auroraDesktop?.profile?.setDefault}
         onSelect={() => void makeDefault()}
       >
         <Codicon name={isDefault ? 'check' : 'home'} size="0.875rem" />

@@ -6,7 +6,7 @@ description: "VirusTotal reputation for downloads and links. Files are hashed lo
 maintainer: Aravinth-Earth
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_aurora: ">=0.22.0"
 docs_url: https://github.com/Aravinth-Earth/vt-check#readme
 version: "0.1.5"
 platforms: []

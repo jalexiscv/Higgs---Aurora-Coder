@@ -161,9 +161,9 @@ async def test_a_reaction_on_an_earlier_segments_row_resets_the_poller(tmp_path,
 
 @pytest.mark.asyncio
 async def test_a_reaction_resets_the_poller_after_an_older_build_opened_the_store(tmp_path, monkeypatch):
-    """An older Hermes sharing the profile opens state.db writable between two polls (its DDL path runs over
+    """An older Aurora sharing the profile opens state.db writable between two polls (its DDL path runs over
     the revision trigger), then the held row gets a reaction: the next poll still resets onto it."""
-    from tests.hermes_state.test_transcript_revision_trigger_skew import open_as_older_build
+    from tests.aurora_state.test_transcript_revision_trigger_skew import open_as_older_build
     with _session(tmp_path, monkeypatch) as (db, _authority, owner, ref, target):
         db.append_message(target, 'user', 'question 1')
         held = db.append_message(target, 'assistant', 'answer 1')
@@ -300,7 +300,7 @@ async def test_an_append_past_the_resume_guard_leaves_the_poller_on_a_fresh_read
     """With the guard at the lineage's size plus one, two appends take the rotated lineage past
     ``sessions.max_resume_messages`` and a fresh read shows the tip segment only. A poller caught up on
     the whole lineage (or one page into it) must end up holding what a fresh read shows."""
-    import hermes_state
+    import aurora_state
     from gateway.session_authority import initialize_session_authority
 
     store, db, runner = _legacy_owner(tmp_path, monkeypatch)
@@ -308,7 +308,7 @@ async def test_an_append_past_the_resume_guard_leaves_the_poller_on_a_fresh_read
     native = _native(authority, tmp_path, 'native')
     try:
         count = db.assert_resume_safe('tui-tip', max_messages=10 ** 6)
-        monkeypatch.setattr(hermes_state, 'resolved_max_resume_messages', lambda: count + 1)
+        monkeypatch.setattr(aurora_state, 'resolved_max_resume_messages', lambda: count + 1)
         reader = Reader(native, 'old-tui', limit=2 if partway else 500)
         if partway:
             page = (await _call(native, 'session.transcript', session_id='old-tui', limit=2))['result']
@@ -328,7 +328,7 @@ async def test_an_append_past_the_resume_guard_leaves_the_poller_on_a_fresh_read
 async def test_a_newest_first_walk_restarts_when_the_lineage_crosses_the_resume_guard(tmp_path, monkeypatch):
     """A newest-first cursor names a slot of the read it came from: once two appends take the rotated
     lineage past the guard, the next page starts again from the newest (``reset``), as a fresh read does."""
-    import hermes_state
+    import aurora_state
     from gateway.session_authority import initialize_session_authority
 
     store, db, runner = _legacy_owner(tmp_path, monkeypatch)
@@ -336,7 +336,7 @@ async def test_a_newest_first_walk_restarts_when_the_lineage_crosses_the_resume_
     native = _native(authority, tmp_path, 'native')
     try:
         count = db.assert_resume_safe('tui-tip', max_messages=10 ** 6)
-        monkeypatch.setattr(hermes_state, 'resolved_max_resume_messages', lambda: count + 1)
+        monkeypatch.setattr(aurora_state, 'resolved_max_resume_messages', lambda: count + 1)
         newest = (await _call(native, 'session.transcript', session_id='old-tui', limit=1, order='latest'))['result']
         db.append_message('tui-tip', 'user', 'late question')
         db.append_message('tui-tip', 'assistant', 'late answer')
@@ -402,7 +402,7 @@ async def test_a_newest_first_walk_of_a_tip_restarts_when_a_compaction_rotates_i
     segment: once a compaction rotates the tip to a new segment, the next page starts again from the
     newest (``reset``) and the walk ends holding what a fresh walk holds. Without a rotation the walk
     pages on (control)."""
-    import hermes_state
+    import aurora_state
     from gateway.session_authority import initialize_session_authority
 
     store, db, runner = _legacy_owner(tmp_path, monkeypatch)
@@ -412,7 +412,7 @@ async def test_a_newest_first_walk_of_a_tip_restarts_when_a_compaction_rotates_i
         for n in range(3):
             db.append_message('tui-tip', 'user', f'tip question {n}')
             db.append_message('tui-tip', 'assistant', f'tip answer {n}')
-        monkeypatch.setattr(hermes_state, 'resolved_max_resume_messages', lambda: 1)
+        monkeypatch.setattr(aurora_state, 'resolved_max_resume_messages', lambda: 1)
         reply = (await _call(native, 'session.transcript', session_id='old-tui', limit=2, order='latest'))['result']
         rows, resets = reply['rows'], []
         if rotate:

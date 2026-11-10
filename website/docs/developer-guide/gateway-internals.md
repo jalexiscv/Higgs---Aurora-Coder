@@ -6,7 +6,7 @@ description: "How the messaging gateway boots, authorizes users, routes sessions
 
 # Gateway Internals
 
-The messaging gateway is the long-running process that connects Hermes to 20+ external messaging platforms through a unified architecture.
+The messaging gateway is the long-running process that connects Aurora to 20+ external messaging platforms through a unified architecture.
 
 ## Canonical group metadata and profile discovery
 
@@ -81,7 +81,7 @@ last event of that turn. Desktop translates both paths into its existing
 `pending_submissions` queue store.
 
 A turn that was `started` when its owning gateway died is recovered by the next owner
-as `unknown`: Hermes cannot prove which side effects happened, so it neither replays
+as `unknown`: Aurora cannot prove which side effects happened, so it neither replays
 the input nor lets the queued turns behind it run. `prompt.resolve_unknown`
 (`session:control`, params `session_id`, `admission_id`, `execution_generation`)
 acknowledges the loss: the row settles as `interrupted`, the session FIFO resumes and
@@ -90,7 +90,7 @@ row (visible in the resume/`session.info` projection), so a stale or already-res
 row is refused with `stale_generation`. Desktop shows such a row in the queue panel as
 "Turn lost during restart" with a **Discard** button; the gateway CLI exposes it as
 `/discard <admission_id>`. The lost input stays in the transcript for the user to resend; the
-discard closes it with a Hermes notice (like a failed turn), so it is never merged into the
+discard closes it with an Aurora notice (like a failed turn), so it is never merged into the
 follower's model request.
 
 A messaging user (Telegram, Discord, ...) whose session is paused this way is told once per
@@ -104,7 +104,7 @@ on the old one); the operator can alternatively resolve the unknown row from Des
 
 `prompt.submit` accepts an optional `attachments: [{path, mime}]` list beside `text`.
 The client stages image bytes in the profile image cache (`cache/images/` under the
-served `HERMES_HOME`, the same place messaging adapters stage downloads); paths must be
+served `AURORA_HOME`, the same place messaging adapters stage downloads); paths must be
 regular files directly in that directory, `mime` must be an image type
 (`image/png`, `image/jpeg`, `image/gif`, `image/webp`), at most 10 per submission, each
 under `gateway.max_inbound_media_bytes`. The authority copies the bytes into its
@@ -285,7 +285,7 @@ The authoritative daemon accepts a **fresh, one-use HTTP grant per request** fro
 its same-user private control socket. Send `session-ticket` with exactly
 `profile_id` (the canonical served primary home), `instance_id` (the ready daemon's
 boot ID), and `purpose: "native-http"`. The returned ticket expires after 30 seconds
-and carries only `http:owner`; send it in `X-Hermes-Gateway-Ticket` from the native
+and carries only `http:owner`; send it in `X-Aurora-Gateway-Ticket` from the native
 main process. Never place it in a URL, cookie, public descriptor, renderer config,
 or log, and never obtain a dashboard token by scraping the public page.
 
@@ -374,12 +374,12 @@ including top-level one-shot launches. It does not become a process-wide option.
 
 ## Optional service installation
 
-A running gateway and an installed OS service are different things. `hermes gateway run`
+A running gateway and an installed OS service are different things. `aurora gateway run`
 works without a service, including with no messaging platforms configured.
 
-`hermes setup`, quick setup, and `hermes gateway setup` ask interactive users once:
+`aurora setup`, quick setup, and `aurora gateway setup` ask interactive users once:
 
-> Install the gateway service so Hermes starts automatically at login and keeps scheduled jobs and messaging available?
+> Install the gateway service so Aurora starts automatically at login and keeps scheduled jobs and messaging available?
 
 The profile's `gateway.service_install_choice` stores `null`, `install`, or `decline`.
 An unset value is not permission to install. Declining records `decline` without creating,
@@ -390,18 +390,18 @@ run while the host is off.
 
 Noninteractive setup and imports do not install a missing service, even when the imported
 config says `install`. Existing installed services remain authoritative and can be started
-regardless of the saved preference. To opt in explicitly later, run `hermes gateway install`;
+regardless of the saved preference. To opt in explicitly later, run `aurora gateway install`;
 the choice is recorded only after successful installation. To be asked again during setup,
-reset the choice with `hermes config set gateway.service_install_choice null`.
+reset the choice with `aurora config set gateway.service_install_choice null`.
 
-Setup orchestration lives in `hermes_cli/gateway_setup_service.py`. Its
+Setup orchestration lives in `aurora_cli/gateway_setup_service.py`. Its
 `ensure_gateway_service` helper is not a general runtime discovery or auto-start API:
 ordinary calls never reinstall a missing service based only on stored preference.
 
-## `hermes gateway ensure`
+## `aurora gateway ensure`
 
-Clients (Desktop, `hermes chat`, the TUI) discover or start the profile's session
-runtime with `hermes gateway ensure --json --timeout 60`; the summary is in the
+Clients (Desktop, `aurora chat`, the TUI) discover or start the profile's session
+runtime with `aurora gateway ensure --json --timeout 60`; the summary is in the
 [CLI reference](../reference/cli-commands.md#local-runtime-discovery-and-startup).
 
 The timeout is a finite, positive total deadline in seconds (default `60`, enough for a
@@ -419,7 +419,7 @@ loaded launchd job rather than assuming the on-disk plist is current, and Window
 queries the actual task XML, principal, and installed launcher.
 
 - `profile_mismatch`: the installed service selects a different home or profile.
-  Inspect the selected service's `HERMES_HOME` and command-line profile selector;
+  Inspect the selected service's `AURORA_HOME` and command-line profile selector;
   use the matching profile or explicitly repair the service configuration.
 - `service_account_mismatch`: the service belongs to another account. Run the
   client as that account, or explicitly configure a service for the intended user.
@@ -439,7 +439,7 @@ remain eligible; a successful start request still must pass live readiness check
 On POSIX, local bootstrap checks the profile directory before it trusts the
 control socket inside it. Newly reserved homes are created with mode `0700`;
 existing permissions are never changed by `ensure`. The home keeps the operator's
-mode (a symlinked `~/.hermes`, `HERMES_HOME_MODE` `0701`/`0750`, or a `0755`
+mode (a symlinked `~/.aurora`, `AURORA_HOME_MODE` `0701`/`0750`, or a `0755`
 home all work): read and search bits grant nothing against the owner-only (`0600`)
 socket. Only write access another user could use to swap the socket is refused
 with `inaccessible / unsafe_control_permissions`: world-write always, and
@@ -475,9 +475,9 @@ Each gateway listens on a local control socket. It is how a client on the same m
 gateway that serves its profile and gets a WebSocket ticket, without spawning Python. Three verbs
 are public: `identify` (read-only), `resolve-profile` and the public form of `session-ticket`.
 Every other verb, the `session-ticket` parameters `subject` and `scope`, and purposes other than
-`interactive` are internal to Hermes (Desktop, the dashboard, the updater) and may change.
-Starting or recovering a gateway stays `hermes gateway attach --start` / `--recover`
-([below](#hermes-gateway-attach)).
+`interactive` are internal to Aurora (Desktop, the dashboard, the updater) and may change.
+Starting or recovering a gateway stays `aurora gateway attach --start` / `--recover`
+([below](#aurora-gateway-attach)).
 
 **Envelope.** One connection carries one request: one UTF-8 JSON object plus `\n` (at most
 64 KiB), then one reply line (at most 512 KiB), then the server closes. A request is
@@ -488,7 +488,7 @@ refuse any other top-level key and `params` that is not an object. The reply is 
 part of the contract.
 
 **`resolve-profile`** takes `{"home": "<absolute profile home>"}` and answers with the verdict
-`hermes gateway attach` discovery gives for that home (a verdict that is not attachable is still
+`aurora gateway attach` discovery gives for that home (a verdict that is not attachable is still
 `ok: true`). Send a plain absolute path: one with a `.` or `..` component, a repeated separator or
 a trailing separator is refused as invalid parameters. Symlinks in it are resolved.
 
@@ -497,11 +497,11 @@ a trailing separator is refused as invalid parameters. Symlinks in it are resolv
 | `resolve_protocol` | `1` |
 | `state`, `reason_code`, `detail` | The discovery verdict: `ready`, `draining`, `starting`, `absent`, `inaccessible`, `incompatible` or `conflict`, with its bounded code and remedy |
 | `attachable` | `ready`, or a restart's after-turn wait (`draining`/`restart_wait`) |
-| `update_fenced` | An update owns the install. `hermes gateway attach --start` would not return this verdict as it is, so a client that wants to start goes through the CLI |
+| `update_fenced` | An update owns the install. `aurora gateway attach --start` would not return this verdict as it is, so a client that wants to start goes through the CLI |
 | `control` | `self` (this is the profile's own socket), `host` (the multiplexer answering for a profile it may serve) or `null` (a home outside this gateway's root) |
 | `message` | When not attachable: the `gateway <state>: <reason>` lines `attach --json` prints |
 | `endpoint` | `null`, or `attach --json`'s `endpoint` plus `ws_url`, `ws_protocol` and `ticket_protocol_prefix` |
-| `install_code_sha` | The commit installed on disk now. When it differs from `endpoint.code_sha`, the gateway outlived `hermes update` |
+| `install_code_sha` | The commit installed on disk now. When it differs from `endpoint.code_sha`, the gateway outlived `aurora update` |
 
 **`session-ticket`, public form:** `{"profile_id": <endpoint.profile_id>, "instance_id":
 <endpoint.instance_id>, "purpose": "interactive"}`, plus `"restart_wait": "refuse"` for machine
@@ -516,7 +516,7 @@ every connection and reconnect.
 |---|---|
 | `resolve-profile`: bad envelope | `PermissionError: invalid resolve envelope` |
 | `resolve-profile`: `params` other than one absolute `home` | `PermissionError: invalid resolve parameters` |
-| A gateway older than the verb | `unknown verb: 'resolve-profile'` (plus `supported_verbs`): use `hermes gateway attach --json` |
+| A gateway older than the verb | `unknown verb: 'resolve-profile'` (plus `supported_verbs`): use `aurora gateway attach --json` |
 | Peer not verified as your OS user | `PermissionError: authenticated runtime bootstrap unavailable` |
 | `session-ticket`: bad envelope | `PermissionError: invalid bootstrap envelope` |
 | Missing or unknown parameters, `restart_wait` other than `refuse` | `PermissionError: invalid bootstrap parameters` (an owner older than `restart_wait` answers this too: retry once without it) |
@@ -525,7 +525,7 @@ every connection and reconnect.
 | 1024 tickets outstanding | `PermissionError: bootstrap capacity exhausted` |
 
 **Rendezvous.** The socket node and its `gateway.sock.path` pointer are the only files in a
-profile home a client touches. They are a rendezvous, not Hermes data: read no lock, state file or
+profile home a client touches. They are a rendezvous, not Aurora data: read no lock, state file or
 config. Try the profile home, then, for a named profile `<root>/profiles/<name>` (name not starting
 with `.`), the root, whose multiplexer answers for the profiles it serves. For each candidate,
 canonicalized like Python's `Path.resolve`:
@@ -535,14 +535,14 @@ canonicalized like Python's `Path.resolve`:
   `<candidate>/gateway.sock` when it exists; it must be a socket you own with no group or other
   access. Otherwise read `<candidate>/gateway.sock.path` (opened without following links: a
   regular file you own, mode 0600, at most 4096 bytes). Its target must be absolute and end in
-  `hermes-gw-<sha256 of the canonical home, 16 hex>/control.sock`, inside a 0700 directory you own,
+  `aurora-gw-<sha256 of the canonical home, 16 hex>/control.sock`, inside a 0700 directory you own,
   and be a 0600 socket you own. Do not compare the target's temp root with your own `TMPDIR`: a
   gateway started by **launchd** has its own `$TMPDIR` (`/var/folders/…/T/`), and the pointer is
   the authority. No node, or a refused connection (a crashed gateway's leftover), means try the
   next candidate. Any other failed check is a refusal: stop, do not try the next candidate.
-- **Windows:** the pipe `\\.\pipe\hermes-gateway-<sha256 of the normcased canonical home, 16 hex>`.
+- **Windows:** the pipe `\\.\pipe\aurora-gateway-<sha256 of the normcased canonical home, 16 hex>`.
   A client must verify that the pipe server runs as your SID before trusting its answer; a client
-  that cannot (Node) uses `hermes gateway attach --json` on every connect.
+  that cannot (Node) uses `aurora gateway attach --json` on every connect.
 
 Ask the first candidate that answers `resolve-profile`. A `profile_mismatch` from the profile's
 own socket means try the next candidate; otherwise that answer is the verdict, and that socket
@@ -566,18 +566,18 @@ out of the root resolves outside and is refused. Only then does it follow a priv
 `profile_mismatch` with `control: null`, and nothing outside the root is opened, created or
 changed (the only calls that reach outside are resolving the home's path and an in-root
 `gateway.lock` link). For a home it accepts it does what discovery does: an unserved profile's
-same-user lock left at mode 0644 by an older Hermes is narrowed to 0600, as
-`hermes gateway attach` does. None of this protects against code already running as your user,
+same-user lock left at mode 0644 by an older Aurora is narrowed to 0600, as
+`aurora gateway attach` does. None of this protects against code already running as your user,
 or root.
 
 The contract is pinned by `apps/shared/src/node/control-socket.vectors.json`: request and reply
 pairs a client in any language can replay, run against the gateway by
 `tests/gateway/test_control_socket_vectors.py`.
 
-## `hermes gateway attach`
+## `aurora gateway attach`
 
-`hermes gateway attach --json` is the public attach step for a local client that has its own UI
-and dials the gateway itself. It runs `hermes_cli/gateway_runtime_attach.py::attach_gateway`, the
+`aurora gateway attach --json` is the public attach step for a local client that has its own UI
+and dials the gateway itself. It runs `aurora_cli/gateway_runtime_attach.py::attach_gateway`, the
 same function behind the Ink TUI's `ui-tui/scripts/gateway_bootstrap.py`, so both clients get the
 same discovery, start, recovery and verdicts.
 
@@ -585,7 +585,7 @@ same discovery, start, recovery and verdicts.
 |------|---------|
 | (none) | Discover the owner that serves the active profile. Never start one. |
 | `--start` | Ensure the owner, as `ensure` does (a client's first launch). |
-| `--recover` | Discover; when the owner is not ready (it crashed, ended by its idle exit, was stopped, or an older Hermes's gateway answers), ensure it. Bound how often a client uses this, as Ink does with `OWNER_RECOVERY_LIMIT`, so a crash-looping owner is not restarted without pause. |
+| `--recover` | Discover; when the owner is not ready (it crashed, ended by its idle exit, was stopped, or an older Aurora's gateway answers), ensure it. Bound how often a client uses this, as Ink does with `OWNER_RECOVERY_LIMIT`, so a crash-looping owner is not restarted without pause. |
 | `--timeout S` | Start deadline for `--start`/`--recover` (default `60`). Discovery and the ticket mint each add at most 5 seconds. `--start` and `--recover` are mutually exclusive. |
 
 When no service is installed, `attach` starts an unmanaged gateway with the idle exit: it stops
@@ -599,16 +599,16 @@ Success (exit `0`) prints one JSON line: `ensure`'s fields (`state`, `reason_cod
 `endpoint`, `client_code_sha`) plus:
 
 ```json
-{"url": "ws://127.0.0.1:<port>/api/ws", "protocol": "hermes-gateway-v1",
- "protocols": ["hermes-gateway-v1", "hermes-gateway-ticket.<ticket>"], "ticket": "<ticket>"}
+{"url": "ws://127.0.0.1:<port>/api/ws", "protocol": "aurora-gateway-v1",
+ "protocols": ["aurora-gateway-v1", "aurora-gateway-ticket.<ticket>"], "ticket": "<ticket>"}
 ```
 
 `endpoint` holds `profile_id`, `instance_id`, `capabilities`, `code_sha` and the other discovery
 fields. Dial `url` with `protocols` as the WebSocket subprotocols, from loopback, with **no
-`Origin` header**, and check that the server selected `protocol`. Then speak `hermes-gateway-v1`:
+`Origin` header**, and check that the server selected `protocol`. Then speak `aurora-gateway-v1`:
 `runtime.describe` for the owner's `session.create` contract, then `session.create` or
 `session.resume`. When `client_code_sha` and `endpoint.code_sha` differ, the gateway outlived
-`hermes update`: restart it (`hermes gateway restart`) rather than keep attaching to old code.
+`aurora update`: restart it (`aurora gateway restart`) rather than keep attaching to old code.
 
 The ticket is the WebSocket's only credential. It is minted by the control socket's
 `session-ticket` verb (purpose `interactive`, scope `profile`) over the same-user socket, or the
@@ -719,7 +719,7 @@ Pairing state is persisted in `gateway/pairing.py` and survives restarts.
 
 All slash commands in the gateway flow through the same resolution pipeline:
 
-1. `resolve_command()` from `hermes_cli/commands.py` maps input to canonical name (handles aliases, prefix matching)
+1. `resolve_command()` from `aurora_cli/commands.py` maps input to canonical name (handles aliases, prefix matching)
 2. The canonical name is checked against `GATEWAY_KNOWN_COMMANDS`
 3. `_handle_message()` (`gateway/run_inbound.py`) looks the handler up by name — `_handle_<name>_command` on the `gateway/slash_commands_*.py` mixins — via `_command_handler_table` over `_IDLE_COMMANDS` / `_PLAIN_COMMANDS` in `gateway/run_busy.py`; there is no `if canonical == ...` chain
 4. Some commands are gated on config (`gateway_config_gate` on `CommandDef`)
@@ -738,8 +738,8 @@ The gateway reads configuration from multiple sources:
 
 | Source | What it provides |
 |--------|-----------------|
-| `~/.hermes/.env` | API keys, bot tokens, platform credentials |
-| `~/.hermes/config.yaml` | Model settings, tool configuration, display options |
+| `~/.aurora/.env` | API keys, bot tokens, platform credentials |
+| `~/.aurora/config.yaml` | Model settings, tool configuration, display options |
 | Environment variables | Override any of the above |
 
 Unlike the CLI (which uses `load_cli_config()` with hardcoded defaults), the gateway reads `config.yaml` directly via YAML loader. This means config keys that exist in the CLI's defaults dict but not in the user's config file may behave differently between CLI and gateway.
@@ -778,9 +778,9 @@ gateway/platforms/                  # core base + HTTP ingress adapters
 └── api_server.py        # REST API server adapter
 ```
 
-**Deferred loading:** Bundled `kind: platform` plugins register cheap `register_deferred` loaders in `gateway/platform_registry.py` (via `hermes_cli/plugins.py`) so platform SDKs import only when the gateway starts, delivers, or runs setup/status — not on plain `hermes chat`. Resolution loads one adapter on lookup; full enumeration runs pending loaders only on paths that need every platform.
+**Deferred loading:** Bundled `kind: platform` plugins register cheap `register_deferred` loaders in `gateway/platform_registry.py` (via `aurora_cli/plugins.py`) so platform SDKs import only when the gateway starts, delivers, or runs setup/status — not on plain `aurora chat`. Resolution loads one adapter on lookup; full enumeration runs pending loaders only on paths that need every platform.
 
-Experimental connector-backed platforms use the generic relay adapter in `gateway/relay/` instead of a direct platform module. When `GATEWAY_RELAY_URL` or `gateway.relay_url` is configured, the gateway registers the `relay` platform, dials the connector over an outbound WebSocket, and receives `descriptor`, `inbound`, and `interrupt_inbound` frames on that same socket. The connector advertises a `CapabilityDescriptor`; Hermes can send normal outbound replies, token-less `follow_up` operations, and interrupt frames back through the relay. The source-grounded wire contract lives in [Relay ↔ Connector contract](relay-connector-contract.md).
+Experimental connector-backed platforms use the generic relay adapter in `gateway/relay/` instead of a direct platform module. When `GATEWAY_RELAY_URL` or `gateway.relay_url` is configured, the gateway registers the `relay` platform, dials the connector over an outbound WebSocket, and receives `descriptor`, `inbound`, and `interrupt_inbound` frames on that same socket. The connector advertises a `CapabilityDescriptor`; Aurora can send normal outbound replies, token-less `follow_up` operations, and interrupt frames back through the relay. The source-grounded wire contract lives in [Relay ↔ Connector contract](relay-connector-contract.md).
 
 Adapters implement a common interface:
 - `connect()` / `disconnect()` — lifecycle management
@@ -809,7 +809,7 @@ Outgoing deliveries (`gateway/delivery.py`) handle:
 
 - **Direct reply** — send response back to the originating chat
 - **Home channel delivery** — route cron job outputs and background results to a configured home channel
-- **Explicit target delivery** — the send engine specifying `telegram:-1001234567890`, exposed via the [`hermes send` CLI](../guides/pipe-script-output.md) for shell scripts and via cron `deliver:` targets
+- **Explicit target delivery** — the send engine specifying `telegram:-1001234567890`, exposed via the [`aurora send` CLI](../guides/pipe-script-output.md) for shell scripts and via cron `deliver:` targets
 - **Cross-platform delivery** — deliver to a different platform than the originating message
 
 Cron job deliveries are NOT mirrored into gateway session history — they live in their own cron session only. This is a deliberate design choice to avoid message alternation violations.
@@ -831,7 +831,7 @@ Gateway hooks are Python modules that respond to lifecycle events:
 | `agent:end` | Agent finishes and returns response |
 | `command:*` | Any slash command is executed |
 
-Hooks are discovered from `<profile home>/hooks/` (user-installed; `~/.hermes/hooks/` for the default profile, one directory per served profile under multiplexing — paths resolve at call time, never at import). Each hook is a directory with a `HOOK.yaml` manifest and `handler.py`.
+Hooks are discovered from `<profile home>/hooks/` (user-installed; `~/.aurora/hooks/` for the default profile, one directory per served profile under multiplexing — paths resolve at call time, never at import). Each hook is a directory with a `HOOK.yaml` manifest and `handler.py`.
 
 ## Memory Provider Integration
 
@@ -868,17 +868,17 @@ The gateway runs periodic maintenance alongside message handling:
 
 The gateway runs as a long-lived process, managed via:
 
-- `hermes gateway start` / `hermes gateway stop` — manual control
+- `aurora gateway start` / `aurora gateway stop` — manual control
 - `systemctl` (Linux) or `launchctl` (macOS) — service management
-- PID file at `~/.hermes/gateway.pid` — profile-scoped process tracking
+- PID file at `~/.aurora/gateway.pid` — profile-scoped process tracking
 
-**Profile-scoped vs global**: `start_gateway()` uses profile-scoped PID files. Standalone (one gateway per profile), `hermes -p x gateway stop` stops only that profile's gateway. Under multiplexing there is ONE gateway process per host, owned by whichever profile launched it (`gateway/host_rendezvous.py` publishes its PID, home and served set; `gateway/host_attach.py` is the attach/rescan/refuse decision every lifecycle verb goes through): `hermes gateway stop` on the owner takes every served profile down, and `hermes -p x gateway stop` for a served secondary refuses with exit 78 (it has no gateway of its own). A second `gateway run` for a served profile attaches and exits 0 — under a service supervisor it exits 75 (EX_TEMPFAIL) instead, so the redundant unit is RETRIED rather than parked: "someone else serves me right now" is a runtime observation that ends when that process does, and 78 (which systemd, s6 and launchd all treat as permanent) would strand the profile. ATTACH requires a live `identify` answer from the owner; a rendezvous record with nothing answering behind it proves an owner exists but never that it serves you, so it yields a transient refusal (exit 75), never an attach. An owner that answers `multiplex: False` to the rescan is another profile's *standalone* gateway, not a multiplexer that excluded you: the verb starts this profile's own gateway beside it (the one-process-per-profile topology), it does not refuse — refusing there exited 78 and parked every launchd unit but the first to claim the host lock. `hermes gateway stop --all` uses global `ps aux` scanning to kill all gateway processes (used during updates). Liveness is decided by `gateway.status.live_gateway_pid_for_home` (PID + start-time fingerprint), never bare PID existence.
+**Profile-scoped vs global**: `start_gateway()` uses profile-scoped PID files. Standalone (one gateway per profile), `aurora -p x gateway stop` stops only that profile's gateway. Under multiplexing there is ONE gateway process per host, owned by whichever profile launched it (`gateway/host_rendezvous.py` publishes its PID, home and served set; `gateway/host_attach.py` is the attach/rescan/refuse decision every lifecycle verb goes through): `aurora gateway stop` on the owner takes every served profile down, and `aurora -p x gateway stop` for a served secondary refuses with exit 78 (it has no gateway of its own). A second `gateway run` for a served profile attaches and exits 0 — under a service supervisor it exits 75 (EX_TEMPFAIL) instead, so the redundant unit is RETRIED rather than parked: "someone else serves me right now" is a runtime observation that ends when that process does, and 78 (which systemd, s6 and launchd all treat as permanent) would strand the profile. ATTACH requires a live `identify` answer from the owner; a rendezvous record with nothing answering behind it proves an owner exists but never that it serves you, so it yields a transient refusal (exit 75), never an attach. An owner that answers `multiplex: False` to the rescan is another profile's *standalone* gateway, not a multiplexer that excluded you: the verb starts this profile's own gateway beside it (the one-process-per-profile topology), it does not refuse — refusing there exited 78 and parked every launchd unit but the first to claim the host lock. `aurora gateway stop --all` uses global `ps aux` scanning to kill all gateway processes (used during updates). Liveness is decided by `gateway.status.live_gateway_pid_for_home` (PID + start-time fingerprint), never bare PID existence.
 
 ## Background process notifications
 
 `terminal(background=true, notify_on_complete=true)` starts a gateway watcher that detects
 completion and triggers a new agent turn. Verbosity: `display.background_process_notifications`
-(or `HERMES_BACKGROUND_NOTIFICATIONS`): `concise` (default; one line, failures append an output
+(or `AURORA_BACKGROUND_NOTIFICATIONS`): `concise` (default; one line, failures append an output
 tail), `all` (running updates + final raw output), `result` (final raw output only), `error`
 (final raw output only on non-zero exit), `off`.
 
@@ -915,7 +915,7 @@ briefs are labelled user turns appended at a turn boundary, preserving role alte
 
 ## `/login` (off-turn, paired DM only)
 
-`/login` is registered in `hermes_cli/commands.py` with `busy_policy="dispatch"` and
+`/login` is registered in `aurora_cli/commands.py` with `busy_policy="dispatch"` and
 `desktop="settings"`, listed in `run_busy.py::_PLAIN_COMMANDS`, and handled by
 `GatewayLoginCommandsMixin` (`gateway/slash_commands_login.py`). It refuses outside a paired DM:
 `chat_type in {"dm","private"}`, a truthy `chat_id`, and a platform whose `"dm"` really is a paired
@@ -947,7 +947,7 @@ an expiring access token that nothing refreshes.
 
 ## Multiplexed profiles
 
-With `gateway.multiplex_profiles: true` one process serves the default profile plus every live directory under `profiles/` (`hermes_cli/profiles.py::profiles_to_serve(multiplex=True)`). `os.environ` and module globals hold the **launch** profile's values, so every activity for a secondary binds its scope explicitly — a profile is home + secret scope + terminal scope together:
+With `gateway.multiplex_profiles: true` one process serves the default profile plus every live directory under `profiles/` (`aurora_cli/profiles.py::profiles_to_serve(multiplex=True)`). `os.environ` and module globals hold the **launch** profile's values, so every activity for a secondary binds its scope explicitly — a profile is home + secret scope + terminal scope together:
 
 | Activity | Binding |
 |---|---|
@@ -956,7 +956,7 @@ With `gateway.multiplex_profiles: true` one process serves the default profile p
 | Shutdown | `gateway/run_shutdown.py::_finalize_session` |
 | Post-turn media delivery | `gateway/platforms/base.py::_media_delivery_scope` |
 | Cron tick | `cron/scheduler_provider.py::_profile_cron_scope(home)` (one ticker, profiles in sequence) |
-| Child processes (`hermes -p X` workers, relay turns, browser drivers) | `tools/environments/local.py::served_profile_child_env` |
+| Child processes (`aurora -p X` workers, relay turns, browser drivers) | `tools/environments/local.py::served_profile_child_env` |
 | Background threads | `agent/memory_provider.py::spawn_context_thread` |
 
 Secret reads fail closed (`agent.secret_scope.get_secret` raises `UnscopedSecretError`) only after `set_multiplex_active(True)`, which the gateway, cron, `gateway migrate` and the Desktop/dashboard `serve` backend set. Adapter YAML never reaches `os.environ` under multiplex: `gateway/platforms/_shared.py::apply_yaml_bridge` seeds `PlatformConfig.extra` and skips the environ write under a secondary's scope; gates read through `platform_gate_env`. Shared-ingress platforms (WhatsApp bridge, Relay) run on the default profile only; a secondary that enables one is logged once and stamped into runtime status (`run_adapters.py::_note_unserved_secondary_platform`). Per-profile isolation as the user sees it: [Multi-profile gateways § What is isolated per profile](../user-guide/multi-profile-gateways.md#what-is-isolated-per-profile).
@@ -976,7 +976,7 @@ Plugins that load after the adapters connected (install/enable from the CLI, Des
   client (keyed `(plugin, qualname)` because a force reload hands back new function objects). Telegram
   hoists the added handlers ahead of core's catch-alls; Slack also re-registers missing
   `register_slack_action_handler` callbacks once per `AsyncApp`.
-- **`reload-plugins` control verb** — other processes (`hermes plugins install`, `hermes serve`) ask the
+- **`reload-plugins` control verb** — other processes (`aurora plugins install`, `aurora serve`) ask the
   running gateway to force-rescan the requested (served) home; the answer carries `plugins`, per-plugin
   `activations` and `adapters_rewired`, so the caller can say "active now" truthfully.
 - **Scope limit** — handlers only. Tools and system-prompt sections of a late plugin wait for the next

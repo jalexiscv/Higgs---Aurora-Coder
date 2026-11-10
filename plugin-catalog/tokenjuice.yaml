@@ -6,7 +6,7 @@ description: "Compact successful terminal output locally before model consumptio
 maintainer: vincentkoc
 tier: community
 category: tools
-requires_hermes: ">=0.22.5"
+requires_aurora: ">=0.22.5"
 docs_url: https://github.com/vincentkoc/tokenjuice/blob/825eaa98214c73174156eea582042e1f8b6fdc9a/src/python/tokenjuice_integrations/README.md
 version: "0.10.0"
 capabilities:

@@ -4,7 +4,7 @@
  * reach runBootstrap unseen.
  */
 export async function localBootstrapNeeded(): Promise<boolean> {
-  const probe = window.hermesDesktop?.probeLocalBackend
+  const probe = window.auroraDesktop?.probeLocalBackend
 
   if (!probe) {
     return true

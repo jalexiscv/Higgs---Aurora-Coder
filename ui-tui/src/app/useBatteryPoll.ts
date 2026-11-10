@@ -1,4 +1,4 @@
-import type { SystemBatteryResponse } from '@hermes/shared/gateway-types'
+import type { SystemBatteryResponse } from '@aurora/shared/gateway-types'
 import { useStore } from '@nanostores/react'
 import { useEffect } from 'react'
 

@@ -5,7 +5,7 @@ description: Fashion design toolkit for drafting ideas, tech packs, size sheets,
 maintainer: priticolours
 tier: community
 category: tools
-requires_hermes: ">=0.8.0"
+requires_aurora: ">=0.8.0"
 version: "1.0.0"
 capabilities:
   provides_tools:

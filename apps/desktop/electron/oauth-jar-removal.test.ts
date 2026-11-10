@@ -71,23 +71,23 @@ it('removing a gateway that went secondary -> primary clears both jars, so a re-
   expect(privateJar).not.toBe(LEGACY_OAUTH_PARTITION)
   expect(resolveOauthPartition(URL_A, { registry: primary })).toBe(LEGACY_OAUTH_PARTITION)
 
-  jars.seed(privateJar, 'gw.example.invalid', 'hermes_session')
-  jars.seed(LEGACY_OAUTH_PARTITION, 'gw.example.invalid', 'hermes_session')
+  jars.seed(privateJar, 'gw.example.invalid', 'aurora_session')
+  jars.seed(LEGACY_OAUTH_PARTITION, 'gw.example.invalid', 'aurora_session')
   jars.seed(LEGACY_OAUTH_PARTITION, 'portal.nousresearch.com', 'portal_session')
   const otherJar = resolveOauthPartition(other.url, { registry: primary })
-  jars.seed(otherJar, 'other.example.invalid', 'hermes_session')
+  jars.seed(otherJar, 'other.example.invalid', 'aurora_session')
 
   await jars.clean('remote-a', primary)
 
   // Re-added as a secondary (recycled id) or as primary: no sign-in either way.
   expect(jars.names(resolveOauthPartition(URL_A, { registry: secondary }))).toEqual([])
   expect(jars.names(LEGACY_OAUTH_PARTITION)).toEqual(['portal.nousresearch.com:portal_session'])
-  expect(jars.names(otherJar)).toEqual(['other.example.invalid:hermes_session'])
+  expect(jars.names(otherJar)).toEqual(['other.example.invalid:aurora_session'])
   expect(jars.mirrorCleared).toEqual([`${privateJar}|*`, `${LEGACY_OAUTH_PARTITION}|${URL_A}`])
 })
 
 it('a removal another writer (the Webapp) made reaches the cleanup with the list that still held it', async () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-oauth-jar-removal-'))
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'aurora-oauth-jar-removal-'))
   onTestFinished(() => fs.rmSync(root, { force: true, recursive: true }))
   const userData = path.join(root, 'userData')
   fs.mkdirSync(userData)
@@ -102,9 +102,9 @@ it('a removal another writer (the Webapp) made reaches the cleanup with the list
   jars.seed(
     resolveOauthPartition(URL_A, { registry: list('local', [gateway]) }),
     'gw.example.invalid',
-    'hermes_session'
+    'aurora_session'
   )
-  jars.seed(LEGACY_OAUTH_PARTITION, 'gw.example.invalid', 'hermes_session')
+  jars.seed(LEGACY_OAUTH_PARTITION, 'gw.example.invalid', 'aurora_session')
   let cleaned: Promise<void> = Promise.resolve()
 
   // main.ts's watcher handler, removal branch.
@@ -144,9 +144,9 @@ it("a connection.json per-profile route on the removed gateway's host keeps its 
   const config = { remote: {}, profiles: { coder: { mode: 'remote', url: 'https://gw.example.invalid:9000' } } }
   const jars = cookieJars(() => ['https://portal.nousresearch.com', ...connectionConfigUrls(config)])
   const secondary = { ...gateway, url: 'https://gw.example.invalid:8000' }
-  jars.seed(LEGACY_OAUTH_PARTITION, 'gw.example.invalid', 'hermes_session')
+  jars.seed(LEGACY_OAUTH_PARTITION, 'gw.example.invalid', 'aurora_session')
 
   await jars.clean('remote-a', list('local', [secondary]))
 
-  expect(jars.names(LEGACY_OAUTH_PARTITION)).toEqual(['gw.example.invalid:hermes_session'])
+  expect(jars.names(LEGACY_OAUTH_PARTITION)).toEqual(['gw.example.invalid:aurora_session'])
 })

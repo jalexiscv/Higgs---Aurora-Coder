@@ -1,6 +1,6 @@
-# Self-contained Hermes TUI, compiled by the same recipe as pnpm.
-{ hermesNpmLib, ... }:
-hermesNpmLib.buildPnpmPackage {
+# Self-contained Aurora TUI, compiled by the same recipe as pnpm.
+{ auroraNpmLib, ... }:
+auroraNpmLib.buildPnpmPackage {
   dirs = [
     "ui-tui"
     "apps/shared"
@@ -19,8 +19,8 @@ hermesNpmLib.buildPnpmPackage {
 
   installPhase = ''
     runHook preInstall
-    mkdir -p $out/lib/hermes-tui
-    cp -r "$TMPDIR/tui-product/." $out/lib/hermes-tui/
+    mkdir -p $out/lib/aurora-tui
+    cp -r "$TMPDIR/tui-product/." $out/lib/aurora-tui/
     runHook postInstall
   '';
 }

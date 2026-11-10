@@ -33,7 +33,7 @@ _run_store_lock = threading.Lock()
 _bound_server = None
 _service = None
 
-_WORKER_UNAVAILABLE = "Group Chat worker is unavailable. Restart the Hermes gateway and try again."
+_WORKER_UNAVAILABLE = "Group Chat worker is unavailable. Restart the Aurora gateway and try again."
 _DRIVER_UNAVAILABLE = "hosted room driver is unavailable"
 
 
@@ -88,7 +88,7 @@ def get_hosted_room_service():
 
 
 def _profile_name() -> str:
-    return (os.getenv("HERMES_PROFILE") or "default").strip() or "default"
+    return (os.getenv("AURORA_PROFILE") or "default").strip() or "default"
 
 
 def _current_profile() -> str:
@@ -335,7 +335,7 @@ def _(rid, params: dict, service) -> dict:
     member_id = str(params.get("member_id") or "")
 
     def owe() -> None:
-        # Owed at the URL this handler probes (``hermes serve`` takes the caller's URL, as it always
+        # Owed at the URL this handler probes (``aurora serve`` takes the caller's URL, as it always
         # has), so a grant it was handed is never forgotten while it could still pass.
         service.owe_grant_revoke(room_id=room_id, member_id=member_id, target_url=target_url, grant=grant)
     from tui_gateway.hosted_room_service import route_publication_lock
@@ -348,7 +348,7 @@ def _(rid, params: dict, service) -> dict:
 
     @contextlib.contextmanager
     def publication():
-        from hermes_state_runtime import RuntimeStoreError
+        from aurora_state_runtime import RuntimeStoreError
         try:
             with route_publication_lock(service):
                 yield
@@ -598,7 +598,7 @@ def _(rid, params: dict, service) -> dict:
 def _(rid, params: dict) -> dict:
     """Discard one indeterminate room task: forwarded to the gateway that owns the room, the only
     runtime that offers Discard; a room this backend drives itself never shows the action."""
-    return _err(rid, 4127, "Only the Hermes gateway that owns this Group Chat can discard its work.")
+    return _err(rid, 4127, "Only the Aurora gateway that owns this Group Chat can discard its work.")
 
 
 def _passthrough(

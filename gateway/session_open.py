@@ -27,7 +27,7 @@ _UNBOUNDED_TURN_WAIT_S = 5.0
 def _reason(db, session_id):
     """``create`` while the conversation has no messages yet, else ``resume``. A local session's
     messages live on its current transcript (a reset moves them to a child row), named by its receipt."""
-    from hermes_state_local import local_receipt
+    from aurora_state_local import local_receipt
     try:
         target = local_receipt(db, session_id)['entry']['session_id']
     except Exception:  # health: allow BLE001 -- no readable receipt: the logical row is the transcript
@@ -63,13 +63,13 @@ class _Open:
         self.started, self.ahead = True, None  # a session reopened nonstop never chains finished deliveries
         while self.unsettled:
             await asyncio.wait(set(self.unsettled))
-        from hermes_cli.lifecycle import hook_known_unused
-        from hermes_constants import reset_hermes_home_override, set_hermes_home_override
-        token = set_hermes_home_override(self.ref.profile_id)
+        from aurora_cli.lifecycle import hook_known_unused
+        from aurora_constants import reset_aurora_home_override, set_aurora_home_override
+        token = set_aurora_home_override(self.ref.profile_id)
         try:  # the owning profile's loaded plugins, read without discovery or config: no consumer, no thread
             unused = hook_known_unused('on_session_open')
         finally:
-            reset_hermes_home_override(token)
+            reset_aurora_home_override(token)
         if self.opened is not None and not unused:
             from gateway.session_commands import _on_own_thread
             await _on_own_thread(lambda: self._deliver(*self.opened))
@@ -78,8 +78,8 @@ class _Open:
         from gateway.run import _profile_runtime_scope
         from gateway.session_context import scoped_session_key
         from gateway.session_policy import SURFACES
-        from hermes_cli.lifecycle import has_hook, invoke_hook
-        from hermes_cli.plugins import _resolve_hook_callback_timeout
+        from aurora_cli.lifecycle import has_hook, invoke_hook
+        from aurora_cli.plugins import _resolve_hook_callback_timeout
         sid = self.ref.session_id
         try:
             with _profile_runtime_scope(Path(self.ref.profile_id)), scoped_session_key(route):

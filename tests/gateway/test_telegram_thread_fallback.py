@@ -1,6 +1,6 @@
 """Tests for Telegram topic/thread routing fallbacks.
 
-Supergroup forum topics route with ``message_thread_id``. Hermes-created
+Supergroup forum topics route with ``message_thread_id``. Aurora-created
 private DM topic lanes are different: live Telegram testing showed they only
 stay in the expected lane when sends include the private topic
 ``message_thread_id``. If a reply anchor is rejected, retries must retain that
@@ -304,7 +304,7 @@ async def test_gateway_runner_busy_ack_replies_to_triggering_message_for_telegra
     """GatewayRunner's duplicate thread metadata must match the base helper."""
     from gateway import run as gateway_run
 
-    monkeypatch.setattr(gateway_run, "_hermes_home", tmp_path)
+    monkeypatch.setattr(gateway_run, "_aurora_home", tmp_path)
     GatewayRunner = gateway_run.GatewayRunner
 
     class BusyAdapter:
@@ -860,7 +860,7 @@ async def test_reply_into_dead_private_topic_reaches_chat_root_and_prunes_bindin
     """Topics turned off client-side: a private-topic reply is tried by thread id, then lands in the
     chat root without the dead topic's anchor, and the stale binding is pruned so inbound recovery
     stops steering into it."""
-    from hermes_state import SessionDB
+    from aurora_state import SessionDB
 
     db = SessionDB(db_path=tmp_path / "state.db")
     db.enable_telegram_topic_mode(chat_id="123", user_id="123")
@@ -963,7 +963,7 @@ _GATEWAY_META = {**_GONE_META, "direct_messages_topic_id": "20197"}
 
 
 def _topic_db(tmp_path):
-    from hermes_state import SessionDB
+    from aurora_state import SessionDB
 
     db = SessionDB(db_path=tmp_path / "state.db")
     db.enable_telegram_topic_mode(chat_id="123", user_id="123")
@@ -1101,7 +1101,7 @@ async def test_forum_topic_deleted_wording_is_not_a_dead_topic_fallback():
 
 @pytest.mark.asyncio
 async def test_private_topic_thread_not_found_flake_retries_same_thread_first():
-    """A one-off "thread not found" in a Hermes private topic lane retries the same thread_id; it never moves the
+    """A one-off "thread not found" in an Aurora private topic lane retries the same thread_id; it never moves the
     message to the native DM-topic id (#87051) when the lane is alive."""
     adapter = _make_adapter()
     call_log = []
@@ -1143,7 +1143,7 @@ async def test_text_reply_with_reply_message_not_found_wording_drops_only_the_an
 
 @pytest.mark.asyncio
 async def test_private_topic_media_flake_retries_same_thread_first(tmp_path):
-    """Media follows the text rule: a one-off "thread not found" retries the same thread_id, so a live Hermes lane
+    """Media follows the text rule: a one-off "thread not found" retries the same thread_id, so a live Aurora lane
     neither moves to the native DM-topic id (#87051) nor loses its binding."""
     db = _topic_db(tmp_path)
     adapter = _make_adapter()

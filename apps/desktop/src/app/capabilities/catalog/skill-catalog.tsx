@@ -2,12 +2,12 @@ import { useQuery } from '@tanstack/react-query'
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { capabilityScoped } from '@/api/client'
+import { getOfficialSkills, getSkillHubUpdates, type ProfileScope, profileScopeKey } from '@/aurora'
 import { Loader } from '@/components/ui/loader'
-import { getOfficialSkills, getSkillHubUpdates, type ProfileScope, profileScopeKey } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { HUB_SOURCES_KEY, installHubSkill, notifyHubActionFailed, OFFICIAL_SKILLS_KEY } from '@/store/hub-actions'
 import { notify } from '@/store/notifications'
-import type { SkillHubSourcesResponse, SkillInfo } from '@/types/hermes'
+import type { SkillHubSourcesResponse, SkillInfo } from '@/types/aurora'
 
 import { skillSearchTerms, usageOf } from '../skills/skills-data'
 
@@ -90,7 +90,7 @@ function ScopedSkillCatalog({
     // lock map rather than guessing identity from a community skill's name.
     // The older getSkillHubSources helper cannot carry a connection pin.
     queryFn: () =>
-      window.hermesDesktop.api<SkillHubSourcesResponse>({
+      window.auroraDesktop.api<SkillHubSourcesResponse>({
         ...capabilityScoped(profile),
         path: '/api/skills/hub/sources',
         timeoutMs: 45_000

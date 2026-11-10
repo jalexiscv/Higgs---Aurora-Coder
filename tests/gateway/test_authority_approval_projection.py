@@ -12,8 +12,8 @@ import pytest
 
 from gateway.session_authority import LiveSession, SessionAuthority
 from gateway.session_controls import AuthorityConnection
-from hermes_state import SessionDB
-from hermes_state_runtime import begin_runtime_epoch
+from aurora_state import SessionDB
+from aurora_state_runtime import begin_runtime_epoch
 
 
 @pytest.mark.asyncio

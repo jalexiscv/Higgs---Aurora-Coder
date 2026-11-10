@@ -6,8 +6,8 @@ import json
 
 # Keep this list aligned with the Desktop bundle banner and channel decoder.
 _ALLOWED = frozenset({
-    "HERMES_HOME", "HERMES_DATA_DIR_SUFFIX", "HERMES_DESKTOP_USER_DATA_DIR",
-    "HERMES_SHARED_AUTH_DIR", "HERMES_PREVIEW_FULL_CONNECTORS",
+    "AURORA_HOME", "AURORA_DATA_DIR_SUFFIX", "AURORA_DESKTOP_USER_DATA_DIR",
+    "AURORA_SHARED_AUTH_DIR", "AURORA_PREVIEW_FULL_CONNECTORS",
 })
 
 

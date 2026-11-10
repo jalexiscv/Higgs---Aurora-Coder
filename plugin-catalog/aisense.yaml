@@ -20,7 +20,7 @@ description: >-
 maintainer: aisenseapi
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_aurora: ">=0.22.0"
 docs_url: https://github.com/aisenseapi/aisense-free-public-rest-apis/blob/3a646585c2ab979da025ba057bd5b9fb049c0fba/agent-plugin/README.md
 version: "1.0.0"
 platforms: []

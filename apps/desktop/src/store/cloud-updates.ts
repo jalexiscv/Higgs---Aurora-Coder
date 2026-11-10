@@ -1,5 +1,5 @@
 /**
- * Hermes Cloud owns updates for its agents: it replaces the agent's image, so
+ * Aurora Cloud owns updates for its agents: it replaces the agent's image, so
  * no in-app updater may be offered there. Two shapes reach a Cloud agent:
  *
  * - the Webapp served BY a Cloud agent (the tab's own origin is the agent):
@@ -8,28 +8,28 @@
  *   the Desktop app on this machine still updates itself.
  */
 
-import { isHermesCloudUrl } from '@hermes/shared'
+import { isAuroraCloudUrl } from '@aurora/shared'
 import { computed } from 'nanostores'
 
-import type { HermesConnection } from '@/global'
-import { servedByHermesCloud } from '@/lib/hermes-cloud-host'
+import type { AuroraConnection } from '@/global'
+import { servedByAuroraCloud } from '@/lib/aurora-cloud-host'
 import type { UpdateTarget } from '@/lib/update-copy'
 import { $connection } from '@/store/session'
 
-function connectedToHermesCloud(connection: HermesConnection | null): boolean {
-  return connection?.mode === 'remote' && (connection.remoteKind === 'cloud' || isHermesCloudUrl(connection.baseUrl))
+function connectedToAuroraCloud(connection: AuroraConnection | null): boolean {
+  return connection?.mode === 'remote' && (connection.remoteKind === 'cloud' || isAuroraCloudUrl(connection.baseUrl))
 }
 
-/** Whether Hermes Cloud owns updates for `target` under `connection`. */
-export function cloudOwnsUpdates(target: UpdateTarget, connection: HermesConnection | null = $connection.get()): boolean {
-  return servedByHermesCloud() || (target === 'backend' && connectedToHermesCloud(connection))
+/** Whether Aurora Cloud owns updates for `target` under `connection`. */
+export function cloudOwnsUpdates(target: UpdateTarget, connection: AuroraConnection | null = $connection.get()): boolean {
+  return servedByAuroraCloud() || (target === 'backend' && connectedToAuroraCloud(connection))
 }
 
 /**
- * The target a generic "Update Hermes" command acts on: the connected backend
- * in remote mode, unless Hermes Cloud owns it — then this machine's own app.
+ * The target a generic "Update Aurora" command acts on: the connected backend
+ * in remote mode, unless Aurora Cloud owns it — then this machine's own app.
  */
-export function updateTargetFor(connection: HermesConnection | null): UpdateTarget {
+export function updateTargetFor(connection: AuroraConnection | null): UpdateTarget {
   return connection?.mode === 'remote' && !cloudOwnsUpdates('backend', connection) ? 'backend' : 'client'
 }
 

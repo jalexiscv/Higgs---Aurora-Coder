@@ -40,7 +40,7 @@ vi.mock('@/store/profile', () => ({
 }))
 
 it('reports single profile changes to main and never pushes its whole map', async () => {
-  localStorage.setItem('hermes.desktop.lastProfileByConnection', JSON.stringify({ homelab: 'work', 'work-vps': 'ops' }))
+  localStorage.setItem('aurora.desktop.lastProfileByConnection', JSON.stringify({ homelab: 'work', 'work-vps': 'ops' }))
 
   const profile = {
     importConnections: vi.fn(async () => undefined),
@@ -49,7 +49,7 @@ it('reports single profile changes to main and never pushes its whole map', asyn
     rememberConnections: vi.fn(async () => undefined)
   }
 
-  ;(window as { hermesDesktop?: unknown }).hermesDesktop = { profile }
+  ;(window as { auroraDesktop?: unknown }).auroraDesktop = { profile }
 
   const { _resetConnectionsForTests, initializeConnectionsRegistry } = await import('./connections')
 
@@ -71,5 +71,5 @@ it('reports single profile changes to main and never pushes its whole map', asyn
   expect(profile.rememberConnection).toHaveBeenCalledTimes(1)
   expect(profile.rememberConnections).not.toHaveBeenCalled()
 
-  delete (window as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as { auroraDesktop?: unknown }).auroraDesktop
 })

@@ -28,7 +28,7 @@ function fixture() {
     sender,
     delivered,
     request(payload: unknown, frame: object = sender.mainFrame, contents: object = sender) {
-      ipc.emit('hermes:stream-work-wake', { sender: contents as WebContents, senderFrame: frame }, payload)
+      ipc.emit('aurora:stream-work-wake', { sender: contents as WebContents, senderFrame: frame }, payload)
     }
   }
 }

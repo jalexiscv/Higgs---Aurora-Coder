@@ -15,12 +15,12 @@ from gateway.runtime_ownership import process_ownership
 
 
 def _reserve_homes(tmp_path, monkeypatch, names=('beta',)):
-    root = tmp_path / '.hermes'
+    root = tmp_path / '.aurora'
     root.mkdir(mode=0o700)
     monkeypatch.setattr(Path, 'home', lambda: tmp_path)
-    monkeypatch.setenv('HERMES_HOME', str(root))
-    import hermes_state
-    monkeypatch.setattr(hermes_state, 'DEFAULT_DB_PATH', hermes_state._IMPORT_DEFAULT_DB_PATH)
+    monkeypatch.setenv('AURORA_HOME', str(root))
+    import aurora_state
+    monkeypatch.setattr(aurora_state, 'DEFAULT_DB_PATH', aurora_state._IMPORT_DEFAULT_DB_PATH)
     homes = [('default', root)]
     for name in names:
         home = root / 'profiles' / name
@@ -43,7 +43,7 @@ async def test_secondary_profile_child_transcript_reads_its_own_store_in_its_sco
     from gateway.session_authorities import owner_scope
     from gateway.session_controls import AuthorityConnection
     from gateway.session_local import create_local_session
-    from hermes_constants import get_hermes_home
+    from aurora_constants import get_aurora_home
 
     monkeypatch.setattr(run, '_load_gateway_config', lambda *a: {
         'platform_toolsets': {'cli': [], 'tui': []},
@@ -58,7 +58,7 @@ async def test_secondary_profile_child_transcript_reads_its_own_store_in_its_sco
     read_transcript = session_stored_reads.read_transcript
 
     def observed(*args, **kwargs):
-        seen_homes.append(Path(get_hermes_home()).resolve())
+        seen_homes.append(Path(get_aurora_home()).resolve())
         return read_transcript(*args, **kwargs)
 
     monkeypatch.setattr(session_stored_reads, 'read_transcript', observed)

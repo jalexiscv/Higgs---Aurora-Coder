@@ -1,4 +1,4 @@
-import type { ConnectorAccountRow } from '@hermes/shared'
+import type { ConnectorAccountRow } from '@aurora/shared'
 
 export type ConnectorResidency = 'hosted' | 'local'
 

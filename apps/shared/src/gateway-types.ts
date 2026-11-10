@@ -9,7 +9,7 @@ import type {
   TranscriptMessage,
   Usage
 } from './gateway-events.js'
-import type { HermesSkin } from './skin.js'
+import type { AuroraSkin } from './skin.js'
 
 /** The gateway's `session.info` / resume `info` block — generated from `tui_gateway/contracts`,
  *  plus the canonical-authority fields the legacy contract does not carry yet
@@ -35,9 +35,9 @@ export interface SlashCategory {
   pairs: [string, string][]
 }
 
-/** The cross-surface skin contract (canonical shape in `@hermes/shared`).
+/** The cross-surface skin contract (canonical shape in `@aurora/shared`).
  *  Includes the paired light_colors/dark_colors overlays from #20379. */
-export type GatewaySkin = HermesSkin
+export type GatewaySkin = AuroraSkin
 
 /** Generation-bound shared control published by a canonical gateway
  *  (`gateway/session_pending_controls.py::register` / `register_clarify`). Answered through
@@ -116,7 +116,7 @@ export interface SlashExecResponse {
 
 // ── Remote Spending (Phase 2b) ───────────────────────────────────────
 
-// Wire shapes now live in @hermes/shared for reuse by TypeScript clients.
+// Wire shapes now live in @aurora/shared for reuse by TypeScript clients.
 export type {
   BillingAutoReload,
   BillingBlock,

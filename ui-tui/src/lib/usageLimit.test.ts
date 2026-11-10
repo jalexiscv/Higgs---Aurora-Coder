@@ -1,4 +1,4 @@
-import type { ModelOptionProvider } from '@hermes/shared/gateway-events'
+import type { ModelOptionProvider } from '@aurora/shared/gateway-events'
 import {
   blockingGauge,
   formatResetsIn,
@@ -6,7 +6,7 @@ import {
   planBlocks,
   planLimitLine,
   usageTag
-} from '@hermes/shared/plan-usage'
+} from '@aurora/shared/plan-usage'
 import { describe, expect, it } from 'vitest'
 
 import { usageLimitDialog } from './billingDialog.js'

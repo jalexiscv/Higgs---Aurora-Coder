@@ -1,17 +1,17 @@
 import { atom } from 'nanostores'
 
-import type { DesktopOauthLoginOptions, DesktopOauthLoginResult, HermesApiRequest } from '@/global'
+import type { AuroraApiRequest, DesktopOauthLoginOptions, DesktopOauthLoginResult } from '@/global'
 import type { BrowserSavedConnections } from '@/lib/browser-saved-connections'
 
 /**
  * Signing in to an oauth-mode saved gateway from the Webapp. The serving gateway runs the native
- * PKCE flow itself (`hermes_cli/gateway_connections_oauth.py`) and keeps the tokens; this tab only
+ * PKCE flow itself (`aurora_cli/gateway_connections_oauth.py`) and keeps the tokens; this tab only
  * opens the other gateway's sign-in page. Its redirect comes back to the serving machine's
  * loopback, which a browser on another machine cannot reach: that browser lands on its own
  * loopback, and the address it shows is pasted here (`$webappOauthPending`) to finish.
  */
 
-type Api = <T>(request: HermesApiRequest) => Promise<T>
+type Api = <T>(request: AuroraApiRequest) => Promise<T>
 
 export interface WebappOauthPending {
   connectionId: string

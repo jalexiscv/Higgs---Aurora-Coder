@@ -20,7 +20,7 @@ def test_macos_record_binds_filename_version_and_provenance(tmp_path, monkeypatc
     request = channel_request(commit, sequence=6) if channel else None
     tag = None if channel else "v1.2.3"
     version = request["version"] if request else "1.2.3"
-    identity = request["identity"]["appId"] if request else "ai.hermes.test"
+    identity = request["identity"]["appId"] if request else "ai.aurora.test"
     stamp = ({"source": "channel-build", "channelBuild": request, "commit": commit, "tag": None}
              if request else {"commit": commit, "tag": tag, "baseVersion": version})
     root = tmp_path / "release"
@@ -72,8 +72,8 @@ PAYLOAD = "Product.app/Contents/Resources/payload/"
 UNIX = 16  # a ZIP entry's Unix mode is the high word of external_attr
 OWNER_WRITABLE = [
     (PAYLOAD, (stat.S_IFDIR | 0o755) << UNIX, b""),
-    (PAYLOAD + "hermes/__pycache__/cli.cpython-313.pyc", (stat.S_IFREG | 0o644) << UNIX, b"pyc"),
-    (PAYLOAD + "hermes/cli.py", (stat.S_IFREG | 0o644) << UNIX, b"py"),
+    (PAYLOAD + "aurora/__pycache__/cli.cpython-313.pyc", (stat.S_IFREG | 0o644) << UNIX, b"pyc"),
+    (PAYLOAD + "aurora/cli.py", (stat.S_IFREG | 0o644) << UNIX, b"py"),
     (PAYLOAD + "bin/python3", (stat.S_IFLNK | 0o755) << UNIX, b"python3.13"),
     # Only an MS-DOS attribute (archive), as a Windows archiver writes it: no Unix mode.
     (PAYLOAD + "no-unix-mode.txt", 0x20, b"dos"),
@@ -86,7 +86,7 @@ def record_mac_update(tmp_path, monkeypatch, extra=()):
     (root / "mac" / "Product.app").mkdir(parents=True)
     with zipfile.ZipFile(root / "Product-1.2.3-mac-arm64.zip", "w") as archive:
         archive.writestr("Product.app/Contents/Info.plist", plistlib.dumps({
-            "CFBundleIdentifier": "ai.hermes.test", "CFBundleShortVersionString": "1.2.3",
+            "CFBundleIdentifier": "ai.aurora.test", "CFBundleShortVersionString": "1.2.3",
         }))
         archive.writestr("Product.app/Contents/Resources/install-stamp.json",
                          json.dumps({"commit": commit, "tag": "v1.2.3", "baseVersion": "1.2.3"}))

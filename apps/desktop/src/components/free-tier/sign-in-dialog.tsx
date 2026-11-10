@@ -5,6 +5,7 @@ import { type ReactNode, useEffect, useId } from 'react'
 import { useGatewayRequest } from '@/app/gateway/hooks/use-gateway-request'
 import { CAPABILITIES_ROUTE } from '@/app/routes'
 import type { ModelSelection } from '@/app/shell/model-menu-panel'
+import { getGlobalModelOptions } from '@/aurora'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -14,7 +15,6 @@ import {
   DialogTitle,
   preventCloseButtonAutoFocus
 } from '@/components/ui/dialog'
-import { getGlobalModelOptions } from '@/hermes'
 import { type Translations, useI18n } from '@/i18n'
 import { CheckCircle2, Loader2 } from '@/lib/icons'
 import {
@@ -45,7 +45,7 @@ import { $localModelOfferPending } from '@/store/local-model-offer'
 import { refreshOnboardingProviders } from '@/store/onboarding'
 import { $onboardingSurfaceClear } from '@/store/onboarding-presence'
 import { $currentModel, setModelPickerOpen } from '@/store/session'
-import type { AppHandoffStatus } from '@/types/hermes'
+import type { AppHandoffStatus } from '@/types/aurora'
 
 interface FreeTierSignInDialogProps {
   /** The app's model-assignment path. Used only to re-home a live session that

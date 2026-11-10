@@ -2,7 +2,7 @@ name: remesher
 title: Remesher
 repo: https://github.com/remesher/remesher
 sha: 5f48a067722e10f0c08d368698fc03b05855bb89
-subdir: integrations/hermes
+subdir: integrations/aurora
 version: "0.2.1"
 description: >-
   Bounded image-to-GLB jobs using an isolated Remesher CLI, with existing
@@ -18,7 +18,7 @@ description: >-
 maintainer: remesher
 tier: community
 category: tools
-requires_hermes: ">=0.22.2"
+requires_aurora: ">=0.22.2"
 platforms: [linux]
 readme: true
 docs_url: https://github.com/remesher/remesher/blob/5f48a067722e10f0c08d368698fc03b05855bb89/integrations/hermes/README.md

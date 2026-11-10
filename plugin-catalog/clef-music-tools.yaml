@@ -7,7 +7,7 @@ description: "Transpose chord symbols, spell piano chords, map guitar tab to pia
 maintainer: MelMayssonOwen
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_aurora: ">=0.22.0"
 docs_url: https://github.com/MelMayssonOwen/hermes-plugins/blob/f203c3f897784d731ef48bc0974104a4d08cf5f8/clef-music-tools/README.md
 version: "1.0.0"
 platforms: []

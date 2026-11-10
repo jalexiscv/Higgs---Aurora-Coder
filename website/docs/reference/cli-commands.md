@@ -1,14 +1,14 @@
 ---
 sidebar_position: 1
 title: "CLI Commands Reference"
-description: "Authoritative reference for Hermes terminal commands and command families"
+description: "Authoritative reference for Aurora terminal commands and command families"
 ---
 
 # CLI Commands Reference
 
 Python dependency commands on this page use a
 [PM-prepared source checkout](./package-management.md#developer-workflow).
-After a dependency change, reactivate the checkout and restart Hermes.
+After a dependency change, reactivate the checkout and restart Aurora.
 
 This page covers the **terminal commands** you run from your shell.
 
@@ -17,7 +17,7 @@ For in-chat slash commands, see [Slash Commands Reference](./slash-commands.md).
 ## Global entrypoint
 
 ```bash
-hermes [global-options] <command> [subcommand/options]
+aurora [global-options] <command> [subcommand/options]
 ```
 
 ### Global options
@@ -25,100 +25,100 @@ hermes [global-options] <command> [subcommand/options]
 | Option | Description |
 |--------|-------------|
 | `--version`, `-V` | Show version and exit. |
-| `--profile <name>`, `-p <name>` | Select which Hermes profile to use for this invocation. Overrides the sticky default set by `hermes profile use`. |
+| `--profile <name>`, `-p <name>` | Select which Aurora profile to use for this invocation. Overrides the sticky default set by `aurora profile use`. |
 | `--resume <session>`, `-r <session>` | Resume a previous session by ID or title. The keyword `latest` resumes the most recent session (workspace-scoped, same lookup as `-c`). |
 | `--continue [name]`, `-c [name]` | Resume the most recent session, or the most recent session matching a title. |
 | `--in <dir>` | Change into `<dir>` before starting or resuming. Scopes `--resume latest` / `-c` lookups to that directory's workspace and keeps the session there (skips the recorded-cwd restore). |
 | `--worktree`, `-w` | Start in an isolated git worktree for parallel-agent workflows. |
 | `--yolo` | Bypass dangerous-command approval prompts. |
 | `--pass-session-id` | Include the session ID in the agent's system prompt. |
-| `--ignore-user-config` | Ignore `~/.hermes/config.yaml` and fall back to built-in defaults. Credentials in `.env` are still loaded. |
+| `--ignore-user-config` | Ignore `~/.aurora/config.yaml` and fall back to built-in defaults. Credentials in `.env` are still loaded. |
 | `--ignore-rules` | Skip auto-injection of `AGENTS.md`, `SOUL.md`, `.cursorrules`, memory, and preloaded skills. |
-| `--tui` | Launch the [TUI](../user-guide/tui.md) instead of the classic CLI. Equivalent to `HERMES_TUI=1`. Always wins over `display.interface`. |
+| `--tui` | Launch the [TUI](../user-guide/tui.md) instead of the classic CLI. Equivalent to `AURORA_TUI=1`. Always wins over `display.interface`. |
 | `--cli` | Force the classic prompt_toolkit REPL. Use this to override `display.interface: tui` for a single invocation. |
 | `--dev` | With `--tui`: run the TypeScript sources directly via `tsx` instead of the prebuilt bundle (for TUI contributors). |
 
-### `hermes-agent` (legacy single-query runner)
+### `aurora-agent` (legacy single-query runner)
 
-The install also ships `hermes-agent`, a minimal runner that sends one query and exits: `hermes-agent --query "summarize README.md"` (or `hermes-agent "summarize README.md"`). `hermes-agent --help` lists its options (`--model`, `--base-url`, `--max-turns`, `--enabled-toolsets`, `--disabled-toolsets`, `--list-tools`, `--save-trajectories`, …) and `hermes-agent --version` prints the version; neither starts the agent. Run with no query, it prints the same help and exits. For anything else use `hermes` (`hermes -z <prompt>` is the scripted one-shot).
+The install also ships `aurora-agent`, a minimal runner that sends one query and exits: `aurora-agent --query "summarize README.md"` (or `aurora-agent "summarize README.md"`). `aurora-agent --help` lists its options (`--model`, `--base-url`, `--max-turns`, `--enabled-toolsets`, `--disabled-toolsets`, `--list-tools`, `--save-trajectories`, …) and `aurora-agent --version` prints the version; neither starts the agent. Run with no query, it prints the same help and exits. For anything else use `aurora` (`aurora -z <prompt>` is the scripted one-shot).
 
 ## Top-level commands
 
 | Command | Purpose |
 |---------|---------|
-| `hermes chat` | Interactive or one-shot chat with the agent. |
-| `hermes model` | Interactively choose the default provider and model. |
-| `hermes moa` | Configure named Mixture of Agents presets selectable from the model picker. |
-| `hermes fallback` | Manage fallback providers tried when the primary model errors. |
-| `hermes gateway` | Run or manage the messaging gateway service. |
-| `hermes proxy` | Local OpenAI-compatible proxy that attaches OAuth provider credentials. See [Subscription Proxy](../user-guide/features/subscription-proxy.md). |
-| `hermes egress` | Outbound credential-injection firewall for remote terminal sandboxes (iron-proxy). Disabled by default. See [Egress proxy](../user-guide/egress/iron-proxy.md). |
-| `hermes lsp` | Manage Language Server Protocol integration (semantic diagnostics for write_file/patch). |
-| `hermes setup` | Interactive setup wizard for all or part of the configuration. |
-| `hermes whatsapp` | Configure and pair the WhatsApp bridge. |
-| `hermes whatsapp-cloud` | Configure the official Meta WhatsApp Business Cloud API adapter (Business account + public webhook required). Distinct from `hermes whatsapp` (Baileys personal-account bridge). |
-| `hermes slack` | Slack helpers (currently: generate the app manifest with every command as a native slash). |
-| `hermes auth` | Manage credentials — add, list, remove, reset, status, logout. Handles OAuth flows for Codex/Nous/Anthropic. |
-| `hermes login` / `logout` | **Deprecated** — use `hermes auth` instead. |
-| `hermes send` | Send a one-shot message to a configured messaging platform (Telegram, Discord, Slack, Signal, SMS, …). Useful from shell scripts, cron jobs, CI hooks, and monitoring daemons — no agent loop, no LLM. |
-| `hermes peer` | Register peer Hermes gateways on other machines and DM their agents' canonical Bot Chats (`hermes peer dm <peer>[/<agent>] "…"`). The transport behind cross-machine bot-to-bot messaging. |
-| `hermes secrets` | Manage external secret sources (currently Bitwarden Secrets Manager) for pulling API keys at process startup instead of from `~/.hermes/.env`. |
-| `hermes migrate` | Move over from another agent (`migrate grok-bot`, `migrate claude-code`, ... or bare to detect), or rewrite `config.yaml` for retired models and deprecated settings (`migrate xai`). |
-| `hermes codex-runtime` | Noninteractive counterpart of `/codex-runtime`: `migrate [--dry-run] [--json]` regenerates the Hermes-managed block in `~/.codex/config.toml` for the selected profile. See [Codex app-server runtime](../user-guide/features/codex-app-server-runtime.md#running-the-migration-from-a-script). |
-| `hermes status` | Show agent, auth, and platform status. |
-| `hermes usage` | Show the configured account's rate-limit windows (the `/usage` block) without a session; `--json` for scripts. |
-| `hermes cron` | Inspect and tick the cron scheduler. |
-| `hermes pause` / `hermes resume` | Global emergency stop: no new cron fires (built-in ticker, managed-cron webhook, misfire catch-up), kanban dispatch or gateway turns start until resumed. Interactive CLI, TUI and Desktop turns are gateway turns, so they are held too, and each surface shows "Hermes is paused" with the reason and "run `hermes resume`". Turns already running finish; in-flight work is never killed. |
-| `hermes kanban` | Multi-profile collaboration board (tasks, links, dispatcher). |
-| `hermes project` | Manage named, multi-folder workspaces (projects). Anchors desktop session grouping; kanban tasks linked to a project with a primary folder default to a deterministic worktree + branch. State is per-profile. |
-| `hermes webhook` | Manage dynamic webhook subscriptions for event-driven activation. |
-| `hermes hooks` | Inspect, approve, or remove shell-script hooks declared in `config.yaml`. |
-| `hermes doctor` | Diagnose config and dependency issues. |
-| `hermes security audit` | On-demand supply-chain audit (OSV.dev) for the venv, plugin requirements, and pinned MCP servers. |
-| `hermes approvals` | Approval-prompt tools — mine approval history into allowlist proposals. |
-| `hermes dump` | Copy-pasteable setup summary for support/debugging. |
-| `hermes prompt-size` | Show a byte breakdown of the system prompt + tool schemas (skills index, memory, profile). Runs offline. |
-| `hermes debug` | Debug tools — upload logs and system info for support. |
-| `hermes backup` | Back up Hermes home directory to a zip file. |
-| `hermes checkpoints` | Inspect / prune / clear `~/.hermes/checkpoints/` (the shadow store used by `/rollback`). Run with no args for a status overview. |
-| `hermes import` | Restore a Hermes backup from a zip file. |
-| `hermes logs` | View, tail, and filter agent/gateway/error log files. |
-| `hermes config` | Show, edit, migrate, and query configuration files. |
-| `hermes skin` | List, switch, and tweak display skins. |
-| `hermes console` | Open the safe Hermes command console. |
-| `hermes pairing` | Approve or revoke messaging pairing codes. |
-| `hermes skills` | Browse, install, publish, audit, and configure skills. |
-| `hermes bundles` | Group several skills under a single `/<name>` slash command. See [Skill Bundles](../user-guide/features/skills.md#skill-bundles). |
-| `hermes curator` | Background skill maintenance — status, run, pause, pin. See [Curator](../user-guide/features/curator.md). |
-| `hermes journey` (aliases `learning`, `memory-graph`) | Timeline of learned skills + memories over time. |
-| `hermes memory` | Configure external memory provider. Plugin-specific subcommands (e.g. `hermes honcho`) register automatically when their provider is active. |
-| `hermes acp` | Run Hermes as an ACP server for editor integration. |
-| `hermes mcp` | Manage MCP server configurations. Running Hermes as an MCP server is the [mcp-serve plugin](../user-guide/features/mcp.md#running-hermes-as-an-mcp-server). |
-| `hermes connectors` | List, connect, rename and disconnect hosted connector accounts. |
-| `hermes plugins` | Manage Hermes Agent plugins (install, enable, disable, remove). |
-| `hermes portal` | Nous Portal status, subscription link, and Tool Gateway routing. See [Tool Gateway](../user-guide/features/tool-gateway.md). |
-| `hermes tools` | Configure enabled tools per platform. |
-| `hermes computer-use` | Install or check the Computer Use (cua-driver) backend (macOS/Windows/Linux). |
-| `hermes pets` | Browse, install, and select [petdex](../user-guide/features/pets.md) animated pets shown across the CLI, TUI, and desktop app. Subcommands: `list`, `install`, `select`, `show`, `off`, `scale`, `remove`, `doctor`. |
-| `hermes clipboard image` | Write this machine's clipboard image to a file (`--json` for scripts). Device-local: no gateway, no session store. |
-| `hermes sessions` | Browse, export, prune, rename, and delete sessions. |
-| `hermes insights` | Show token/cost/activity analytics. |
-| `hermes claw` | OpenClaw migration (`migrate`, `cleanup`), from the [`agent-importers`](../user-guide/import-from-other-agents.md) plugin; `hermes claw migrate` is the same as `hermes import-agent openclaw`. |
-| `hermes import-agent` | Import an OpenClaw, Claude Code, Codex CLI or Cursor setup (from the [`agent-importers`](../user-guide/import-from-other-agents.md) plugin). |
-| `hermes dashboard` | Launch the web dashboard for managing config, API keys, and sessions. |
-| `hermes serve` | Start the Hermes backend server (headless; powers the desktop app and remote backends). |
-| `hermes webapp` | Open the Desktop workspace in a browser, served by the gateway. |
-| `hermes desktop` (alias `gui`) | Build and launch the native Electron desktop app. |
-| `hermes profile` | Manage profiles — multiple isolated Hermes instances. |
-| `hermes completion` | Print shell completion scripts (bash/zsh/fish). |
-| `hermes --version` | Show version information. |
-| `hermes update` | Update to the latest stable release (or the selected channel) and reinstall dependencies. `--check` previews without installing; `--backup` takes a pre-pull `HERMES_HOME` snapshot. |
-| `hermes uninstall` | Remove Hermes from the system. |
+| `aurora chat` | Interactive or one-shot chat with the agent. |
+| `aurora model` | Interactively choose the default provider and model. |
+| `aurora moa` | Configure named Mixture of Agents presets selectable from the model picker. |
+| `aurora fallback` | Manage fallback providers tried when the primary model errors. |
+| `aurora gateway` | Run or manage the messaging gateway service. |
+| `aurora proxy` | Local OpenAI-compatible proxy that attaches OAuth provider credentials. See [Subscription Proxy](../user-guide/features/subscription-proxy.md). |
+| `aurora egress` | Outbound credential-injection firewall for remote terminal sandboxes (iron-proxy). Disabled by default. See [Egress proxy](../user-guide/egress/iron-proxy.md). |
+| `aurora lsp` | Manage Language Server Protocol integration (semantic diagnostics for write_file/patch). |
+| `aurora setup` | Interactive setup wizard for all or part of the configuration. |
+| `aurora whatsapp` | Configure and pair the WhatsApp bridge. |
+| `aurora whatsapp-cloud` | Configure the official Meta WhatsApp Business Cloud API adapter (Business account + public webhook required). Distinct from `aurora whatsapp` (Baileys personal-account bridge). |
+| `aurora slack` | Slack helpers (currently: generate the app manifest with every command as a native slash). |
+| `aurora auth` | Manage credentials — add, list, remove, reset, status, logout. Handles OAuth flows for Codex/Nous/Anthropic. |
+| `aurora login` / `logout` | **Deprecated** — use `aurora auth` instead. |
+| `aurora send` | Send a one-shot message to a configured messaging platform (Telegram, Discord, Slack, Signal, SMS, …). Useful from shell scripts, cron jobs, CI hooks, and monitoring daemons — no agent loop, no LLM. |
+| `aurora peer` | Register peer Aurora gateways on other machines and DM their agents' canonical Bot Chats (`aurora peer dm <peer>[/<agent>] "…"`). The transport behind cross-machine bot-to-bot messaging. |
+| `aurora secrets` | Manage external secret sources (currently Bitwarden Secrets Manager) for pulling API keys at process startup instead of from `~/.aurora/.env`. |
+| `aurora migrate` | Move over from another agent (`migrate grok-bot`, `migrate claude-code`, ... or bare to detect), or rewrite `config.yaml` for retired models and deprecated settings (`migrate xai`). |
+| `aurora codex-runtime` | Noninteractive counterpart of `/codex-runtime`: `migrate [--dry-run] [--json]` regenerates the Aurora-managed block in `~/.codex/config.toml` for the selected profile. See [Codex app-server runtime](../user-guide/features/codex-app-server-runtime.md#running-the-migration-from-a-script). |
+| `aurora status` | Show agent, auth, and platform status. |
+| `aurora usage` | Show the configured account's rate-limit windows (the `/usage` block) without a session; `--json` for scripts. |
+| `aurora cron` | Inspect and tick the cron scheduler. |
+| `aurora pause` / `aurora resume` | Global emergency stop: no new cron fires (built-in ticker, managed-cron webhook, misfire catch-up), kanban dispatch or gateway turns start until resumed. Interactive CLI, TUI and Desktop turns are gateway turns, so they are held too, and each surface shows "Aurora is paused" with the reason and "run `aurora resume`". Turns already running finish; in-flight work is never killed. |
+| `aurora kanban` | Multi-profile collaboration board (tasks, links, dispatcher). |
+| `aurora project` | Manage named, multi-folder workspaces (projects). Anchors desktop session grouping; kanban tasks linked to a project with a primary folder default to a deterministic worktree + branch. State is per-profile. |
+| `aurora webhook` | Manage dynamic webhook subscriptions for event-driven activation. |
+| `aurora hooks` | Inspect, approve, or remove shell-script hooks declared in `config.yaml`. |
+| `aurora doctor` | Diagnose config and dependency issues. |
+| `aurora security audit` | On-demand supply-chain audit (OSV.dev) for the venv, plugin requirements, and pinned MCP servers. |
+| `aurora approvals` | Approval-prompt tools — mine approval history into allowlist proposals. |
+| `aurora dump` | Copy-pasteable setup summary for support/debugging. |
+| `aurora prompt-size` | Show a byte breakdown of the system prompt + tool schemas (skills index, memory, profile). Runs offline. |
+| `aurora debug` | Debug tools — upload logs and system info for support. |
+| `aurora backup` | Back up Aurora home directory to a zip file. |
+| `aurora checkpoints` | Inspect / prune / clear `~/.aurora/checkpoints/` (the shadow store used by `/rollback`). Run with no args for a status overview. |
+| `aurora import` | Restore an Aurora backup from a zip file. |
+| `aurora logs` | View, tail, and filter agent/gateway/error log files. |
+| `aurora config` | Show, edit, migrate, and query configuration files. |
+| `aurora skin` | List, switch, and tweak display skins. |
+| `aurora console` | Open the safe Aurora command console. |
+| `aurora pairing` | Approve or revoke messaging pairing codes. |
+| `aurora skills` | Browse, install, publish, audit, and configure skills. |
+| `aurora bundles` | Group several skills under a single `/<name>` slash command. See [Skill Bundles](../user-guide/features/skills.md#skill-bundles). |
+| `aurora curator` | Background skill maintenance — status, run, pause, pin. See [Curator](../user-guide/features/curator.md). |
+| `aurora journey` (aliases `learning`, `memory-graph`) | Timeline of learned skills + memories over time. |
+| `aurora memory` | Configure external memory provider. Plugin-specific subcommands (e.g. `aurora honcho`) register automatically when their provider is active. |
+| `aurora acp` | Run Aurora as an ACP server for editor integration. |
+| `aurora mcp` | Manage MCP server configurations. Running Aurora as an MCP server is the [mcp-serve plugin](../user-guide/features/mcp.md#running-aurora-as-an-mcp-server). |
+| `aurora connectors` | List, connect, rename and disconnect hosted connector accounts. |
+| `aurora plugins` | Manage Aurora Agent plugins (install, enable, disable, remove). |
+| `aurora portal` | Nous Portal status, subscription link, and Tool Gateway routing. See [Tool Gateway](../user-guide/features/tool-gateway.md). |
+| `aurora tools` | Configure enabled tools per platform. |
+| `aurora computer-use` | Install or check the Computer Use (cua-driver) backend (macOS/Windows/Linux). |
+| `aurora pets` | Browse, install, and select [petdex](../user-guide/features/pets.md) animated pets shown across the CLI, TUI, and desktop app. Subcommands: `list`, `install`, `select`, `show`, `off`, `scale`, `remove`, `doctor`. |
+| `aurora clipboard image` | Write this machine's clipboard image to a file (`--json` for scripts). Device-local: no gateway, no session store. |
+| `aurora sessions` | Browse, export, prune, rename, and delete sessions. |
+| `aurora insights` | Show token/cost/activity analytics. |
+| `aurora claw` | OpenClaw migration (`migrate`, `cleanup`), from the [`agent-importers`](../user-guide/import-from-other-agents.md) plugin; `aurora claw migrate` is the same as `aurora import-agent openclaw`. |
+| `aurora import-agent` | Import an OpenClaw, Claude Code, Codex CLI or Cursor setup (from the [`agent-importers`](../user-guide/import-from-other-agents.md) plugin). |
+| `aurora dashboard` | Launch the web dashboard for managing config, API keys, and sessions. |
+| `aurora serve` | Start the Aurora backend server (headless; powers the desktop app and remote backends). |
+| `aurora webapp` | Open the Desktop workspace in a browser, served by the gateway. |
+| `aurora desktop` (alias `gui`) | Build and launch the native Electron desktop app. |
+| `aurora profile` | Manage profiles — multiple isolated Aurora instances. |
+| `aurora completion` | Print shell completion scripts (bash/zsh/fish). |
+| `aurora --version` | Show version information. |
+| `aurora update` | Update to the latest stable release (or the selected channel) and reinstall dependencies. `--check` previews without installing; `--backup` takes a pre-pull `AURORA_HOME` snapshot. |
+| `aurora uninstall` | Remove Aurora from the system. |
 
-## `hermes chat`
+## `aurora chat`
 
 ```bash
-hermes chat [options]
+aurora chat [options]
 ```
 
 Common options:
@@ -141,7 +141,7 @@ Common options:
 | `--checkpoints` | Enable filesystem checkpoints before destructive file changes. |
 | `--yolo` | Skip approval prompts. |
 | `--pass-session-id` | Pass the session ID into the system prompt. |
-| `--ignore-user-config` | Ignore `~/.hermes/config.yaml` and use built-in defaults. Credentials in `.env` are still loaded. Useful for isolated CI runs, reproducible bug reports, and third-party integrations. |
+| `--ignore-user-config` | Ignore `~/.aurora/config.yaml` and use built-in defaults. Credentials in `.env` are still loaded. Useful for isolated CI runs, reproducible bug reports, and third-party integrations. |
 | `--ignore-rules` | Skip auto-injection of `AGENTS.md`, `SOUL.md`, `.cursorrules`, persistent memory, and preloaded skills. Combine with `--ignore-user-config` for a fully isolated run. |
 | `--safe-mode` | Troubleshooting mode: disable ALL customizations — user config, rules/memory injection, plugins, shell hooks, and MCP servers (implies `--ignore-user-config` and `--ignore-rules`). The gateway freezes code defaults plus your explicit options into the session and runs the turn in an isolated worker process that never reads the profile, so a broken `config.yaml` cannot block it. Requires an explicit `--model` (there is no profile default to inherit); pair with `--provider custom --base-url <url> --api-key <key>` for a fully explicit endpoint. |
 | `--base-url <url>` / `--api-key <key>` | Explicit OpenAI-compatible endpoint and launch-only key for `--provider custom`. The key is held in the running gateway's memory for this session and never written to disk. |
@@ -151,17 +151,17 @@ Common options:
 Examples:
 
 ```bash
-hermes
-hermes chat -q "Summarize the latest PRs"          # seeds an interactive session
-hermes chat --oneshot -q "Summarize the latest PRs"  # answer and exit
-hermes chat --provider openrouter --model anthropic/claude-sonnet-4.6
-hermes chat --toolsets web,terminal,skills
-hermes chat --quiet -q "Return only JSON"
-hermes chat -q "Inspect this repository" --format stream-json
-hermes chat --worktree -q "Review this repo and open a PR"
-hermes chat --ignore-user-config --ignore-rules -q "Repro without my personal setup"
-hermes chat --safe-mode --model gpt-4.1 -q "Is this bug mine or Hermes'?"
-hermes chat --safe-mode --provider custom --base-url http://127.0.0.1:8000/v1 --model local -q "Isolate against a local server"
+aurora
+aurora chat -q "Summarize the latest PRs"          # seeds an interactive session
+aurora chat --oneshot -q "Summarize the latest PRs"  # answer and exit
+aurora chat --provider openrouter --model anthropic/claude-sonnet-4.6
+aurora chat --toolsets web,terminal,skills
+aurora chat --quiet -q "Return only JSON"
+aurora chat -q "Inspect this repository" --format stream-json
+aurora chat --worktree -q "Review this repo and open a PR"
+aurora chat --ignore-user-config --ignore-rules -q "Repro without my personal setup"
+aurora chat --safe-mode --model gpt-4.1 -q "Is this bug mine or Aurora'?"
+aurora chat --safe-mode --provider custom --base-url http://127.0.0.1:8000/v1 --model local -q "Isolate against a local server"
 ```
 
 ### `--format stream-json` — structured JSONL output
@@ -172,7 +172,7 @@ quiet non-interactive CLI mode, and rejects an explicit `--tui` request. Every
 stdout line is one JSON object; diagnostics and the `session_id:` line stay on stderr.
 
 ```bash
-hermes chat -q "Summarize this repository" --format stream-json
+aurora chat -q "Summarize this repository" --format stream-json
 ```
 
 Every event carries `timestamp` (Unix epoch milliseconds).
@@ -196,7 +196,7 @@ stdio) the process exit code reports the turn's outcome, on both the quiet and
 the non-quiet path: `0` the turn completed; `1` it failed, stopped partway
 (`partial`), hit the iteration budget, or never ran (credentials / agent init
 failed); `130` it was interrupted. A Kanban dispatcher-spawned worker
-(`HERMES_KANBAN_TASK` set) whose turn failed only because the provider was
+(`AURORA_KANBAN_TASK` set) whose turn failed only because the provider was
 rate-limited, overloaded, returning 5xx, timing out, or the account hit a
 billing/quota wall, exits
 `75` (`EX_TEMPFAIL`) so the dispatcher requeues the task without counting a
@@ -209,33 +209,33 @@ When chat answers and exits, `delegate_task` waits for its children and returns 
 results in the same turn instead of running them in the background. Details and limits:
 [Delegation: finite chat runs](../user-guide/features/delegation.md#finite-chat-runs).
 
-### `hermes -z <prompt>` — scripted one-shot
+### `aurora -z <prompt>` — scripted one-shot
 
-For programmatic callers (shell scripts, CI, cron, parent processes piping in a prompt), `hermes -z` is the purest one-shot entry point: **single prompt in, final response text out, nothing else on stdout or stderr.** No banner, no spinner, no tool previews, no `Session:` line — just the agent's final reply as plain text.
+For programmatic callers (shell scripts, CI, cron, parent processes piping in a prompt), `aurora -z` is the purest one-shot entry point: **single prompt in, final response text out, nothing else on stdout or stderr.** No banner, no spinner, no tool previews, no `Session:` line — just the agent's final reply as plain text.
 
 ```bash
-hermes -z "What's the capital of France?"
+aurora -z "What's the capital of France?"
 # → Paris.
 
 # Parent scripts can cleanly capture the response:
-answer=$(hermes -z "summarize this" < /path/to/file.txt)
+answer=$(aurora -z "summarize this" < /path/to/file.txt)
 ```
 
-Per-run overrides (no mutation to `~/.hermes/config.yaml`):
+Per-run overrides (no mutation to `~/.aurora/config.yaml`):
 
 | Flag | Equivalent env var | Purpose |
 |---|---|---|
-| `-m` / `--model <model>` | `HERMES_INFERENCE_MODEL` | Override the model for this run |
+| `-m` / `--model <model>` | `AURORA_INFERENCE_MODEL` | Override the model for this run |
 | `--provider <provider>` | _(none)_ | Override the provider for this run |
 | `--usage-file <path>` | _(none)_ | Write a JSON usage report after the run (see below) |
 
 ```bash
-hermes -z "…" --provider openrouter --model openai/gpt-5.5
+aurora -z "…" --provider openrouter --model openai/gpt-5.5
 # or:
-HERMES_INFERENCE_MODEL=anthropic/claude-sonnet-4.6 hermes -z "…"
+AURORA_INFERENCE_MODEL=anthropic/claude-sonnet-4.6 aurora -z "…"
 ```
 
-Same agent, same tools, same skills — just strips every interactive / cosmetic layer. If you need tool output in the transcript too, use `hermes chat --oneshot -q` instead; `-z` is explicitly for "I only want the final answer".
+Same agent, same tools, same skills — just strips every interactive / cosmetic layer. If you need tool output in the transcript too, use `aurora chat --oneshot -q` instead; `-z` is explicitly for "I only want the final answer".
 
 Exit codes: `0` the turn completed; `2` it failed or stopped partway (`partial`,
 iteration budget, `completed: false`) — even when an explanation was printed;
@@ -248,20 +248,20 @@ stdout is non-empty.
 
 #### `--usage-file` — JSON usage report for pipelines
 
-`hermes -z "…" --usage-file /path/report.json` writes a machine-readable usage report after the run: `estimated_cost_usd`, `input_tokens` / `output_tokens` / `cache_read_tokens` / `cache_write_tokens` / `reasoning_tokens` / `total_tokens`, `api_calls`, `model`, `provider`, `session_id`, `service_tier`, the `completed` / `failed` / `partial` / `interrupted` flags and `turn_exit_reason` (why `completed` is false, e.g. `max_iterations_reached(3/3)`). Those top-level counters cover the **main agent loop** only. Auxiliary LLM calls made on the same run (title generation, vision, context compression, background review, …) are reported separately under `auxiliary` — the same totals plus a per-task `by_task` map — and `total_including_auxiliary` (`estimated_cost_usd`, `total_tokens`, `api_calls`) is the grand total to bill on. The report is written **even when the run fails**, so batch pipelines can always account for spend. It has no effect outside `-z`/`--oneshot`, and a broken usage write never masks the run's own outcome.
+`aurora -z "…" --usage-file /path/report.json` writes a machine-readable usage report after the run: `estimated_cost_usd`, `input_tokens` / `output_tokens` / `cache_read_tokens` / `cache_write_tokens` / `reasoning_tokens` / `total_tokens`, `api_calls`, `model`, `provider`, `session_id`, `service_tier`, the `completed` / `failed` / `partial` / `interrupted` flags and `turn_exit_reason` (why `completed` is false, e.g. `max_iterations_reached(3/3)`). Those top-level counters cover the **main agent loop** only. Auxiliary LLM calls made on the same run (title generation, vision, context compression, background review, …) are reported separately under `auxiliary` — the same totals plus a per-task `by_task` map — and `total_including_auxiliary` (`estimated_cost_usd`, `total_tokens`, `api_calls`) is the grand total to bill on. The report is written **even when the run fails**, so batch pipelines can always account for spend. It has no effect outside `-z`/`--oneshot`, and a broken usage write never masks the run's own outcome.
 
 ```bash
-hermes -z "summarize this repo" --usage-file ~/.hermes/cache/scratch/usage.json
-jq .total_including_auxiliary.estimated_cost_usd ~/.hermes/cache/scratch/usage.json
-jq .auxiliary.by_task ~/.hermes/cache/scratch/usage.json      # what did title generation / vision cost?
+aurora -z "summarize this repo" --usage-file ~/.aurora/cache/scratch/usage.json
+jq .total_including_auxiliary.estimated_cost_usd ~/.aurora/cache/scratch/usage.json
+jq .auxiliary.by_task ~/.aurora/cache/scratch/usage.json      # what did title generation / vision cost?
 ```
 
-## `hermes model`
+## `aurora model`
 
-Interactive provider + model selector. **This is the command for adding new providers, setting up API keys, and running OAuth flows.** Run it from your terminal — not from inside an active Hermes chat session.
+Interactive provider + model selector. **This is the command for adding new providers, setting up API keys, and running OAuth flows.** Run it from your terminal — not from inside an active Aurora chat session.
 
 ```bash
-hermes model
+aurora model
 ```
 
 Use this when you want to:
@@ -272,12 +272,12 @@ Use this when you want to:
 - configure a custom/self-hosted endpoint
 - save the new default into config
 
-:::warning hermes model vs /model — know the difference
-**`hermes model`** (run from your terminal, outside any Hermes session) is the **full provider setup wizard**. It can add new providers, run OAuth flows, prompt for API keys, and configure endpoints.
+:::warning aurora model vs /model — know the difference
+**`aurora model`** (run from your terminal, outside any Aurora session) is the **full provider setup wizard**. It can add new providers, run OAuth flows, prompt for API keys, and configure endpoints.
 
-**`/model`** (typed inside an active Hermes chat session) can only **switch between providers and models you've already set up**. It cannot add new providers, run OAuth, or prompt for API keys.
+**`/model`** (typed inside an active Aurora chat session) can only **switch between providers and models you've already set up**. It cannot add new providers, run OAuth, or prompt for API keys.
 
-**If you need to add a new provider:** Exit your Hermes session first (`Ctrl+C` or `/quit`), then run `hermes model` from your terminal prompt.
+**If you need to add a new provider:** Exit your Aurora session first (`Ctrl+C` or `/quit`), then run `aurora model` from your terminal prompt.
 :::
 
 ### `/model` slash command (mid-session)
@@ -301,15 +301,15 @@ By default, `/model` changes apply **to the current session only**. Add `--globa
 ```
 
 :::info What if I only see OpenRouter models?
-If you've only configured OpenRouter, `/model` will only show OpenRouter models. To add another provider (Anthropic, DeepSeek, etc.), exit your session and run `hermes model` from the terminal.
+If you've only configured OpenRouter, `/model` will only show OpenRouter models. To add another provider (Anthropic, DeepSeek, etc.), exit your session and run `aurora model` from the terminal.
 :::
 
 On a `--global` switch, provider and base URL changes are persisted to `config.yaml` alongside the model. When switching away from a custom endpoint, the stale base URL is cleared to prevent it leaking into other providers.
 
-## `hermes gateway`
+## `aurora gateway`
 
 ```bash
-hermes gateway <subcommand>
+aurora gateway <subcommand>
 ```
 
 Subcommands:
@@ -327,22 +327,22 @@ Subcommands:
 | `install` | Install as a systemd (Linux) or launchd (macOS) background service. |
 | `uninstall` | Remove the installed service. |
 | `setup` | Interactive messaging-platform setup. |
-| `migrate` | Fold per-profile standalone gateways onto the one host gateway (`--multiplex`, the only mode — `hermes update` runs it automatically unless a real boundary blocks it). Re-running it converges a half-migrated host; a manifest on disk is the resume record, never a rollback (there is no `--standalone`). Runs a preflight (duplicate bot tokens, secondary port-binders without a `/p/<profile>/` ingress) and changes nothing when blocked. Flags: `--dry-run`, `-y`/`--yes`. See [Migrating from per-profile gateways](../user-guide/multi-profile-gateways.md#migrating-from-per-profile-gateways). |
-| `migrate-legacy` | Remove legacy `hermes.service` units left over from pre-rename installs. Profile units (`hermes-gateway-<profile>.service`) and unrelated services are never touched. Flags: `--dry-run`, `-y`/`--yes`. |
-| `enroll` | Experimental: enroll this gateway with a relay connector and save relay credentials for connector-backed platforms. See [Hermes Relay](../user-guide/messaging/relay.md). |
+| `migrate` | Fold per-profile standalone gateways onto the one host gateway (`--multiplex`, the only mode — `aurora update` runs it automatically unless a real boundary blocks it). Re-running it converges a half-migrated host; a manifest on disk is the resume record, never a rollback (there is no `--standalone`). Runs a preflight (duplicate bot tokens, secondary port-binders without a `/p/<profile>/` ingress) and changes nothing when blocked. Flags: `--dry-run`, `-y`/`--yes`. See [Migrating from per-profile gateways](../user-guide/multi-profile-gateways.md#migrating-from-per-profile-gateways). |
+| `migrate-legacy` | Remove legacy `aurora.service` units left over from pre-rename installs. Profile units (`aurora-gateway-<profile>.service`) and unrelated services are never touched. Flags: `--dry-run`, `-y`/`--yes`. |
+| `enroll` | Experimental: enroll this gateway with a relay connector and save relay credentials for connector-backed platforms. See [Aurora Relay](../user-guide/messaging/relay.md). |
 
 Options:
 
 | Option | Description |
 |--------|-------------|
-| `--all` | On `start` / `restart` / `stop`: act on **every profile's** gateway, not just the active `HERMES_HOME`. Useful if you run multiple profiles side-by-side and want to restart them all after `hermes update`. |
+| `--all` | On `start` / `restart` / `stop`: act on **every profile's** gateway, not just the active `AURORA_HOME`. Useful if you run multiple profiles side-by-side and want to restart them all after `aurora update`. |
 | `-y`, `--yes` | On `stop` / `restart`: when the gateway is running chat turns, cron jobs or background delegations, the command lists them and asks `y/N` before interrupting them. `--yes` skips the question. With no terminal to ask on (scripts, cron) it refuses unless `--yes` is passed. `--interrupt` is an alias. |
-| `--detach` | On `restart`: when no gateway service is installed, start the replacement in the background (the way `hermes gateway ensure` starts one) instead of in the current terminal. The desktop app and the updater's recovery restart pass it so their short-lived restart call never becomes the gateway itself. Service, supervisor and Windows-task restarts are unchanged. |
-| `--no-supervise` | On `run`: inside the s6-overlay Docker image, opt out of auto-supervision and use pre-s6 foreground semantics — gateway runs as the container's main process with no auto-restart. No-op outside the s6 image. Equivalent to setting `HERMES_GATEWAY_NO_SUPERVISE=1`. |
+| `--detach` | On `restart`: when no gateway service is installed, start the replacement in the background (the way `aurora gateway ensure` starts one) instead of in the current terminal. The desktop app and the updater's recovery restart pass it so their short-lived restart call never becomes the gateway itself. Service, supervisor and Windows-task restarts are unchanged. |
+| `--no-supervise` | On `run`: inside the s6-overlay Docker image, opt out of auto-supervision and use pre-s6 foreground semantics — gateway runs as the container's main process with no auto-restart. No-op outside the s6 image. Equivalent to setting `AURORA_GATEWAY_NO_SUPERVISE=1`. |
 | `--external-supervisor` | On `run`: declare that a wrapper-provided process manager owns the foreground gateway. Use this when `sudo`, `env -i`, or another wrapper strips launchd/systemd's native environment marker. In-chat restarts and updates exit back to that manager instead of spawning a detached replacement. |
 
 `--external-supervisor` is a restart-policy contract: an in-chat restart,
-`hermes gateway restart`, or service-restart update exits with status `75`
+`aurora gateway restart`, or service-restart update exits with status `75`
 (the CLI then waits for the supervisor's fresh PID instead of running a
 foreground gateway of its own), so the wrapper's supervisor must
 relaunch the gateway after that nonzero exit. For systemd, use
@@ -351,42 +351,42 @@ relaunch the gateway after that nonzero exit. For systemd, use
 unsuccessful exits. Without that policy, a requested restart leaves the gateway
 stopped.
 
-`hermes gateway enroll` accepts `--token`, `--connector-url`, `--gateway-id`, and `--wake-url`. It exchanges the enrollment token with the connector and writes the resulting `GATEWAY_RELAY_ID`, `GATEWAY_RELAY_SECRET`, `GATEWAY_RELAY_DELIVERY_KEY`, optional `GATEWAY_RELAY_URL`, and (when `--wake-url` is given) `GATEWAY_RELAY_WAKE_URL` values to the active profile's `.env`.
+`aurora gateway enroll` accepts `--token`, `--connector-url`, `--gateway-id`, and `--wake-url`. It exchanges the enrollment token with the connector and writes the resulting `GATEWAY_RELAY_ID`, `GATEWAY_RELAY_SECRET`, `GATEWAY_RELAY_DELIVERY_KEY`, optional `GATEWAY_RELAY_URL`, and (when `--wake-url` is given) `GATEWAY_RELAY_WAKE_URL` values to the active profile's `.env`.
 
 :::tip WSL users
-Use `hermes gateway run` instead of `hermes gateway start` — WSL's systemd support is unreliable. Wrap it in tmux for persistence: `tmux new -s hermes 'hermes gateway run'`. See [WSL FAQ](./faq.md#wsl-gateway-keeps-disconnecting-or-hermes-gateway-start-fails) for details.
+Use `aurora gateway run` instead of `aurora gateway start` — WSL's systemd support is unreliable. Wrap it in tmux for persistence: `tmux new -s aurora 'aurora gateway run'`. See [WSL FAQ](./faq.md#wsl-gateway-keeps-disconnecting-or-aurora-gateway-start-fails) for details.
 :::
 
 ### Local runtime discovery and startup
 
-`hermes gateway ensure [--json] [--timeout 60]` discovers or starts the active profile's
+`aurora gateway ensure [--json] [--timeout 60]` discovers or starts the active profile's
 session runtime and prints one JSON object (`state`, `reason_code`, and an `endpoint` only
 once authenticated discovery reports compatible readiness; never tickets or credentials).
 It waits for an existing or starting owner instead of replacing it and never installs a
 service. Exit `0` means ready; any other code is a refusal or a deadline, never permission
 to start a replacement. Service identity checks, the home-permission policy behind
 `unsafe_control_permissions`, and every exit code:
-[Gateway internals: `hermes gateway ensure`](../developer-guide/gateway-internals.md#hermes-gateway-ensure).
+[Gateway internals: `aurora gateway ensure`](../developer-guide/gateway-internals.md#aurora-gateway-ensure).
 
-`hermes gateway attach [--json] [--start] [--recover] [--timeout 60]` is the attach step for a
+`aurora gateway attach [--json] [--start] [--recover] [--timeout 60]` is the attach step for a
 local client that dials the gateway itself (a third-party chat UI, for example). It prints
 `ensure`'s JSON plus, once the gateway is attachable, `url` (`ws://127.0.0.1:<port>/api/ws`),
-`protocol` (`hermes-gateway-v1`), `protocols` (the WebSocket subprotocols to dial with) and
+`protocol` (`aurora-gateway-v1`), `protocols` (the WebSocket subprotocols to dial with) and
 `ticket`. The ticket is single-use, bound to the active profile, and expires 30 seconds after it
 is minted; it goes to stdout for the calling process only and is never logged. A plain call only
 discovers the gateway; `--start` starts it when none serves the profile; `--recover` discovers
-first and starts (or replaces an older Hermes's gateway) only when it is not ready. An unmanaged
+first and starts (or replaces an older Aurora's gateway) only when it is not ready. An unmanaged
 gateway that `attach` starts (no service installed) stops itself once it has been idle for a while.
 With no gateway to attach,
 the JSON carries `message` (the `gateway <state>: <reason>` lines, with the remedy when there is
 one), the same text goes to stderr, and the exit code is `ensure`'s for that verdict. The Ink TUI
 attaches through the same code. Details and the dial rules:
-[Gateway internals: `hermes gateway attach`](../developer-guide/gateway-internals.md#hermes-gateway-attach).
+[Gateway internals: `aurora gateway attach`](../developer-guide/gateway-internals.md#aurora-gateway-attach).
 
-## `hermes lsp`
+## `aurora lsp`
 
 ```bash
-hermes lsp <subcommand>
+aurora lsp <subcommand>
 ```
 
 Manage the Language Server Protocol integration. LSP runs real
@@ -410,19 +410,19 @@ Subcommands:
 See [LSP — Semantic Diagnostics](../user-guide/features/lsp.md) for
 the full guide, supported languages, and configuration knobs.
 
-## `hermes setup`
+## `aurora setup`
 
 ```bash
-hermes setup [model|tts|terminal|gateway|tools|agent] [--non-interactive] [--reset] [--quick] [--reconfigure] [--portal]
+aurora setup [model|tts|terminal|gateway|tools|agent] [--non-interactive] [--reset] [--quick] [--reconfigure] [--portal]
 ```
 
-**Easiest path:** `hermes setup --portal` — OAuth into Nous Portal and opt into the [Tool Gateway](../user-guide/features/tool-gateway.md) in one shot.
+**Easiest path:** `aurora setup --portal` — OAuth into Nous Portal and opt into the [Tool Gateway](../user-guide/features/tool-gateway.md) in one shot.
 
 **First run:** launches the first-time wizard.
 
 **Returning user (already configured):** drops straight into the full reconfigure wizard — every prompt shows your current value as its default, press Enter to keep or type a new value. No menu.
 
-**Coming from another agent:** when the first run finds an OpenClaw, Claude Code, Codex CLI or Cursor setup (`~/.openclaw`, `~/.claude`, `~/.codex`, `~/.cursor`), it first asks **"Import your setup from …?"** (default yes). With more than one found, you then pick which from a checklist. Setup installs the [`agent-importers`](../user-guide/import-from-other-agents.md) plugin from the catalog, unless you already have it, and runs its import for each pick, which shows a preview and asks before changing anything (OpenClaw's allowlisted API keys and bot tokens are included, as the old built-in step did). Quick Setup after an import that brought a model and its key asks **"Keep your imported model (…) or switch to Nous Portal?"** (default keep, which skips the Nous Portal login). Nothing found, a no, `--non-interactive` or a setup started by the dashboard: no question and nothing installed. On an already configured install, run `hermes import-agent` instead.
+**Coming from another agent:** when the first run finds an OpenClaw, Claude Code, Codex CLI or Cursor setup (`~/.openclaw`, `~/.claude`, `~/.codex`, `~/.cursor`), it first asks **"Import your setup from …?"** (default yes). With more than one found, you then pick which from a checklist. Setup installs the [`agent-importers`](../user-guide/import-from-other-agents.md) plugin from the catalog, unless you already have it, and runs its import for each pick, which shows a preview and asks before changing anything (OpenClaw's allowlisted API keys and bot tokens are included, as the old built-in step did). Quick Setup after an import that brought a model and its key asks **"Keep your imported model (…) or switch to Nous Portal?"** (default keep, which skips the Nous Portal login). Nothing found, a no, `--non-interactive` or a setup started by the dashboard: no question and nothing installed. On an already configured install, run `aurora import-agent` instead.
 
 Jump into one section instead of the full wizard:
 
@@ -441,13 +441,13 @@ Options:
 | `--quick` | On returning-user runs: only prompt for items that are missing or unset. Skip items you already have configured. |
 | `--non-interactive` | Use defaults / environment values without prompts. |
 | `--reset` | Reset configuration to defaults before setup. |
-| `--reconfigure` | Backwards-compat alias — bare `hermes setup` on an existing install now does this by default. |
+| `--reconfigure` | Backwards-compat alias — bare `aurora setup` on an existing install now does this by default. |
 | `--portal` | One-shot Nous Portal setup: log in via OAuth, set Nous as the inference provider, and opt into the [Tool Gateway](../user-guide/features/tool-gateway.md). Skips the rest of the wizard. |
 
-## `hermes portal`
+## `aurora portal`
 
 ```bash
-hermes portal [status|open|tools]
+aurora portal [status|open|tools]
 ```
 
 Inspect Nous Portal auth, Tool Gateway routing, and reach the subscription page. Subcommand-less invocation runs `status`.
@@ -458,23 +458,23 @@ Inspect Nous Portal auth, Tool Gateway routing, and reach the subscription page.
 | `open` | Open `portal.nousresearch.com/manage-subscription` in your default browser. |
 | `tools` | List every Tool Gateway partner (Firecrawl, FAL, OpenAI TTS, Browser Use, Modal) and which are routed via Nous. |
 
-For configuration of the gateway itself, see [Tool Gateway](../user-guide/features/tool-gateway.md). For the one-shot setup path, see `hermes setup --portal` above.
+For configuration of the gateway itself, see [Tool Gateway](../user-guide/features/tool-gateway.md). For the one-shot setup path, see `aurora setup --portal` above.
 
-## `hermes whatsapp`
+## `aurora whatsapp`
 
 ```bash
-hermes whatsapp
+aurora whatsapp
 ```
 
 Runs the WhatsApp pairing/setup flow, including mode selection and QR-code pairing.
 
-## `hermes slack`
+## `aurora slack`
 
 ```bash
-hermes slack manifest              # print manifest to stdout
-hermes slack manifest --write      # write to ~/.hermes/slack-manifest.json
-hermes slack manifest --long-description-file AGENTS.md --write
-hermes slack manifest --slashes-only  # just the features.slash_commands array
+aurora slack manifest              # print manifest to stdout
+aurora slack manifest --write      # write to ~/.aurora/slack-manifest.json
+aurora slack manifest --long-description-file AGENTS.md --write
+aurora slack manifest --slashes-only  # just the features.slash_commands array
 ```
 
 Generates a Slack app manifest that registers every gateway command in
@@ -487,29 +487,29 @@ reinstall if scopes or slash commands changed.
 
 | Flag | Default | Purpose |
 |------|---------|---------|
-| `--write [PATH]` | stdout | Write to a file instead of stdout. Bare `--write` writes `$HERMES_HOME/slack-manifest.json`. |
-| `--name NAME` | `Hermes` | Bot display name in Slack. |
+| `--write [PATH]` | stdout | Write to a file instead of stdout. Bare `--write` writes `$AURORA_HOME/slack-manifest.json`. |
+| `--name NAME` | `Aurora` | Bot display name in Slack. |
 | `--description DESC` | default blurb | Bot description shown in the Slack app directory. |
 | `--long-description TEXT` | unset | Set `display_information.long_description` inline (175–4,000 characters). Incompatible with `--slashes-only`. |
 | `--long-description-file PATH` | unset | Read the long description from a UTF-8 text file, preserving its contents exactly. Mutually exclusive with `--long-description` and incompatible with `--slashes-only`. |
 | `--slashes-only` | off | Emit only `features.slash_commands` for merging into a manually-maintained manifest. |
 
-Run `hermes slack manifest --write` again after `hermes update` to pick
+Run `aurora slack manifest --write` again after `aurora update` to pick
 up any new commands.
 
 
-## `hermes send`
+## `aurora send`
 
 ```bash
-hermes send --to <target> "message text"
-hermes send --to <target> --file <path>
-echo "message" | hermes send --to <target>
-hermes send --list [platform]
+aurora send --to <target> "message text"
+aurora send --to <target> --file <path>
+echo "message" | aurora send --to <target>
+aurora send --list [platform]
 ```
 
-Send a one-shot message to a configured messaging platform without spinning up an agent or gateway loop. Reuses the gateway's already-configured credentials (`~/.hermes/.env` + `~/.hermes/config.yaml`) so ops scripts, cron jobs, CI hooks, and monitoring daemons can post status updates without reimplementing each platform's REST client.
+Send a one-shot message to a configured messaging platform without spinning up an agent or gateway loop. Reuses the gateway's already-configured credentials (`~/.aurora/.env` + `~/.aurora/config.yaml`) so ops scripts, cron jobs, CI hooks, and monitoring daemons can post status updates without reimplementing each platform's REST client.
 
-For bot-token platforms (Telegram, Discord, Slack, Signal, SMS, WhatsApp-CloudAPI) no running gateway is required — `hermes send` talks directly to the platform's REST endpoint. Plugin platforms that need a persistent adapter still require a live gateway.
+For bot-token platforms (Telegram, Discord, Slack, Signal, SMS, WhatsApp-CloudAPI) no running gateway is required — `aurora send` talks directly to the platform's REST endpoint. Plugin platforms that need a persistent adapter still require a live gateway.
 
 | Option | Description |
 |--------|-------------|
@@ -520,55 +520,55 @@ For bot-token platforms (Telegram, Discord, Slack, Signal, SMS, WhatsApp-CloudAP
 | `-q`, `--quiet` | Suppress stdout on success — useful in scripts (rely on exit code only). |
 | `--json` | Emit raw JSON result instead of human-readable output. |
 
-If neither a positional `message` argument nor `--file` is provided, `hermes send` reads from stdin when it is not a TTY. Exit codes: `0` on success, `1` on delivery/backend failure, `2` on usage errors.
+If neither a positional `message` argument nor `--file` is provided, `aurora send` reads from stdin when it is not a TTY. Exit codes: `0` on success, `1` on delivery/backend failure, `2` on usage errors.
 
 ### Sending images and other media
 
 `--file` is for *text* bodies only. To deliver an image, document, video, or audio file as a native platform attachment, reference it inside the message text with the `MEDIA:<local_path>` directive:
 
 ```bash
-hermes send --to telegram "MEDIA:~/.hermes/cache/scratch/screenshot.png"
-hermes send --to telegram "Build chart for today MEDIA:~/.hermes/cache/scratch/chart.png"   # with caption
-hermes send --to discord:#ops "MEDIA:~/.hermes/cache/scratch/report.pdf"
+aurora send --to telegram "MEDIA:~/.aurora/cache/scratch/screenshot.png"
+aurora send --to telegram "Build chart for today MEDIA:~/.aurora/cache/scratch/chart.png"   # with caption
+aurora send --to discord:#ops "MEDIA:~/.aurora/cache/scratch/report.pdf"
 ```
 
 By default, image files are sent as photos (platforms like Telegram recompress these). Add `[[as_document]]` to the message to deliver them as uncompressed file attachments instead:
 
 ```bash
-hermes send --to telegram "[[as_document]] MEDIA:~/.hermes/cache/scratch/screenshot.png"
+aurora send --to telegram "[[as_document]] MEDIA:~/.aurora/cache/scratch/screenshot.png"
 ```
 
 Examples:
 
 ```bash
-hermes send --to telegram "deploy finished"
-echo "RAM 92%" | hermes send --to telegram:-1001234567890
-hermes send --to discord:#ops --file ~/.hermes/cache/scratch/report.md
-hermes send --to slack:#eng --subject "[CI]" --file build.log
-hermes send --list                  # all platforms
-hermes send --list telegram         # filter by platform
+aurora send --to telegram "deploy finished"
+echo "RAM 92%" | aurora send --to telegram:-1001234567890
+aurora send --to discord:#ops --file ~/.aurora/cache/scratch/report.md
+aurora send --to slack:#eng --subject "[CI]" --file build.log
+aurora send --list                  # all platforms
+aurora send --list telegram         # filter by platform
 ```
 
 
 
-## `hermes peer`
+## `aurora peer`
 
 ```bash
-hermes peer add <name> --url http://host:port --key <API_SERVER_KEY>
-hermes peer list
-hermes peer dm <peer>[/<agent>] "message"
-hermes peer run <peer>[/<agent>] --idempotency-key <key> "message"
-hermes peer status <peer>[/<agent>] <run_id>
-hermes peer stop <peer>[/<agent>] <run_id>
-hermes peer remove <name>
+aurora peer add <name> --url http://host:port --key <API_SERVER_KEY>
+aurora peer list
+aurora peer dm <peer>[/<agent>] "message"
+aurora peer run <peer>[/<agent>] --idempotency-key <key> "message"
+aurora peer status <peer>[/<agent>] <run_id>
+aurora peer stop <peer>[/<agent>] <run_id>
+aurora peer remove <name>
 ```
 
-Bot-to-bot DMs across machines. Register another Hermes gateway (any machine
+Bot-to-bot DMs across machines. Register another Aurora gateway (any machine
 running the `api_server` platform) as a *peer*, then message its agents:
-`hermes peer dm` resolves the remote agent's canonical **Bot Chat** session
+`aurora peer dm` resolves the remote agent's canonical **Bot Chat** session
 over the peer's API server, runs one agent turn there, and prints the reply
 on stdout — the cross-machine twin of the local
-`hermes -p <bot> chat --in ~ -c "Bot Chat" …` bot-messaging command.
+`aurora -p <bot> chat --in ~ -c "Bot Chat" …` bot-messaging command.
 
 `<peer>` alone targets the peer gateway's main agent;
 `<peer>/<agent>` targets a named profile on a multiplexed peer (routed via
@@ -576,7 +576,7 @@ its `/p/<profile>/` mirror).
 
 | Subcommand | Description |
 |--------|-------------|
-| `add <name> --url <URL> [--key <KEY>] [--note TEXT]` | Register or update a peer. The URL goes to `config.yaml` (`bot_peers`); the key is stored as `HERMES_PEER_<NAME>_KEY` in `~/.hermes/.env`. |
+| `add <name> --url <URL> [--key <KEY>] [--note TEXT]` | Register or update a peer. The URL goes to `config.yaml` (`bot_peers`); the key is stored as `AURORA_PEER_<NAME>_KEY` in `~/.aurora/.env`. |
 | `list` | List peers and whether each has a key configured. |
 | `dm <peer>[/<agent>] [message]` | Message the peer agent's canonical Bot Chat and print the reply (`--json` for machine-readable output; message falls back to stdin). |
 | `run <peer>[/<agent>] [message]` | Start a long canonical Bot Chat turn asynchronously and return its `run_id`, session ID, and idempotency key (`--json` supported). Reuse `--idempotency-key` when retrying the same request. |
@@ -586,20 +586,20 @@ its `/p/<profile>/` mirror).
 
 When at least one peer is registered, the Bot Mode messaging protocol
 (`agent.bot_mode_protocol`) taught to every canonical Bot Chat automatically
-includes the peer roster and the `hermes peer dm` pattern, so agents discover
+includes the peer roster and the `aurora peer dm` pattern, so agents discover
 cross-machine teammates without SOUL edits. See
 [Bot Mode](../user-guide/bot-mode.md).
 
 Exit codes: `0` on success, `1` on delivery/peer failure, `2` on usage errors.
 
-## `hermes secrets`
+## `aurora secrets`
 
 ```bash
-hermes secrets bitwarden <subcommand>
-hermes secrets bw <subcommand>          # short alias
+aurora secrets bitwarden <subcommand>
+aurora secrets bw <subcommand>          # short alias
 ```
 
-Pull API keys from an external secret manager at process startup instead of storing them in `~/.hermes/.env`. Currently supports **Bitwarden Secrets Manager**. See the full guide: [Bitwarden integration](../user-guide/secrets/bitwarden.md).
+Pull API keys from an external secret manager at process startup instead of storing them in `~/.aurora/.env`. Currently supports **Bitwarden Secrets Manager**. See the full guide: [Bitwarden integration](../user-guide/secrets/bitwarden.md).
 
 `bitwarden` (alias `bw`) subcommands:
 
@@ -613,15 +613,15 @@ Pull API keys from an external secret manager at process startup instead of stor
 | `disable` | Turn off the Bitwarden integration. |
 
 
-## `hermes migrate`
+## `aurora migrate`
 
 ```bash
-hermes migrate                 # find another agent's setup here and offer to import it
-hermes migrate <agent>         # openclaw, claude-code, codex, cursor, grok-bot or openbot
-hermes migrate <type>          # xai, relay
+aurora migrate                 # find another agent's setup here and offer to import it
+aurora migrate <agent>         # openclaw, claude-code, codex, cursor, grok-bot or openbot
+aurora migrate <type>          # xai, relay
 ```
 
-Bare `hermes migrate` looks for OpenClaw, Claude Code, Codex CLI, Cursor, Grok Bot and OpenBot on this computer and offers to import what it finds, the same step a first `hermes setup` runs (without setup's own choices: OpenClaw keys come over only with `hermes migrate openclaw --migrate-secrets`). `hermes migrate <agent>` imports from that agent even when nothing is detected: it installs the [`agent-importers`](../user-guide/import-from-other-agents.md) plugin from the catalog when it is missing, then runs `hermes import-agent <agent>` (preview, then confirmation). It takes `--source`, `--dry-run`, `--overwrite` and `-y`; `grok-bot` and `openbot` also take `--activate-routines` and `--bot <name>`; `openclaw` takes `--migrate-secrets` (API keys and bot tokens come over only with it, unlike first-run setup, which passes it).
+Bare `aurora migrate` looks for OpenClaw, Claude Code, Codex CLI, Cursor, Grok Bot and OpenBot on this computer and offers to import what it finds, the same step a first `aurora setup` runs (without setup's own choices: OpenClaw keys come over only with `aurora migrate openclaw --migrate-secrets`). `aurora migrate <agent>` imports from that agent even when nothing is detected: it installs the [`agent-importers`](../user-guide/import-from-other-agents.md) plugin from the catalog when it is missing, then runs `aurora import-agent <agent>` (preview, then confirmation). It takes `--source`, `--dry-run`, `--overwrite` and `-y`; `grok-bot` and `openbot` also take `--activate-routines` and `--bot <name>`; `openclaw` takes `--migrate-secrets` (API keys and bot tokens come over only with it, unlike first-run setup, which passes it).
 
 The `xai` and `relay` types diagnose and (optionally) rewrite the active `config.yaml` to replace references to retired models or deprecated settings. A timestamped backup of the original `config.yaml` is taken before any rewrite (skip with `--no-backup`).
 
@@ -639,13 +639,13 @@ Common flags for migration subcommands:
 
 
 
-## `hermes codex-runtime`
+## `aurora codex-runtime`
 
 ```bash
-hermes codex-runtime migrate [--dry-run] [--json]
+aurora codex-runtime migrate [--dry-run] [--json]
 ```
 
-Runs the `~/.codex/config.toml` migration that `/codex-runtime codex_app_server` triggers, without a chat session: Hermes' `mcp_servers` (plus installed codex plugins and the `default_permissions` default) are projected into the managed block for the selected profile (`hermes -p <name> codex-runtime migrate`). User text outside the block is kept verbatim; a user-owned `[mcp_servers.<name>]` with the same name as a Hermes server is preserved and the Hermes projection for that name skipped (reported as `preserved_user_servers`). The result is validated as TOML before an atomic write; exit code is 1 when the report contains errors.
+Runs the `~/.codex/config.toml` migration that `/codex-runtime codex_app_server` triggers, without a chat session: Aurora's `mcp_servers` (plus installed codex plugins and the `default_permissions` default) are projected into the managed block for the selected profile (`aurora -p <name> codex-runtime migrate`). User text outside the block is kept verbatim; a user-owned `[mcp_servers.<name>]` with the same name as an Aurora server is preserved and the Aurora projection for that name skipped (reported as `preserved_user_servers`). The result is validated as TOML before an atomic write; exit code is 1 when the report contains errors.
 
 | Flag | Description |
 |------|-------------|
@@ -653,10 +653,10 @@ Runs the `~/.codex/config.toml` migration that `/codex-runtime codex_app_server`
 | `--json` | Print the full migration report as JSON (`migrated`, `preserved_user_servers`, `skipped_keys_per_server`, `errors`, `target_path`, `written`). |
 
 
-## `hermes proxy`
+## `aurora proxy`
 
 ```bash
-hermes proxy <subcommand>
+aurora proxy <subcommand>
 ```
 
 Run a local OpenAI-compatible HTTP server that forwards requests to an OAuth-authenticated upstream provider (e.g. Nous Portal, xAI). External apps can point at the proxy with any bearer token; the proxy attaches your real OAuth credentials on the way out. See [Subscription Proxy](../user-guide/features/subscription-proxy.md) for the full guide.
@@ -668,13 +668,13 @@ Run a local OpenAI-compatible HTTP server that forwards requests to an OAuth-aut
 | `providers` | List available proxy upstream providers. |
 
 
-## `hermes security`
+## `aurora security`
 
 ```bash
-hermes security <subcommand>
+aurora security <subcommand>
 ```
 
-On-demand vulnerability scan against [OSV.dev](https://osv.dev). Covers the Hermes venv (installed PyPI distributions), Python dependencies declared by plugins under `~/.hermes/plugins/`, and pinned `npx`/`uvx` MCP servers in `config.yaml`. Does NOT scan globally-installed packages or editor/browser extensions.
+On-demand vulnerability scan against [OSV.dev](https://osv.dev). Covers the Aurora venv (installed PyPI distributions), Python dependencies declared by plugins under `~/.aurora/plugins/`, and pinned `npx`/`uvx` MCP servers in `config.yaml`. Does NOT scan globally-installed packages or editor/browser extensions.
 
 | Subcommand | Description |
 |------------|-------------|
@@ -686,51 +686,51 @@ On-demand vulnerability scan against [OSV.dev](https://osv.dev). Covers the Herm
 |------|---------|-------------|
 | `--json` | off | Emit machine-readable JSON instead of human-readable text. |
 | `--fail-on <level>` | `critical` | Exit non-zero when any finding meets this severity (`low`, `moderate`, `high`, `critical`). |
-| `--skip-venv` | off | Skip scanning the Hermes Python venv. |
+| `--skip-venv` | off | Skip scanning the Aurora Python venv. |
 | `--skip-plugins` | off | Skip scanning plugin requirements files. |
 | `--skip-mcp` | off | Skip scanning pinned MCP servers in `config.yaml`. |
 
 
-## `hermes login` / `hermes logout` *(Deprecated)*
+## `aurora login` / `aurora logout` *(Deprecated)*
 
 :::caution
-`hermes login` has been removed. Use `hermes auth` to manage OAuth credentials, `hermes model` to select a provider, or `hermes setup` for full interactive setup.
+`aurora login` has been removed. Use `aurora auth` to manage OAuth credentials, `aurora model` to select a provider, or `aurora setup` for full interactive setup.
 :::
 
-## `hermes auth`
+## `aurora auth`
 
 Manage credential pools for same-provider key rotation. See [Credential Pools](../user-guide/features/credential-pools.md) for full documentation.
 
 ```bash
-hermes auth                                              # Interactive wizard
-hermes auth list                                         # Show all pools
-hermes auth list openrouter                              # Show specific provider
-hermes auth add openrouter --api-key sk-or-v1-xxx        # Add API key
-hermes auth add openrouter --type oauth                  # Browser login (OpenRouter PKCE) mints a key for you
-hermes auth add anthropic --type oauth                   # Add OAuth credential
-hermes auth add openai-codex --type oauth --priority 0   # Add an account and try it first
-hermes auth add openai-codex --browser                   # Codex: browser auth-code + PKCE on localhost:1455 instead of device code
-hermes auth remove openrouter 2                          # Remove by index
-hermes auth priority openrouter backup-key 0             # Move a credential to the front of fill_first order
-hermes auth reset openrouter                             # Clear cooldowns
-hermes auth reset openrouter 2                           # Clear the cooldown on one credential
-hermes auth refresh openai-codex work                    # Refresh one OAuth credential and clear its cooldown
-hermes auth status anthropic                             # Show auth status for a provider
-hermes auth logout anthropic                             # Log out and clear stored auth state
+aurora auth                                              # Interactive wizard
+aurora auth list                                         # Show all pools
+aurora auth list openrouter                              # Show specific provider
+aurora auth add openrouter --api-key sk-or-v1-xxx        # Add API key
+aurora auth add openrouter --type oauth                  # Browser login (OpenRouter PKCE) mints a key for you
+aurora auth add anthropic --type oauth                   # Add OAuth credential
+aurora auth add openai-codex --type oauth --priority 0   # Add an account and try it first
+aurora auth add openai-codex --browser                   # Codex: browser auth-code + PKCE on localhost:1455 instead of device code
+aurora auth remove openrouter 2                          # Remove by index
+aurora auth priority openrouter backup-key 0             # Move a credential to the front of fill_first order
+aurora auth reset openrouter                             # Clear cooldowns
+aurora auth reset openrouter 2                           # Clear the cooldown on one credential
+aurora auth refresh openai-codex work                    # Refresh one OAuth credential and clear its cooldown
+aurora auth status anthropic                             # Show auth status for a provider
+aurora auth logout anthropic                             # Log out and clear stored auth state
 ```
 
-Subcommands: `add`, `list`, `remove`, `reset`, `priority`, `refresh`, `status`, `logout`. Spotify login moved to the `spotify` catalog plugin's `hermes spotify login`. When called with no subcommand, launches the interactive management wizard.
+Subcommands: `add`, `list`, `remove`, `reset`, `priority`, `refresh`, `status`, `logout`. Spotify login moved to the `spotify` catalog plugin's `aurora spotify login`. When called with no subcommand, launches the interactive management wizard.
 
-## `hermes usage`
+## `aurora usage`
 
 The account-limits block of the `/usage` slash command — Codex 5-hour / weekly windows, plan and banked
 resets; Anthropic OAuth windows; OpenRouter credits — without starting a session, so shell scripts and cron
 jobs can read it.
 
 ```bash
-hermes usage                          # configured model provider, human-readable block
-hermes usage --provider openai-codex  # a specific provider
-hermes usage --json                   # one JSON document on stdout
+aurora usage                          # configured model provider, human-readable block
+aurora usage --provider openai-codex  # a specific provider
+aurora usage --json                   # one JSON document on stdout
 ```
 
 | Option | Description |
@@ -764,10 +764,10 @@ has no usage endpoint, or the fetch fails (stdout stays empty).
 `used_percent` is `null` when the provider did not report the window; `resets_at` is ISO-8601 UTC or `null`
 (some windows carry a free-text `detail` instead); `plan` is `null` when unknown.
 
-## `hermes status`
+## `aurora status`
 
 ```bash
-hermes status [--full] [--deep]
+aurora status [--full] [--deep]
 ```
 
 By default prints a one-screen summary: model, active provider, every provider with
@@ -779,10 +779,10 @@ platforms the gateway would start, and scheduled jobs. No key values are printed
 | `--full` | Print every section (API keys redacted, auth providers, terminal backend, sessions, ...). `--all` is an alias. |
 | `--deep` | Run deeper checks that may take longer. Implies `--full`. |
 
-## `hermes cron`
+## `aurora cron`
 
 ```bash
-hermes cron <list|create|edit|pause|resume|run|remove|status|runs|incidents|doctor|tick>
+aurora cron <list|create|edit|pause|resume|run|remove|status|runs|incidents|doctor|tick>
 ```
 
 | Subcommand | Description |
@@ -803,32 +803,32 @@ The cron **trigger** is pluggable via the `cron.provider` config key. Empty
 NAS-managed provider for scale-to-zero hosted gateways) — configured via the
 `cron.chronos.*` keys (`portal_url`, `callback_url`, `expected_audience`,
 `nas_jwks_url`) — or name a custom provider under `plugins/cron/<name>/` or
-`$HERMES_HOME/plugins/<name>/`. An unknown or unavailable provider falls back to
+`$AURORA_HOME/plugins/<name>/`. An unknown or unavailable provider falls back to
 the built-in, so cron is never left without a trigger. See the
 [cron internals](../developer-guide/cron-internals.md#gateway-integration) doc.
 
-## `hermes kanban`
+## `aurora kanban`
 
 ```bash
-hermes kanban [--board <slug>] <action> [options]
+aurora kanban [--board <slug>] <action> [options]
 ```
 
-Multi-profile, multi-project collaboration board. Each install can host many boards (one per project, repo, or domain); each board is a standalone queue with its own SQLite DB and dispatcher scope. New installs start with one board called `default`, whose DB is `~/.hermes/kanban.db` for back-compat; additional boards live at `~/.hermes/kanban/boards/<slug>/kanban.db`. The gateway-embedded dispatcher sweeps every board per tick.
+Multi-profile, multi-project collaboration board. Each install can host many boards (one per project, repo, or domain); each board is a standalone queue with its own SQLite DB and dispatcher scope. New installs start with one board called `default`, whose DB is `~/.aurora/kanban.db` for back-compat; additional boards live at `~/.aurora/kanban/boards/<slug>/kanban.db`. The gateway-embedded dispatcher sweeps every board per tick.
 
 **Global flags (apply to every action below):**
 
 | Flag | Purpose |
 |------|---------|
-| `--board <slug>` | Operate on a specific board. Defaults to the current board (set via `hermes kanban boards switch`, the `HERMES_KANBAN_BOARD` env var, or `default`). |
+| `--board <slug>` | Operate on a specific board. Defaults to the current board (set via `aurora kanban boards switch`, the `AURORA_KANBAN_BOARD` env var, or `default`). |
 
-**This is the human / scripting surface.** Agent workers spawned by the dispatcher drive the board through a dedicated `kanban_*` [toolset](../user-guide/features/kanban.md#how-workers-interact-with-the-board) (`kanban_show`, `kanban_complete`, `kanban_request_review`, `kanban_request_changes`, `kanban_block`, `kanban_create`, `kanban_link`, `kanban_comment`, `kanban_heartbeat`; orchestrator profiles also get `kanban_list` and `kanban_unblock`) instead of shelling to `hermes kanban`. Workers have `HERMES_KANBAN_BOARD` pinned in their env so they physically cannot see other boards.
+**This is the human / scripting surface.** Agent workers spawned by the dispatcher drive the board through a dedicated `kanban_*` [toolset](../user-guide/features/kanban.md#how-workers-interact-with-the-board) (`kanban_show`, `kanban_complete`, `kanban_request_review`, `kanban_request_changes`, `kanban_block`, `kanban_create`, `kanban_link`, `kanban_comment`, `kanban_heartbeat`; orchestrator profiles also get `kanban_list` and `kanban_unblock`) instead of shelling to `aurora kanban`. Workers have `AURORA_KANBAN_BOARD` pinned in their env so they physically cannot see other boards.
 
 | Action | Purpose |
 |--------|---------|
 | `init` | Create `kanban.db` if missing. Idempotent. |
 | `boards list` / `boards ls` | List all boards with task counts. `--json`, `--all` (include archived). |
 | `boards create <slug>` | Create a new board. Flags: `--name`, `--description`, `--icon`, `--color`, `--switch` (make active). Slug is kebab-case, auto-downcased. |
-| `boards switch <slug>` / `boards use` | Persist `<slug>` as the active board (writes `~/.hermes/kanban/current`). |
+| `boards switch <slug>` / `boards use` | Persist `<slug>` as the active board (writes `~/.aurora/kanban/current`). |
 | `boards show` / `boards current` | Print the currently-active board's name, DB path, and task counts. |
 | `boards rename <slug> "<name>"` | Change a board's display name. Slug is immutable. |
 | `boards rm <slug>` | Archive (default) or hard-delete a board. `--delete` skips the archive step. Archived boards move to `boards/_archived/<slug>-<ts>/`. Refused for `default`. |
@@ -859,49 +859,49 @@ Examples:
 
 ```bash
 # Create a second board and put a task on it without switching away.
-hermes kanban boards create atm10-server --name "ATM10 Server" --icon 🎮
-hermes kanban --board atm10-server create "Restart server" --assignee ops
+aurora kanban boards create atm10-server --name "ATM10 Server" --icon 🎮
+aurora kanban --board atm10-server create "Restart server" --assignee ops
 
 # Switch the active board for subsequent calls.
-hermes kanban boards switch atm10-server
-hermes kanban list                  # shows atm10-server tasks
+aurora kanban boards switch atm10-server
+aurora kanban list                  # shows atm10-server tasks
 
 # Archive a board (recoverable) or hard-delete it.
-hermes kanban boards rm atm10-server
-hermes kanban boards rm atm10-server --delete
+aurora kanban boards rm atm10-server
+aurora kanban boards rm atm10-server --delete
 ```
 
-Board resolution order (highest precedence first): `--board <slug>` flag → `HERMES_KANBAN_BOARD` env var → `~/.hermes/kanban/current` file → `default`.
+Board resolution order (highest precedence first): `--board <slug>` flag → `AURORA_KANBAN_BOARD` env var → `~/.aurora/kanban/current` file → `default`.
 
 All actions are also available as a slash command in the gateway (`/kanban …`), with the same argument surface — including `boards` subcommands and the `--board` flag.
 
 For the full design — comparison with Cline Kanban / Paperclip / NanoClaw / Gemini Enterprise, eight collaboration patterns, four user stories, concurrency correctness proof — see the [Kanban user guide](../user-guide/features/kanban.md).
 
-## `hermes egress`
+## `aurora egress`
 
 Outbound credential-injection firewall for remote terminal sandboxes. Wraps the [iron-proxy](https://github.com/ironsh/iron-proxy) daemon — a TLS-intercepting proxy that swaps opaque proxy tokens for real upstream API credentials at the network boundary, so sandboxes never hold real keys. Disabled by default; see the full [Egress proxy](../user-guide/egress/iron-proxy.md) page for setup + architecture.
 
 ```bash
-hermes egress install                  # download the pinned iron-proxy binary
-hermes egress install --force          # check and repair the managed copy
+aurora egress install                  # download the pinned iron-proxy binary
+aurora egress install --force          # check and repair the managed copy
 
-hermes egress setup                    # interactive wizard: CA, mappings, config
-hermes egress setup --tunnel-port N    # override the tunnel listener port (default 9090)
-hermes egress setup --from-bitwarden   # use Bitwarden Secrets Manager as credential source
-hermes egress setup --no-bitwarden     # explicitly switch back to env-based credentials
-hermes egress setup --rotate-tokens    # mint fresh proxy tokens (default preserves existing)
+aurora egress setup                    # interactive wizard: CA, mappings, config
+aurora egress setup --tunnel-port N    # override the tunnel listener port (default 9090)
+aurora egress setup --from-bitwarden   # use Bitwarden Secrets Manager as credential source
+aurora egress setup --no-bitwarden     # explicitly switch back to env-based credentials
+aurora egress setup --rotate-tokens    # mint fresh proxy tokens (default preserves existing)
 
-hermes egress start                    # spawn the managed proxy daemon
-hermes egress stop                     # SIGTERM (then SIGKILL after 5s grace)
-hermes egress restart                  # stop (if running) then start — needed for secret changes
-hermes egress reload                   # hot-reload the ruleset in-place (no restart, no dropped
+aurora egress start                    # spawn the managed proxy daemon
+aurora egress stop                     # SIGTERM (then SIGKILL after 5s grace)
+aurora egress restart                  # stop (if running) then start — needed for secret changes
+aurora egress reload                   # hot-reload the ruleset in-place (no restart, no dropped
                                        #   connections) via the loopback management API
 
-hermes egress status                   # binary + config + pid + listening + mappings
-hermes egress status --show-tokens     # print proxy tokens in full (default: redacted)
+aurora egress status                   # binary + config + pid + listening + mappings
+aurora egress status --show-tokens     # print proxy tokens in full (default: redacted)
 
-hermes egress disable                  # flip proxy.enabled = false (does not stop a running proxy)
-hermes egress config                   # print the path to proxy.yaml for inspection
+aurora egress disable                  # flip proxy.enabled = false (does not stop a running proxy)
+aurora egress config                   # print the path to proxy.yaml for inspection
 ```
 
 ### Common flows
@@ -909,42 +909,42 @@ hermes egress config                   # print the path to proxy.yaml for inspec
 ```bash
 # First-time setup
 export OPENROUTER_API_KEY=…
-hermes egress setup && hermes egress start
-hermes config set terminal.backend docker   # if not already
+aurora egress setup && aurora egress start
+aurora config set terminal.backend docker   # if not already
 
 # Switching credential source after the fact
-hermes egress setup --from-bitwarden       # env → bitwarden
-hermes egress setup --no-bitwarden         # bitwarden → env
+aurora egress setup --from-bitwarden       # env → bitwarden
+aurora egress setup --no-bitwarden         # bitwarden → env
 # (just `setup` without either flag preserves the existing mode)
 
 # Rotating all tokens (e.g. after a suspected token leak)
-hermes egress setup --rotate-tokens    # setup offers to restart the running daemon for you
+aurora egress setup --rotate-tokens    # setup offers to restart the running daemon for you
 # (running sandboxes still hold old tokens; restart them too)
 
 # Adding a new upstream
-# Edit ~/.hermes/config.yaml proxy.extra_allowed_hosts: [api.example.com]
-hermes egress setup
-hermes egress restart                  # one-command apply (stop + start)
+# Edit ~/.aurora/config.yaml proxy.extra_allowed_hosts: [api.example.com]
+aurora egress setup
+aurora egress restart                  # one-command apply (stop + start)
 ```
 
 ### Diagnostic shortcuts
 
 ```bash
-hermes egress status                     # current state in one view
-cat ~/.hermes/proxy/proxy.yaml           # the rendered iron-proxy config
-tail -20 ~/.hermes/proxy/iron-proxy.log  # daemon-level diagnostics
-tail -f ~/.hermes/proxy/iron-proxy.log | jq  # daemon + per-request log (line-delimited JSON; v0.39 combines both streams)
+aurora egress status                     # current state in one view
+cat ~/.aurora/proxy/proxy.yaml           # the rendered iron-proxy config
+tail -20 ~/.aurora/proxy/iron-proxy.log  # daemon-level diagnostics
+tail -f ~/.aurora/proxy/iron-proxy.log | jq  # daemon + per-request log (line-delimited JSON; v0.39 combines both streams)
 ```
 
 Common failure modes + recovery are covered in [Egress proxy → Troubleshooting](../user-guide/egress/iron-proxy.md#troubleshooting).
 
-## `hermes project`
+## `aurora project`
 
 ```bash
-hermes project <create|list|show|add-folder|remove-folder|rename|set-primary|use|archive|restore|bind-board>
+aurora project <create|list|show|add-folder|remove-folder|rename|set-primary|use|archive|restore|bind-board>
 ```
 
-Projects are human-named workspaces that can span multiple folders / repos. They anchor desktop session grouping, and a kanban task linked to a project (`hermes kanban create --project <slug>`, or a board bound to the project in the kanban dashboard) gets a deterministic worktree + branch under the project's primary folder by default (when the project has one). State is per-profile.
+Projects are human-named workspaces that can span multiple folders / repos. They anchor desktop session grouping, and a kanban task linked to a project (`aurora kanban create --project <slug>`, or a board bound to the project in the kanban dashboard) gets a deterministic worktree + branch under the project's primary folder by default (when the project has one). State is per-profile.
 
 | Subcommand | Description |
 |------------|-------------|
@@ -960,10 +960,10 @@ Projects are human-named workspaces that can span multiple folders / repos. They
 | `restore` | Restore an archived project. |
 | `bind-board` | Record a kanban board on the project and, when the board exists and the project has a primary folder, point the board's default workdir at it. Does not link the board's tasks to the project. |
 
-## `hermes webhook`
+## `aurora webhook`
 
 ```bash
-hermes webhook <subscribe|list|remove|test>
+aurora webhook <subscribe|list|remove|test>
 ```
 
 Manage dynamic webhook subscriptions for event-driven agent activation. Requires the webhook platform to be enabled in config — if not configured, prints setup instructions.
@@ -975,10 +975,10 @@ Manage dynamic webhook subscriptions for event-driven agent activation. Requires
 | `remove` / `rm` | Delete a dynamic subscription. Static routes from config.yaml are not affected. |
 | `test` | Send a test POST to verify a subscription is working. |
 
-### `hermes webhook subscribe`
+### `aurora webhook subscribe`
 
 ```bash
-hermes webhook subscribe <name> [options]
+aurora webhook subscribe <name> [options]
 ```
 
 | Option | Description |
@@ -992,22 +992,22 @@ hermes webhook subscribe <name> [options]
 | `--secret` | Custom HMAC secret. Auto-generated if omitted. |
 | `--deliver-only` | Skip the agent — deliver the rendered `--prompt` as the literal message. Zero LLM cost, sub-second delivery. Requires `--deliver` to be a real target (not `log`). |
 | `--mirror-to-session` | Also write each delivered message into the target chat's session, so replying to it in that chat has context. Off by default; only enable it for sources whose content you trust in your conversation. |
-| `--script` | Filter/transform script under `~/.hermes/scripts/`. The webhook payload is passed as JSON on stdin; JSON stdout replaces the payload, and empty stdout, `[SILENT]`, or a nonzero exit code ignores the webhook. See [Script Filters and Transforms](../user-guide/messaging/webhooks.md#script-filters-and-transforms). |
+| `--script` | Filter/transform script under `~/.aurora/scripts/`. The webhook payload is passed as JSON on stdin; JSON stdout replaces the payload, and empty stdout, `[SILENT]`, or a nonzero exit code ignores the webhook. See [Script Filters and Transforms](../user-guide/messaging/webhooks.md#script-filters-and-transforms). |
 | `--route-profile` | Bind the route to a multiplexed profile: it is then reachable only at `/p/<profile>/webhooks/<name>` and the agent runs as that profile. Validated against existing profiles; kept on update when omitted. Not the same as the global `-p/--profile`, which selects the gateway whose subscriptions file is written. See [Multi-profile gateways](../user-guide/multi-profile-gateways.md). |
 
-Subscriptions persist to `~/.hermes/webhook_subscriptions.json` and are hot-reloaded by the webhook adapter without a gateway restart. Re-running `subscribe` for an existing name keeps its secret and profile binding unless you pass `--secret` / `--route-profile`.
+Subscriptions persist to `~/.aurora/webhook_subscriptions.json` and are hot-reloaded by the webhook adapter without a gateway restart. Re-running `subscribe` for an existing name keeps its secret and profile binding unless you pass `--secret` / `--route-profile`.
 
-## `hermes doctor`
+## `aurora doctor`
 
 ```bash
-hermes doctor [--fix]
+aurora doctor [--fix]
 ```
 
 | Option | Description |
 |--------|-------------|
 | `--fix` | Attempt automatic repairs where possible. |
 
-Exit status: `0` when the report lists no unresolved problems, `1` when at least one remains (including problems `--fix` could not repair), so a health gate or CI step can trust `hermes doctor` as a check.
+Exit status: `0` when the report lists no unresolved problems, `1` when at least one remains (including problems `--fix` could not repair), so a health gate or CI step can trust `aurora doctor` as a check.
 
 The **API Connectivity** section includes an `IPv6 route` check: it opens one short (2 s) IPv6 TCP connection to a known dual-stack host. A route that is advertised but only times out (a blackholed IPv6 prefix) is reported as a warning naming the remedy, `network.force_ipv4: true`. Having no IPv6 route at all is healthy and reported as OK; the check is skipped when `force_ipv4` is already set.
 
@@ -1016,15 +1016,15 @@ Custom-endpoint config checks (both warn-only; `--fix` does not rewrite them):
 - `custom_providers` that is not a YAML list (for example a string left by a bad `config set`) is reported as an error naming the key and the received type — the runtime ignores every custom endpoint until it is a list again.
 - A legacy `custom_providers` list entry with no matching `providers:` entry (same endpoint URL) is reported with the move to make: such an entry is still served from the retired list store (the model picker and the Custom Endpoints page dual-read it) rather than the `providers:` map every other surface edits, and the one-shot v12 migration that moved the list into `providers:` does not run again.
 
-**Config Structure** also flags any list/mapping setting stored as one quoted string (`plugins.enabled: '["a","b"]'`, `model_catalog.excluded_providers: '["openai-api"]'` — the shape older `config set` versions wrote): every reader ignores such a string, so the plugins silently stay unmounted and the exclusion never applies. The finding names the key and the `hermes config set <key> '<literal>'` command that stores a real list; the same warning appears in the startup banner. `--fix` does not rewrite the file.
+**Config Structure** also flags any list/mapping setting stored as one quoted string (`plugins.enabled: '["a","b"]'`, `model_catalog.excluded_providers: '["openai-api"]'` — the shape older `config set` versions wrote): every reader ignores such a string, so the plugins silently stay unmounted and the exclusion never applies. The finding names the key and the `aurora config set <key> '<literal>'` command that stores a real list; the same warning appears in the startup banner. `--fix` does not rewrite the file.
 
-## `hermes dump`
+## `aurora dump`
 
 ```bash
-hermes dump [--show-keys]
+aurora dump [--show-keys]
 ```
 
-Outputs a compact, plain-text summary of your entire Hermes setup. Designed to be copy-pasted into Discord, GitHub issues, or Telegram when asking for support — no ANSI colors, no special formatting, just data.
+Outputs a compact, plain-text summary of your entire Aurora setup. Designed to be copy-pasted into Discord, GitHub issues, or Telegram when asking for support — no ANSI colors, no special formatting, just data.
 
 | Option | Description |
 |--------|-------------|
@@ -1034,9 +1034,9 @@ Outputs a compact, plain-text summary of your entire Hermes setup. Designed to b
 
 | Section | Details |
 |---------|---------|
-| **Header** | Hermes version, release date, git commit hash |
+| **Header** | Aurora version, release date, git commit hash |
 | **Environment** | OS, Python version, OpenAI SDK version |
-| **Identity** | Active profile name, HERMES_HOME path |
+| **Identity** | Active profile name, AURORA_HOME path |
 | **Model** | Configured default model and provider |
 | **Terminal** | Backend type (local, docker, ssh, etc.) |
 | **API keys** | Presence check for all 22 provider/tool API keys |
@@ -1048,13 +1048,13 @@ Outputs a compact, plain-text summary of your entire Hermes setup. Designed to b
 ### Example output
 
 ```
---- hermes dump ---
+--- aurora dump ---
 version:          0.8.0 (2026.4.8) [af4abd2f]
 os:               Linux 6.14.0-37-generic x86_64
 python:           3.11.14
 openai_sdk:       2.24.0
 profile:          default
-hermes_home:      ~/.hermes
+aurora_home:      ~/.aurora
 model:            anthropic/claude-opus-4.6
 provider:         openrouter
 terminal:         local
@@ -1091,13 +1091,13 @@ config_overrides:
 - Quick sanity check when something isn't working
 
 :::tip
-`hermes dump` is specifically designed for sharing. For interactive diagnostics, use `hermes doctor`. For a visual overview, use `hermes status`.
+`aurora dump` is specifically designed for sharing. For interactive diagnostics, use `aurora doctor`. For a visual overview, use `aurora status`.
 :::
 
-## `hermes debug`
+## `aurora debug`
 
 ```bash
-hermes debug share [options]
+aurora debug share [options]
 ```
 
 Upload a debug report (system info + recent logs) to a paste service and get a shareable URL. Useful for quick support requests — includes everything a helper needs to diagnose your issue.
@@ -1110,36 +1110,36 @@ Upload a debug report (system info + recent logs) to a paste service and get a s
 | `--local` | Print the report locally instead of uploading. |
 | `--no-redact` | Disable upload-time secret redaction. By default, uploads are redacted. |
 
-The report includes system info (OS, Python version, Hermes version), recent agent, gateway, GUI/dashboard, and desktop logs (512 KB limit per file), plus the update and Desktop update hand-off logs when present, and redacted API key status. By default, uploads are redacted so secrets are not included; this covers the system dump (including config values such as `fallback_providers` entries and credentials in their URLs) as well as the logs, and the gateway `/debug` report too.
+The report includes system info (OS, Python version, Aurora version), recent agent, gateway, GUI/dashboard, and desktop logs (512 KB limit per file), plus the update and Desktop update hand-off logs when present, and redacted API key status. By default, uploads are redacted so secrets are not included; this covers the system dump (including config values such as `fallback_providers` entries and credentials in their URLs) as well as the logs, and the gateway `/debug` report too.
 
 Default uploads use public paste services tried in order: paste.rs, dpaste.com. `--nous` uploads the same debug bundle to private Nous diagnostics storage instead; the returned viewer link is for the Nous team and auto-deletes after 14 days.
 
 ### Examples
 
 ```bash
-hermes debug share              # Upload debug report, print URL
-hermes debug share --lines 500  # Include more log lines
-hermes debug share --expire 30  # Keep paste for 30 days
-hermes debug share --nous       # Upload a private diagnostics bundle for Nous support
-hermes debug share --local      # Print report to terminal (no upload)
+aurora debug share              # Upload debug report, print URL
+aurora debug share --lines 500  # Include more log lines
+aurora debug share --expire 30  # Keep paste for 30 days
+aurora debug share --nous       # Upload a private diagnostics bundle for Nous support
+aurora debug share --local      # Print report to terminal (no upload)
 ```
 
-## `hermes backup`
+## `aurora backup`
 
 ```bash
-hermes backup [options]
+aurora backup [options]
 ```
 
-Create a zip archive of your Hermes configuration, skills, sessions, and data. The backup excludes the hermes-agent codebase itself, and it does not nest earlier backup artifacts (`backups/`, `state-snapshots/`) — each of those already contains its own copy of `state.db`.
+Create a zip archive of your Aurora configuration, skills, sessions, and data. The backup excludes the aurora-agent codebase itself, and it does not nest earlier backup artifacts (`backups/`, `state-snapshots/`) — each of those already contains its own copy of `state.db`.
 
 | Option | Description |
 |--------|-------------|
-| `-o`, `--output <path>` | Output path for the zip file (default: `~/hermes-backup-<timestamp>.zip`). |
+| `-o`, `--output <path>` | Output path for the zip file (default: `~/aurora-backup-<timestamp>.zip`). |
 | `-q`, `--quick` | Quick snapshot: only critical state files (config.yaml, state.db, .env, auth, cron jobs). Much faster than a full backup. |
 | `-l`, `--label <name>` | Label for the snapshot (only used with `--quick`). |
-| `-k`, `--keep <N>` | After a full backup, delete older `hermes-backup-*.zip` files in the output directory beyond the newest N (default 3; `0` keeps everything). Custom-named zips are never touched. |
+| `-k`, `--keep <N>` | After a full backup, delete older `aurora-backup-*.zip` files in the output directory beyond the newest N (default 3; `0` keeps everything). Custom-named zips are never touched. |
 
-The backup uses SQLite's `backup()` API for safe copying, so it works correctly even when Hermes is running (WAL-mode safe).
+The backup uses SQLite's `backup()` API for safe copying, so it works correctly even when Aurora is running (WAL-mode safe).
 
 **Exit status:** `0` only when every selected file landed in the archive. If some files could not be added (`Backup incomplete: …`), the zip is kept so the rest can still be restored, but the command exits `1` — a cron or systemd timer will not report a partial archive as success, and `--keep` pruning is skipped so older complete archives survive. `2` means another backup was already running.
 
@@ -1147,32 +1147,32 @@ The backup uses SQLite's `backup()` API for safe copying, so it works correctly 
 
 - `*.db-wal`, `*.db-shm`, `*.db-journal` — SQLite's WAL / shared-memory / journal sidecars. The `*.db` file already got a consistent snapshot via `sqlite3.backup()`; shipping the live sidecars alongside it would let a restore see a half-committed state.
 - `checkpoints/` — per-session trajectory caches. Hash-keyed and regenerated per session; wouldn't port cleanly to another install anyway.
-- `models/`, `runtimes/`, `node/` at the root of `~/.hermes` (and of each `profiles/<name>/`) — regenerable runtime downloads, often tens of GB. Deeper directories with the same names (a skill's `models/`) are kept.
-- Browser profiles: `browser-profile/` (the real-profile snapshot — copied Cookies / Login Data), `browser-profiles/` (live CDP profiles) at any depth, and `browser_profiles/` (the Browser Use CLI backend's Chromium user-data dir, with its own Login Data / Cookies) at the root of `~/.hermes` and of each `profiles/<name>/`. Credential stores that must never enter an archive; all are regenerated on the next launch.
+- `models/`, `runtimes/`, `node/` at the root of `~/.aurora` (and of each `profiles/<name>/`) — regenerable runtime downloads, often tens of GB. Deeper directories with the same names (a skill's `models/`) are kept.
+- Browser profiles: `browser-profile/` (the real-profile snapshot — copied Cookies / Login Data), `browser-profiles/` (live CDP profiles) at any depth, and `browser_profiles/` (the Browser Use CLI backend's Chromium user-data dir, with its own Login Data / Cookies) at the root of `~/.aurora` and of each `profiles/<name>/`. Credential stores that must never enter an archive; all are regenerated on the next launch.
 - Regenerable entries of `cache/` at those same roots — model/plugin catalogs, stamps, browser profiles, tool-output spill. Durable artifacts stay in: `cache/images`, `cache/audio`, `cache/videos`, `cache/documents`, `cache/screenshots` (media delivered to or received from you) and `cache/citations` (the grounded-citations ledger). A deeper `cache/` (inside a skill) is kept whole.
 - Unix sockets, devices, and symlinks — a zip cannot hold them; before they were excluded, a stray `gateway.sock` made every full backup report `Backup incomplete`.
-- The `hermes-agent` code itself (this is a user-data backup, not a repo snapshot).
+- The `aurora-agent` code itself (this is a user-data backup, not a repo snapshot).
 
 ### Examples
 
 ```bash
-hermes backup                           # Full backup to ~/hermes-backup-*.zip
-hermes backup -o ~/backups/hermes.zip   # Full backup to specific path
-hermes backup --quick                   # Quick state-only snapshot
-hermes backup --quick --label "pre-upgrade"  # Quick snapshot with label
+aurora backup                           # Full backup to ~/aurora-backup-*.zip
+aurora backup -o ~/backups/aurora.zip   # Full backup to specific path
+aurora backup --quick                   # Quick state-only snapshot
+aurora backup --quick --label "pre-upgrade"  # Quick snapshot with label
 ```
 
-## `hermes checkpoints`
+## `aurora checkpoints`
 
 ```bash
-hermes checkpoints [COMMAND]
+aurora checkpoints [COMMAND]
 ```
 
-Inspect and manage the shadow git store at `~/.hermes/checkpoints/` — the storage layer behind the in-session `/rollback` command. Safe to run any time; does not require the agent to be running.
+Inspect and manage the shadow git store at `~/.aurora/checkpoints/` — the storage layer behind the in-session `/rollback` command. Safe to run any time; does not require the agent to be running.
 
 | Subcommand | Description |
 |------------|-------------|
-| `status` (default) | Show total size, project count, and per-project breakdown. Bare `hermes checkpoints` is equivalent. |
+| `status` (default) | Show total size, project count, and per-project breakdown. Bare `aurora checkpoints` is equivalent. |
 | `list` | Alias for `status`. |
 | `prune` | Force a cleanup sweep — delete orphan and stale projects, GC the store, enforce the size cap. Ignores the 24h idempotency marker. |
 | `clear` | Delete the entire checkpoint base. Irreversible; asks for confirmation unless `-f`. |
@@ -1191,22 +1191,22 @@ Inspect and manage the shadow git store at `~/.hermes/checkpoints/` — the stor
 ### Examples
 
 ```bash
-hermes checkpoints                                  # status overview
-hermes checkpoints prune --retention-days 3         # aggressive cleanup
-hermes checkpoints prune --max-size-mb 200          # tighten size cap once
-hermes checkpoints clear-legacy -f                  # drop v1 archive dirs
-hermes checkpoints clear -f                         # wipe everything
+aurora checkpoints                                  # status overview
+aurora checkpoints prune --retention-days 3         # aggressive cleanup
+aurora checkpoints prune --max-size-mb 200          # tighten size cap once
+aurora checkpoints clear-legacy -f                  # drop v1 archive dirs
+aurora checkpoints clear -f                         # wipe everything
 ```
 
 See [Checkpoints and `/rollback`](../user-guide/checkpoints-and-rollback.md) for the full architecture and the in-session commands.
 
-## `hermes import`
+## `aurora import`
 
 ```bash
-hermes import <zipfile> [options]
+aurora import <zipfile> [options]
 ```
 
-Restore a previously created Hermes backup into your Hermes home directory. All files in the archive overwrite existing files in your Hermes home; `--force` only skips the confirmation prompt that fires when the target already has a Hermes installation.
+Restore a previously created Aurora backup into your Aurora home directory. All files in the archive overwrite existing files in your Aurora home; `--force` only skips the confirmation prompt that fires when the target already has an Aurora installation.
 
 | Option | Description |
 |--------|-------------|
@@ -1216,7 +1216,7 @@ Restore a previously created Hermes backup into your Hermes home directory. All 
 Stop the gateway before importing to avoid conflicts with running processes.
 :::
 
-**Exit status:** `1` when the archive is damaged — before anything is written, every member is decompressed once and its CRC checked; if any fail, the command prints `Error: backup archive is damaged (N member(s) …)` with the offending members and stops with the Hermes home untouched. Also `1` when any file from the archive could not be restored (listed under `Warnings (N files skipped)` and summarised as `Import incomplete: …`). The files that did land stay in place, but a script or the dashboard will not report a partial restore as success. Runtime files the import deliberately keeps from this machine (`gateway.pid`, `gateway_state.json`, …) and the older-backup session warning below do not change the exit status.
+**Exit status:** `1` when the archive is damaged — before anything is written, every member is decompressed once and its CRC checked; if any fail, the command prints `Error: backup archive is damaged (N member(s) …)` with the offending members and stops with the Aurora home untouched. Also `1` when any file from the archive could not be restored (listed under `Warnings (N files skipped)` and summarised as `Import incomplete: …`). The files that did land stay in place, but a script or the dashboard will not report a partial restore as success. Runtime files the import deliberately keeps from this machine (`gateway.pid`, `gateway_state.json`, …) and the older-backup session warning below do not change the exit status.
 
 ### SQLite databases
 
@@ -1230,22 +1230,22 @@ Importing an older backup over newer work is still allowed, but it is no longer 
   ⚠ Session data replaced by older backup contents:
     state.db: 12 session(s) / 8912 message(s) -> 3 / 24
     Anything recorded after the backup was taken is not in it.
-    Recover from a newer backup or snapshot: hermes snapshot list
+    Recover from a newer backup or snapshot: aurora snapshot list
 ```
 
 ### Examples
 ```bash
-hermes import ~/hermes-backup-20260423.zip           # Prompts before overwriting existing config
-hermes import ~/hermes-backup-20260423.zip --force   # Overwrite without prompting
+aurora import ~/aurora-backup-20260423.zip           # Prompts before overwriting existing config
+aurora import ~/aurora-backup-20260423.zip --force   # Overwrite without prompting
 ```
 
-## `hermes logs`
+## `aurora logs`
 
 ```bash
-hermes logs [log_name] [options]
+aurora logs [log_name] [options]
 ```
 
-View, tail, and filter Hermes log files. All logs are stored in `~/.hermes/logs/` (or `<profile>/logs/` for non-default profiles).
+View, tail, and filter Aurora log files. All logs are stored in `~/.aurora/logs/` (or `<profile>/logs/` for non-default profiles).
 
 ### Log files
 
@@ -1257,7 +1257,7 @@ View, tail, and filter Hermes log files. All logs are stored in `~/.hermes/logs/
 | `gui` | `gui.log` | Dashboard / TUI-gateway / PTY-bridge / websocket events |
 | `desktop` | `desktop.log` | Electron desktop app — boot, backend spawn output, and recent Python tracebacks |
 | `mcp` | `mcp-stderr.log` | stderr of every stdio MCP server, one `starting MCP server` banner per launch |
-| `update` | `update.log` | Full stdout/stderr mirror of `hermes update` runs (append-only) — the root cause of update/dependency failures |
+| `update` | `update.log` | Full stdout/stderr mirror of `aurora update` runs (append-only) — the root cause of update/dependency failures |
 | `handoff` | `desktop-update-handoff.log` | Desktop-driven update hand-off stages, including the Desktop rebuild retry output |
 
 ### Options
@@ -1278,25 +1278,25 @@ A line without its own timestamp, such as a traceback frame or the rest of a mul
 
 ```bash
 # View the last 50 lines of agent.log (default)
-hermes logs
+aurora logs
 
 # Follow agent.log in real time
-hermes logs -f
+aurora logs -f
 
 # View the last 100 lines of gateway.log
-hermes logs gateway -n 100
+aurora logs gateway -n 100
 
 # Show only warnings and errors from the last hour
-hermes logs --level WARNING --since 1h
+aurora logs --level WARNING --since 1h
 
 # Filter by a specific session
-hermes logs --session abc123
+aurora logs --session abc123
 
 # Follow errors.log, starting from 30 minutes ago
-hermes logs errors --since 30m -f
+aurora logs errors --since 30m -f
 
 # List all log files with their sizes
-hermes logs list
+aurora logs list
 ```
 
 ### Filtering
@@ -1305,20 +1305,20 @@ Filters can be combined. When multiple filters are active, a log line must pass 
 
 ```bash
 # WARNING+ lines from the last 2 hours containing session "tg-12345"
-hermes logs --level WARNING --since 2h --session tg-12345
+aurora logs --level WARNING --since 2h --session tg-12345
 ```
 
 Lines without a parseable timestamp are included when `--since` is active (they may be continuation lines from a multi-line log entry). Lines without a detectable level are included when `--level` is active.
 
 ### Log rotation
 
-Hermes uses Python's `RotatingFileHandler`. Old logs are rotated automatically — look for `agent.log.1`, `agent.log.2`, etc. The `hermes logs list` subcommand shows all log files including rotated ones.
+Aurora uses Python's `RotatingFileHandler`. Old logs are rotated automatically — look for `agent.log.1`, `agent.log.2`, etc. The `aurora logs list` subcommand shows all log files including rotated ones.
 
 
-## `hermes prompt-size`
+## `aurora prompt-size`
 
 ```bash
-hermes prompt-size [--platform <name>] [--json]
+aurora prompt-size [--platform <name>] [--json]
 ```
 
 Reports the fixed prompt budget for a fresh session — what gets sent on every
@@ -1333,7 +1333,7 @@ It builds the same system prompt the agent would, then breaks it down:
 - **Skills index** — the `<available_skills>` block. This is often the largest
   single block when many skills are installed.
 - **Memory** and **user profile** — your `MEMORY.md` / `USER.md` snapshots.
-- **Prompt tiers** — stable / context / volatile, matching how Hermes layers
+- **Prompt tiers** — stable / context / volatile, matching how Aurora layers
   the prompt for cache-friendliness.
 - **Tool schemas** — the JSON for all enabled tools (the other half of the
   fixed per-call payload).
@@ -1342,26 +1342,26 @@ Runs entirely offline — no API call, works with no credentials configured.
 
 ```bash
 # Human-readable breakdown for the CLI platform (default)
-hermes prompt-size
+aurora prompt-size
 
 # Simulate a messaging platform's prompt (different platform hint)
-hermes prompt-size --platform telegram
+aurora prompt-size --platform telegram
 
 # Machine-readable output for scripts
-hermes prompt-size --json
+aurora prompt-size --json
 ```
 
 :::tip
 The skills index and tool schemas scale with how many skills and tools you have
-enabled. To shrink the prompt, disable unused toolsets (`hermes tools`) or
-uninstall skills you don't need (`hermes skills`). Context files (AGENTS.md,
+enabled. To shrink the prompt, disable unused toolsets (`aurora tools`) or
+uninstall skills you don't need (`aurora skills`). Context files (AGENTS.md,
 .cursorrules) in your current directory also count toward the total.
 :::
 
-## `hermes config`
+## `aurora config`
 
 ```bash
-hermes config <subcommand>
+aurora config <subcommand>
 ```
 
 Subcommands:
@@ -1370,8 +1370,8 @@ Subcommands:
 |------------|-------------|
 | `show` | Show current config values. |
 | `edit` | Open `config.yaml` in your editor. |
-| `get <key> [--json] [--raw]` | Print a single config value by dotted key (e.g. `hermes config get model.default`). `--json` emits machine-readable output. Credential-shaped values (`api_key`, `*_TOKEN`, `*_SECRET`, `password`, …) are masked (`sk-o...7890`) because the agent runs this from sessions whose transcripts persist; `--raw` prints the real value (or set `security.redact_secrets: false`). A nested key under a known section that the schema does not define (`compression.compressor.enabled`) still prints its file value, plus a stderr notice that Hermes may not read it; stdout and the exit code (0) are unchanged. |
-| `set <key> <value> [--force]` | Set a config value. Dotted paths go to `config.yaml`; every `UPPER_SNAKE` name (`OPENROUTER_API_KEY`, `DISCORD_HOME_CHANNEL`, `TELEGRAM_GROUP_ALLOWED_USERS`, `HERMES_TIMEZONE`, …) is an environment variable and goes to `.env` — the same file the platform setup flows and `/sethome` write, and the one every runtime reader resolves against. `config set` never writes an `UPPER_SNAKE` key into `config.yaml`, `--force` included; names on the env writer's denylist (`HERMES_YOLO_MODE`, `PATH`, …) are refused outright; any other `UPPER_SNAKE` name is saved to `.env` as-is (plugins, skills and external tools read it from the process environment). A known key written under the wrong prefix (`gateway.discord.foo`, where `discord.foo` is itself a known key) is refused with a did-you-mean and nothing is written; any other unknown path under a known section (`agent.max_turnz`, or a runtime-read key that has no seeded default) is written with a did-you-mean notice, and an unknown lowercase *top-level* key is written with a notice (top-level scalars are bridged into the environment for skills). `--force` writes the refused wrong-prefix path too. Values are type-checked against the schema: a key that must hold a list or a mapping (`custom_providers`, `model.aliases`, `display.platforms`, `plugins.enabled`/`plugins.disabled`, `model_catalog.excluded_providers`, any key already holding one) refuses a plain string or a wrong-shaped literal, and a value that looks like a list/mapping but is not valid YAML/JSON is refused instead of being stored as a string — nothing is written and the error names the expected type. Pass a YAML/JSON literal (`hermes config set custom_providers '[{name: x, base_url: https://...}]'`); to store a string that merely starts with `[` or `{`, quote it in YAML (`"'[text'"`). `--force` still replaces a whole mapping section; a non-list in a list slot has no override, except that a bare name for a list of names read leniently (`agent.disabled_toolsets`, `skills.disabled`) is stored as a one-item list. |
+| `get <key> [--json] [--raw]` | Print a single config value by dotted key (e.g. `aurora config get model.default`). `--json` emits machine-readable output. Credential-shaped values (`api_key`, `*_TOKEN`, `*_SECRET`, `password`, …) are masked (`sk-o...7890`) because the agent runs this from sessions whose transcripts persist; `--raw` prints the real value (or set `security.redact_secrets: false`). A nested key under a known section that the schema does not define (`compression.compressor.enabled`) still prints its file value, plus a stderr notice that Aurora may not read it; stdout and the exit code (0) are unchanged. |
+| `set <key> <value> [--force]` | Set a config value. Dotted paths go to `config.yaml`; every `UPPER_SNAKE` name (`OPENROUTER_API_KEY`, `DISCORD_HOME_CHANNEL`, `TELEGRAM_GROUP_ALLOWED_USERS`, `AURORA_TIMEZONE`, …) is an environment variable and goes to `.env` — the same file the platform setup flows and `/sethome` write, and the one every runtime reader resolves against. `config set` never writes an `UPPER_SNAKE` key into `config.yaml`, `--force` included; names on the env writer's denylist (`AURORA_YOLO_MODE`, `PATH`, …) are refused outright; any other `UPPER_SNAKE` name is saved to `.env` as-is (plugins, skills and external tools read it from the process environment). A known key written under the wrong prefix (`gateway.discord.foo`, where `discord.foo` is itself a known key) is refused with a did-you-mean and nothing is written; any other unknown path under a known section (`agent.max_turnz`, or a runtime-read key that has no seeded default) is written with a did-you-mean notice, and an unknown lowercase *top-level* key is written with a notice (top-level scalars are bridged into the environment for skills). `--force` writes the refused wrong-prefix path too. Values are type-checked against the schema: a key that must hold a list or a mapping (`custom_providers`, `model.aliases`, `display.platforms`, `plugins.enabled`/`plugins.disabled`, `model_catalog.excluded_providers`, any key already holding one) refuses a plain string or a wrong-shaped literal, and a value that looks like a list/mapping but is not valid YAML/JSON is refused instead of being stored as a string — nothing is written and the error names the expected type. Pass a YAML/JSON literal (`aurora config set custom_providers '[{name: x, base_url: https://...}]'`); to store a string that merely starts with `[` or `{`, quote it in YAML (`"'[text'"`). `--force` still replaces a whole mapping section; a non-list in a list slot has no override, except that a bare name for a list of names read leniently (`agent.disabled_toolsets`, `skills.disabled`) is stored as a one-item list. |
 | `unset <key>` | Remove a config key, reverting it to the built-in default. For `UPPER_SNAKE` names this removes the `.env` entry and also drops a stale top-level `config.yaml` copy left by older `config set` runs (`get` reports such a copy as stale). |
 | `path` | Print the config file path. |
 | `env-path` | Print the `.env` file path. |
@@ -1387,17 +1387,17 @@ unrecognised host (a proxy, a LAN server) stays with a warning that it still app
 
 ### Dots inside key names
 
-`hermes config set/get/unset` use `.` as the nesting separator, but many real
+`aurora config set/get/unset` use `.` as the nesting separator, but many real
 key names contain literal dots — model IDs (`grok-4.6`, `glm-5.3-flash`),
 Matrix room IDs (`!room:example.org`), versioned provider names. Two rules
 make these addressable:
 
 - **Existing keys just work.** When navigating an existing mapping, an
   existing literal key that matches the dotted remainder is preferred over
-  splitting. `hermes config set providers.p.models.grok-4.6.supports_vision true`
+  splitting. `aurora config set providers.p.models.grok-4.6.supports_vision true`
   updates the real `grok-4.6` entry (and `get`/`unset` resolve the same way).
 - **Creating a new dotted key requires escaping.** Escape literal dots with a
-  backslash: `hermes config set 'providers.p.models.grok-4\.7.context_length' 128000`
+  backslash: `aurora config set 'providers.p.models.grok-4\.7.context_length' 128000`
   creates the literal `grok-4.7` key. (Quote the key so your shell keeps the
   backslash.)
 
@@ -1406,10 +1406,10 @@ dotted sibling (e.g. creating `grok-4` next to an existing `grok-4.6`), the
 command fails with an error instead of silently writing a phantom entry the
 runtime would never read.
 
-## `hermes pairing`
+## `aurora pairing`
 
 ```bash
-hermes pairing <list|approve|revoke|clear-pending>
+aurora pairing <list|approve|revoke|clear-pending>
 ```
 
 | Subcommand | Description |
@@ -1419,10 +1419,10 @@ hermes pairing <list|approve|revoke|clear-pending>
 | `revoke <platform> <user-id>` | Revoke a user's access. |
 | `clear-pending` | Clear pending pairing codes. |
 
-## `hermes skills`
+## `aurora skills`
 
 ```bash
-hermes skills <subcommand>
+aurora skills <subcommand>
 ```
 
 Subcommands:
@@ -1439,8 +1439,8 @@ Subcommands:
 | `audit` | Re-scan installed hub skills. |
 | `uninstall` | Remove a hub-installed skill. |
 | `reset` | Un-stick a bundled skill flagged as `user_modified` by clearing its manifest entry. With `--restore`, also replaces the user copy with the bundled version. |
-| `opt-out` | Stop bundled skills from being seeded into the active profile. Writes a `.no-bundled-skills` marker so the installer, `hermes update`, and any sync skip bundled-skill seeding. Safe by default — nothing on disk is touched. With `--remove`, also deletes already-present bundled skills that are **unmodified** (user-edited, hub-installed, and hand-written skills are never removed; previews and confirms first, `--yes` to skip). |
-| `opt-in` | Undo `opt-out` by removing the `.no-bundled-skills` marker so bundled skills are seeded again on the next `hermes update`. With `--sync`, re-seed immediately. |
+| `opt-out` | Stop bundled skills from being seeded into the active profile. Writes a `.no-bundled-skills` marker so the installer, `aurora update`, and any sync skip bundled-skill seeding. Safe by default — nothing on disk is touched. With `--remove`, also deletes already-present bundled skills that are **unmodified** (user-edited, hub-installed, and hand-written skills are never removed; previews and confirms first, `--yes` to skip). |
+| `opt-in` | Undo `opt-out` by removing the `.no-bundled-skills` marker so bundled skills are seeded again on the next `aurora update`. With `--sync`, re-seed immediately. |
 | `publish` | Publish a skill to a registry. |
 | `snapshot` | Export/import skill configurations. |
 | `tap` | Manage custom skill sources. |
@@ -1449,41 +1449,41 @@ Subcommands:
 Common examples:
 
 ```bash
-hermes skills browse
-hermes skills browse --source official
-hermes skills search react --source skills-sh
-hermes skills search https://mintlify.com/docs --source well-known
-hermes skills inspect official/security/1password
-hermes skills inspect skills-sh/vercel-labs/json-render/json-render-react
-hermes skills install official/mcp/fastmcp
-hermes skills install skills-sh/anthropics/skills/pdf --force
-hermes skills install https://sharethis.chat/SKILL.md                     # Direct URL (+ referenced support files)
-hermes skills install https://example.com/SKILL.md --name my-skill        # Override name when frontmatter has none
-hermes skills check
-hermes skills update
-hermes skills config
-hermes skills reset google-workspace
-hermes skills reset google-workspace --restore --yes
-hermes skills opt-out                  # stop future bundled-skill seeding (nothing deleted)
-hermes skills opt-out --remove --yes   # also delete UNMODIFIED bundled skills
-hermes skills opt-in --sync            # undo: remove marker and re-seed now
+aurora skills browse
+aurora skills browse --source official
+aurora skills search react --source skills-sh
+aurora skills search https://mintlify.com/docs --source well-known
+aurora skills inspect official/security/1password
+aurora skills inspect skills-sh/vercel-labs/json-render/json-render-react
+aurora skills install official/mcp/fastmcp
+aurora skills install skills-sh/anthropics/skills/pdf --force
+aurora skills install https://sharethis.chat/SKILL.md                     # Direct URL (+ referenced support files)
+aurora skills install https://example.com/SKILL.md --name my-skill        # Override name when frontmatter has none
+aurora skills check
+aurora skills update
+aurora skills config
+aurora skills reset google-workspace
+aurora skills reset google-workspace --restore --yes
+aurora skills opt-out                  # stop future bundled-skill seeding (nothing deleted)
+aurora skills opt-out --remove --yes   # also delete UNMODIFIED bundled skills
+aurora skills opt-in --sync            # undo: remove marker and re-seed now
 ```
 
 Notes:
 - `--force` can override non-dangerous policy blocks for third-party/community skills.
 - `--force` does not override a `dangerous` scan verdict.
 - `--source skills-sh` searches the public `skills.sh` directory.
-- `--source well-known` lets you point Hermes at a site exposing `/.well-known/skills/index.json`.
+- `--source well-known` lets you point Aurora at a site exposing `/.well-known/skills/index.json`.
 - `--source browse-sh` searches [browse.sh](https://browse.sh)'s catalog of 200+ site-specific browser-automation skills. Identifiers look like `browse-sh/airbnb.com/search-listings-ddgioa`.
 - Passing an `http(s)://…/*.md` URL installs `SKILL.md` plus explicitly referenced files under `references/`, `templates/`, `scripts/`, `assets/`, and `examples/`. When frontmatter has no `name:` and the URL slug isn't a valid identifier, an interactive terminal prompts for a name; non-interactive surfaces (`/skills install` inside the TUI, gateway platforms) require `--name <x>` instead.
 
-## `hermes bundles`
+## `aurora bundles`
 
 ```bash
-hermes bundles <subcommand>
+aurora bundles <subcommand>
 ```
 
-Skill bundles group several skills under one `/<bundle-name>` slash command. Invoking the bundle loads every referenced skill into a single combined user message. Storage: `~/.hermes/skill-bundles/<slug>.yaml`. See [Skill Bundles](../user-guide/features/skills.md#skill-bundles) for the YAML schema and behavior.
+Skill bundles group several skills under one `/<bundle-name>` slash command. Invoking the bundle loads every referenced skill into a single combined user message. Storage: `~/.aurora/skill-bundles/<slug>.yaml`. See [Skill Bundles](../user-guide/features/skills.md#skill-bundles) for the YAML schema and behavior.
 
 Subcommands:
 
@@ -1493,28 +1493,28 @@ Subcommands:
 | `show <name>` | Show one bundle's name, description, skills, and file path |
 | `create <name>` | Create a new bundle. Pass `--skill <id>` (repeat) or omit for interactive entry. `--description`, `--instruction`, `--force` available. |
 | `delete <name>` | Remove a bundle file |
-| `reload` | Re-scan `~/.hermes/skill-bundles/` and report added/removed bundles |
+| `reload` | Re-scan `~/.aurora/skill-bundles/` and report added/removed bundles |
 
 Examples:
 
 ```bash
-hermes bundles create backend-dev \
+aurora bundles create backend-dev \
   --skill github-code-review \
   --skill test-driven-development \
   --skill github-pr-workflow \
   -d "Backend feature work"
 
-hermes bundles list
-hermes bundles show backend-dev
-hermes bundles delete backend-dev
+aurora bundles list
+aurora bundles show backend-dev
+aurora bundles delete backend-dev
 ```
 
 In a chat session, `/bundles` lists installed bundles and `/<bundle-name>` loads one.
 
-## `hermes curator`
+## `aurora curator`
 
 ```bash
-hermes curator <subcommand>
+aurora curator <subcommand>
 ```
 
 The curator is an auxiliary-model background task that periodically reviews agent-created skills, prunes stale ones, consolidates overlaps, and archives obsolete skills. Bundled and hub-installed skills are never touched. Archives are recoverable; auto-deletion never happens.
@@ -1525,8 +1525,8 @@ The curator is an auxiliary-model background task that periodically reviews agen
 | `run` | Trigger a curator review now (blocks until the LLM pass finishes) |
 | `run --background` | Start the LLM pass in a background thread and return immediately |
 | `run --dry-run` | Preview only — produce the review report with no mutations |
-| `backup` | Take a manual tar.gz snapshot of `~/.hermes/skills/` (curator also snapshots automatically before every real run) |
-| `rollback` | Restore `~/.hermes/skills/` from a snapshot (defaults to newest) |
+| `backup` | Take a manual tar.gz snapshot of `~/.aurora/skills/` (curator also snapshots automatically before every real run) |
+| `rollback` | Restore `~/.aurora/skills/` from a snapshot (defaults to newest) |
 | `rollback --list` | List available snapshots |
 | `rollback --id <ts>` | Restore a specific snapshot by id |
 | `rollback -y` | Skip the confirmation prompt |
@@ -1539,26 +1539,26 @@ The curator is an auxiliary-model background task that periodically reviews agen
 | `prune` | Manually prune skills the curator would normally clean up |
 | `list-archived` | List archived skills (recoverable via `restore`) |
 
-On a fresh install the first scheduled pass is deferred by one full `interval_hours` (7 days by default) — the gateway will not curate immediately on the first tick after `hermes update`. Use `hermes curator run --dry-run` to preview before that happens.
+On a fresh install the first scheduled pass is deferred by one full `interval_hours` (7 days by default) — the gateway will not curate immediately on the first tick after `aurora update`. Use `aurora curator run --dry-run` to preview before that happens.
 
 See [Curator](../user-guide/features/curator.md) for behavior and config.
 
-## `hermes moa`
+## `aurora moa`
 
 Configure named Mixture of Agents presets. Presets appear as selectable models under a `Mixture of Agents` provider in every model picker; `/moa <prompt>` runs one prompt through the default preset.
 
 ```bash
-hermes moa list
-hermes moa configure [name]
-hermes moa delete <name>
+aurora moa list
+aurora moa configure [name]
+aurora moa delete <name>
 ```
 
-`hermes moa configure` reuses Hermes' provider → model picker for each reference model and the aggregator. A preset is an execution-mode configuration, not a primary model or provider.
+`aurora moa configure` reuses Aurora's provider → model picker for each reference model and the aggregator. A preset is an execution-mode configuration, not a primary model or provider.
 
-## `hermes fallback`
+## `aurora fallback`
 
 ```bash
-hermes fallback <subcommand>
+aurora fallback <subcommand>
 ```
 
 Manage the fallback provider chain. Fallback providers are tried in order when the primary model fails with rate-limit, overload, or connection errors.
@@ -1566,20 +1566,20 @@ Manage the fallback provider chain. Fallback providers are tried in order when t
 | Subcommand | Description |
 |------------|-------------|
 | `list` (alias: `ls`) | Show the current fallback chain (default when no subcommand) |
-| `add` | Pick a provider + model (same picker as `hermes model`) and append to the chain |
+| `add` | Pick a provider + model (same picker as `aurora model`) and append to the chain |
 | `remove` (alias: `rm`) | Pick an entry to delete from the chain |
 | `clear` | Remove all fallback entries |
 | `check [--live] [--json]` | Check each entry resolves with usable credentials (`--live`: one minimal request per statically ready fixed-route entry, on that entry's own provider/model, never another). Exits 1 when any entry is not ready. No agent session is created |
 
 See [Fallback Providers](../user-guide/features/fallback-providers.md).
 
-## `hermes hooks`
+## `aurora hooks`
 
 ```bash
-hermes hooks <subcommand>
+aurora hooks <subcommand>
 ```
 
-Inspect shell-script hooks declared in `~/.hermes/config.yaml`, test them against synthetic payloads, and manage the first-use consent allowlist at `~/.hermes/shell-hooks-allowlist.json`.
+Inspect shell-script hooks declared in `~/.aurora/config.yaml`, test them against synthetic payloads, and manage the first-use consent allowlist at `~/.aurora/shell-hooks-allowlist.json`.
 
 | Subcommand | Description |
 |------------|-------------|
@@ -1590,13 +1590,13 @@ Inspect shell-script hooks declared in `~/.hermes/config.yaml`, test them agains
 
 See [Hooks](../user-guide/features/hooks.md) for event signatures and payload shapes.
 
-## `hermes memory`
+## `aurora memory`
 
 ```bash
-hermes memory <subcommand>
+aurora memory <subcommand>
 ```
 
-Set up and manage external memory provider plugins. Bundled providers: retaindb, byterover; honcho, hindsight, supermemory, mem0, openviking and holographic (plugin catalog) after `hermes plugins install <name>` (`hermes update` does this automatically for a provider already named in `memory.provider`). Only one external provider can be active at a time. Built-in memory (MEMORY.md/USER.md) is always active.
+Set up and manage external memory provider plugins. Bundled providers: retaindb, byterover; honcho, hindsight, supermemory, mem0, openviking and holographic (plugin catalog) after `aurora plugins install <name>` (`aurora update` does this automatically for a provider already named in `memory.provider`). Only one external provider can be active at a time. Built-in memory (MEMORY.md/USER.md) is always active.
 
 Subcommands:
 
@@ -1607,45 +1607,45 @@ Subcommands:
 | `off` | Disable external provider (built-in only). |
 
 :::info Provider-specific subcommands
-When an external memory provider is active, it may register its own top-level `hermes <provider>` command for provider-specific management (e.g. `hermes honcho` when Honcho is active). Inactive providers do not expose their subcommands. Run `hermes --help` to see what's currently wired in.
+When an external memory provider is active, it may register its own top-level `aurora <provider>` command for provider-specific management (e.g. `aurora honcho` when Honcho is active). Inactive providers do not expose their subcommands. Run `aurora --help` to see what's currently wired in.
 :::
 
-## `hermes acp`
+## `aurora acp`
 
 ```bash
-hermes acp
+aurora acp
 ```
 
-Starts Hermes as an ACP (Agent Client Protocol) stdio server for editor integration.
+Starts Aurora as an ACP (Agent Client Protocol) stdio server for editor integration.
 
 Related entrypoints:
 
 ```bash
-hermes-acp
+aurora-acp
 python -m acp_adapter
 ```
 
 Install support first:
 
 ```bash
-cd ~/.hermes/hermes-agent && python -c "import pm; pm.sync_venv(['acp'], explicit=True)"
+cd ~/.aurora/aurora-agent && python -c "import pm; pm.sync_venv(['acp'], explicit=True)"
 ```
 
 See [ACP Editor Integration](../user-guide/features/acp.md) and [ACP Internals](../developer-guide/acp-internals.md).
 
-## `hermes mcp`
+## `aurora mcp`
 
 ```bash
-hermes mcp <subcommand>
+aurora mcp <subcommand>
 ```
 
-Manage MCP (Model Context Protocol) server configurations. Running Hermes itself as an MCP server moved to the `mcp-serve` plugin (`hermes plugins install mcp-serve`, then `hermes mcp-serve`); `hermes mcp serve` prints that new spelling.
+Manage MCP (Model Context Protocol) server configurations. Running Aurora itself as an MCP server moved to the `mcp-serve` plugin (`aurora plugins install mcp-serve`, then `aurora mcp-serve`); `aurora mcp serve` prints that new spelling.
 
 | Subcommand | Description |
 |------------|-------------|
 | *(none)* or `picker` | Interactive catalog picker — browse Nous-approved MCPs and install/enable/disable. |
 | `catalog` | List Nous-approved MCPs (plain text, scriptable). |
-| `install <name>` | Install a catalog entry (e.g. `hermes mcp install deepwiki`). |
+| `install <name>` | Install a catalog entry (e.g. `aurora mcp install deepwiki`). |
 | `add <name> [--url URL] [--command CMD] [--auth oauth\|header] [--args ...]` | Add a custom MCP server with automatic tool discovery. `--args` passes the remaining argv to the stdio command, so put it last. |
 | `remove <name>` (alias: `rm`) | Remove an MCP server from config. |
 | `list` (alias: `ls`) | List configured MCP servers. |
@@ -1653,12 +1653,12 @@ Manage MCP (Model Context Protocol) server configurations. Running Hermes itself
 | `configure <name>` (alias: `config`) | Toggle tool selection for a server. |
 | `login <name>` | Force re-authentication for an OAuth-based MCP server. |
 
-See [MCP Config Reference](./mcp-config-reference.md), [Use MCP with Hermes](../guides/use-mcp-with-hermes.md), and [MCP Server Mode](../user-guide/features/mcp.md#running-hermes-as-an-mcp-server).
+See [MCP Config Reference](./mcp-config-reference.md), [Use MCP with Aurora](../guides/use-mcp-with-aurora.md), and [MCP Server Mode](../user-guide/features/mcp.md#running-aurora-as-an-mcp-server).
 
-## `hermes connectors`
+## `aurora connectors`
 
 ```bash
-hermes connectors <subcommand>
+aurora connectors <subcommand>
 ```
 
 Manage hosted connector accounts (apps such as Gmail reached through the Nous tool gateway). Needs a Nous Portal sign-in. One app can have several named accounts; see [Multiple connector accounts](../user-guide/features/tool-gateway.md#multiple-connector-accounts).
@@ -1673,13 +1673,13 @@ Manage hosted connector accounts (apps such as Gmail reached through the Nous to
 
 Rename needs a Nous Portal version that supports it. Until then it reports "This Nous Portal cannot rename connector accounts yet."
 
-## `hermes plugins`
+## `aurora plugins`
 
 ```bash
-hermes plugins [subcommand]
+aurora plugins [subcommand]
 ```
 
-Unified plugin management — general plugins, memory providers, and context engines in one place. Running `hermes plugins` with no subcommand opens a composite interactive screen with two sections:
+Unified plugin management — general plugins, memory providers, and context engines in one place. Running `aurora plugins` with no subcommand opens a composite interactive screen with two sections:
 
 - **General Plugins** — multi-select checkboxes to enable/disable installed plugins
 - **Provider Plugins** — single-select configuration for Memory Provider and Context Engine. Press ENTER on a category to open a radio picker.
@@ -1687,8 +1687,8 @@ Unified plugin management — general plugins, memory providers, and context eng
 | Subcommand | Description |
 |------------|-------------|
 | *(none)* | Composite interactive UI — general plugin toggles + provider plugin configuration. |
-| `install <identifier> [--force] [--ref COMMIT_SHA] [--allow-removed]` | Install a plugin from the Hermes plugin catalog (bare entry name), a Git URL, or `owner/repo` shorthand. Catalog names resolve to the reviewed 40-hex commit SHA and show declared capabilities. Source, checked-out revision, and a nested catalog-provenance block are recorded in the installer's `plugins/.install-metadata.json`; the `.hermes-catalog.json` copy inside the plugin directory is only for convenience and is never trusted. Raw URLs are flagged as custom (unreviewed) sources. `--ref` selects a full-SHA custom pin and records the SHA actually checked out. `--allow-removed` (DANGEROUS) bypasses the removed-plugin blocklist at install and exempts that install from update, enable, and load-time kill-list checks. |
-| `search [term] [--json]` | Search the Hermes plugin catalog (matches entry names, descriptions, and declared tools; omit `term` to list everything). The catalog is curated in-repo (`plugin-catalog/`), refreshed from the live repo with a 6-hour cache, and falls back to the in-tree copy offline. Cataloged ≠ audited — admission reviews the entry, not the code. |
+| `install <identifier> [--force] [--ref COMMIT_SHA] [--allow-removed]` | Install a plugin from the Aurora plugin catalog (bare entry name), a Git URL, or `owner/repo` shorthand. Catalog names resolve to the reviewed 40-hex commit SHA and show declared capabilities. Source, checked-out revision, and a nested catalog-provenance block are recorded in the installer's `plugins/.install-metadata.json`; the `.aurora-catalog.json` copy inside the plugin directory is only for convenience and is never trusted. Raw URLs are flagged as custom (unreviewed) sources. `--ref` selects a full-SHA custom pin and records the SHA actually checked out. `--allow-removed` (DANGEROUS) bypasses the removed-plugin blocklist at install and exempts that install from update, enable, and load-time kill-list checks. |
+| `search [term] [--json]` | Search the Aurora plugin catalog (matches entry names, descriptions, and declared tools; omit `term` to list everything). The catalog is curated in-repo (`plugin-catalog/`), refreshed from the live repo with a 6-hour cache, and falls back to the in-tree copy offline. Cataloged ≠ audited — admission reviews the entry, not the code. |
 | `update <name>` | Re-pin catalog installs to the reviewed catalog SHA, or update a custom Git install from its recorded source/feed. PM validates active-plugin dependencies before code publication. Explicit custom pins move only with `install --force --ref <new-commit>`. |
 | `update [--yes]` | With no name: list every installed plugin that has an update `update <name>` can apply (catalog re-pin or Git pull) plus the ones it skips and why, then ask `Update all N? [Y/n]` and update each through the single-plugin path (per-plugin consent prompts still apply). One failure does not stop the rest; exits 1 if any failed. Without a terminal nothing is updated unless `--yes` is passed; `--yes` keeps consent fail-closed (new capabilities stay ungranted). |
 | `remove <name>` (aliases: `rm`, `uninstall`) | Remove an installed plugin. |
@@ -1696,7 +1696,7 @@ Unified plugin management — general plugins, memory providers, and context eng
 | `disable <name>` | Disable a plugin without removing it. |
 | `list` (alias: `ls`) | List installed plugins with enabled/disabled status. |
 | `doctor [path-or-id] [--ci]` | Validate a native plugin through the real manifest parser, loader, and registration path. `--ci` exits 1 on errors. |
-| `pack install <path-or-url> [--force]` | Install a plugin pack (`hermes-pack.yaml`) — a declarative set of plugins each pinned to an exact 40-character commit SHA. Shows a mandatory review screen (every plugin, source, pinned ref, declared capabilities), asks one confirmation for the pack contents, then runs ordinary pinned installs. Each plugin's declared capabilities still go through the standard per-plugin consent — a pack never bulk-grants. Partial failures are reported per plugin; exits non-zero when any plugin failed. Interactive only (no `--yes`). |
+| `pack install <path-or-url> [--force]` | Install a plugin pack (`aurora-pack.yaml`) — a declarative set of plugins each pinned to an exact 40-character commit SHA. Shows a mandatory review screen (every plugin, source, pinned ref, declared capabilities), asks one confirmation for the pack contents, then runs ordinary pinned installs. Each plugin's declared capabilities still go through the standard per-plugin consent — a pack never bulk-grants. Partial failures are reported per plugin; exits non-zero when any plugin failed. Interactive only (no `--yes`). |
 | `pack export [--enabled-only] [--name NAME]` | Emit a pack YAML on stdout from the current install: repo + exact SHA of each git-installed plugin plus sanitized non-secret `plugins.entries` config. Local-only plugins (no git provenance) are listed as warning comments, never as installable entries. Secrets, capability grants, and `allow_*` gates are always stripped. |
 | `pack show <path-or-url>` | Dry-run: parse, validate, and display a pack without installing anything. |
 
@@ -1709,12 +1709,12 @@ Git installs also record only their canonical source, exact installed revision, 
 pin status in the profile-local `plugins/.install-metadata.json` sidecar. It does
 not contain plugin config, environment values, secrets, or capability grants.
 
-See [Plugins](../user-guide/features/plugins.md) and [Build a Hermes Plugin](../developer-guide/plugins/index.md).
+See [Plugins](../user-guide/features/plugins.md) and [Build an Aurora Plugin](../developer-guide/plugins/index.md).
 
-## `hermes tools`
+## `aurora tools`
 
 ```bash
-hermes tools [--summary]
+aurora tools [--summary]
 ```
 
 | Option | Description |
@@ -1723,10 +1723,10 @@ hermes tools [--summary]
 
 Without `--summary`, this launches the interactive per-platform tool configuration UI.
 
-## `hermes computer-use`
+## `aurora computer-use`
 
 ```bash
-hermes computer-use <subcommand>
+aurora computer-use <subcommand>
 ```
 
 Subcommands:
@@ -1740,40 +1740,40 @@ Subcommands:
 | `permissions status [--json]` | Report macOS Accessibility and Screen Recording grants. |
 | `permissions grant` | Ask macOS to grant Accessibility and Screen Recording to Cua Driver. |
 
-`hermes computer-use install` is the stable entry point for installing the
+`aurora computer-use install` is the stable entry point for installing the
 [cua-driver](https://github.com/trycua/cua) binary used by the
 `computer_use` toolset. It runs the same upstream installer that
-`hermes tools` invokes when you first enable Computer Use, so it's safe
+`aurora tools` invokes when you first enable Computer Use, so it's safe
 to use for re-running the install if the toolset toggle didn't trigger
 it (for example, on returning-user setups).
 
-If cua-driver is already present, Hermes checks its version and runtime
+If cua-driver is already present, Aurora checks its version and runtime
 manifest. A compatible 0.20.0 or newer installation is left in place. An old or
 incomplete standard installation is repaired with the current upstream
-installer. Hermes never replaces a custom binary selected through
-`HERMES_CUA_DRIVER_CMD`; update that binary directly or remove the override.
-`hermes computer-use status` reports when repair is required.
+installer. Aurora never replaces a custom binary selected through
+`AURORA_CUA_DRIVER_CMD`; update that binary directly or remove the override.
+`aurora computer-use status` reports when repair is required.
 
-The built-in `computer_use` toolset is the recommended Hermes integration.
+The built-in `computer_use` toolset is the recommended Aurora integration.
 Registering raw Cua MCP tools is an alternative when you need Cua's low-level
-tool vocabulary. `cua-driver skills install` detects Hermes and links Cua's
-skill pack into the Hermes skills directory automatically.
+tool vocabulary. `cua-driver skills install` detects Aurora and links Cua's
+skill pack into the Aurora skills directory automatically.
 
 Permission mode and capability-manifest approval
-belong to runtime launch. In bounded mode Hermes passes Cua's canonical
+belong to runtime launch. In bounded mode Aurora passes Cua's canonical
 `--capability-manifest` and `--approve-capability-manifest` flags. Every MCP
 transport owns a private lifecycle session inside its runtime. Public session
 names label cursor and session state; they do not own or share the runtime.
 
-`hermes update` automatically re-runs the upstream installer at the end
+`aurora update` automatically re-runs the upstream installer at the end
 of the update if cua-driver is on PATH, so most users will not need to
 call `--upgrade` manually. Use it when upstream ships a fix you want
-right now without waiting for the next Hermes update.
+right now without waiting for the next Aurora update.
 
-## `hermes clipboard`
+## `aurora clipboard`
 
 ```bash
-hermes clipboard image --out PATH [--json]
+aurora clipboard image --out PATH [--json]
 ```
 
 Writes the clipboard image to `PATH` (created or overwritten) with the same extractor the CLI and
@@ -1782,7 +1782,7 @@ TUI use for image paste: macOS `pngpaste`, then `osascript`; Windows PowerShell 
 PNG, except that a copied image *file* (Windows/WSL file drop) is copied as it is. The command
 reads only this machine's clipboard: it needs no running gateway and reads no session store or
 profile file, so a client whose gateway runs on another machine calls it where the user is.
-Under NixOS container mode the command runs inside the managed container, like every `hermes`
+Under NixOS container mode the command runs inside the managed container, like every `aurora`
 subcommand, so it cannot see the host's clipboard and `--out` is a path inside the container.
 
 | Option | Description |
@@ -1806,13 +1806,13 @@ subcommand, so it cannot see the host's clipboard and `--out` is a path inside t
 {"ok": false, "reason": "no_tool", "tools": ["wl-paste", "xclip"], "message": "no clipboard tool found; install one of: wl-paste, xclip"}
 ```
 
-## `hermes pets`
+## `aurora pets`
 
 ```bash
-hermes pets <list|install|select|show|off|scale|remove|doctor>
+aurora pets <list|install|select|show|off|scale|remove|doctor>
 ```
 
-[Petdex](https://github.com/crafter-station/petdex) is a public gallery of animated sprite pets for coding agents. Install one and Hermes shows it reacting to agent activity across the CLI, TUI, and desktop app.
+[Petdex](https://github.com/crafter-station/petdex) is a public gallery of animated sprite pets for coding agents. Install one and Aurora shows it reacting to agent activity across the CLI, TUI, and desktop app.
 
 | Subcommand | Description |
 |------------|-------------|
@@ -1827,10 +1827,10 @@ hermes pets <list|install|select|show|off|scale|remove|doctor>
 
 You can also generate a brand-new pet from a text description with the `/hatch` slash command. See [Pets](../user-guide/features/pets.md).
 
-## `hermes sessions`
+## `aurora sessions`
 
 ```bash
-hermes sessions <subcommand>
+aurora sessions <subcommand>
 ```
 
 Subcommands:
@@ -1855,10 +1855,10 @@ Subcommands:
 | `recover` | Offline, non-destructive recovery of a damaged `state.db` into a separate clean database. |
 | `retitle-skills` | Regenerate titles for sessions opened with a `/skill`, using what the user actually typed; lists changes unless `--apply` is passed. |
 
-## `hermes insights`
+## `aurora insights`
 
 ```bash
-hermes insights [--days N] [--source platform]
+aurora insights [--days N] [--source platform]
 ```
 
 | Option | Description |
@@ -1866,43 +1866,43 @@ hermes insights [--days N] [--source platform]
 | `--days <n>` | Analyze the last `n` days (default: 30). |
 | `--source <platform>` | Filter by source such as `cli`, `telegram`, or `discord`. |
 
-## `hermes import-agent`
+## `aurora import-agent`
 
 ```bash
-hermes plugins install agent-importers   # once; the command comes from this official plugin
-hermes import-agent [openclaw|claude-code|codex|cursor] [options]
+aurora plugins install agent-importers   # once; the command comes from this official plugin
+aurora import-agent [openclaw|claude-code|codex|cursor] [options]
 ```
 
-Import an **OpenClaw** (`~/.openclaw`), **Claude Code** (`~/.claude`), **OpenAI Codex CLI** (`~/.codex`) or **Cursor** (`~/.cursor`) setup into Hermes: instructions and rules become memory entries, `Bash(...)` permission rules become `command_allowlist`/`approvals.deny`, MCP servers land in `mcp_servers`, and skills are copied. Always previews first. API keys and credentials are never imported, except OpenClaw's allowlisted keys when you pass `--migrate-secrets`. `--sync` re-imports registered Claude Code, Codex and Cursor sources that changed. On a fresh install, `hermes setup` offers to install the plugin and run the import for you when it finds one of these agents.
+Import an **OpenClaw** (`~/.openclaw`), **Claude Code** (`~/.claude`), **OpenAI Codex CLI** (`~/.codex`) or **Cursor** (`~/.cursor`) setup into Aurora: instructions and rules become memory entries, `Bash(...)` permission rules become `command_allowlist`/`approvals.deny`, MCP servers land in `mcp_servers`, and skills are copied. Always previews first. API keys and credentials are never imported, except OpenClaw's allowlisted keys when you pass `--migrate-secrets`. `--sync` re-imports registered Claude Code, Codex and Cursor sources that changed. On a fresh install, `aurora setup` offers to install the plugin and run the import for you when it finds one of these agents.
 
-The command moved out of core into the official `agent-importers` plugin, together with `hermes claw` (OpenClaw migration), whose spelling the plugin keeps. Without the plugin, `hermes import-agent` and `hermes claw` print the install line. See the **[import guide](../user-guide/import-from-other-agents.md)** for options and mapping tables.
+The command moved out of core into the official `agent-importers` plugin, together with `aurora claw` (OpenClaw migration), whose spelling the plugin keeps. Without the plugin, `aurora import-agent` and `aurora claw` print the install line. See the **[import guide](../user-guide/import-from-other-agents.md)** for options and mapping tables.
 
-### OpenClaw: `hermes import-agent openclaw`
+### OpenClaw: `aurora import-agent openclaw`
 
 ```bash
-hermes import-agent openclaw [options]    # same as the older spelling: hermes claw migrate [options]
-hermes claw cleanup [--source <path>] [--dry-run] [--yes]
+aurora import-agent openclaw [options]    # same as the older spelling: aurora claw migrate [options]
+aurora claw cleanup [--source <path>] [--dry-run] [--yes]
 ```
 
-Migrate your OpenClaw setup to Hermes. Reads from `~/.openclaw` (or a custom path) and writes to `~/.hermes`. Automatically detects legacy directory names (`~/.clawdbot`, `~/.moltbot`) and config filenames (`clawdbot.json`, `moltbot.json`).
+Migrate your OpenClaw setup to Aurora. Reads from `~/.openclaw` (or a custom path) and writes to `~/.aurora`. Automatically detects legacy directory names (`~/.clawdbot`, `~/.moltbot`) and config filenames (`clawdbot.json`, `moltbot.json`).
 
 | Option | Description |
 |--------|-------------|
 | `--dry-run` | Preview what would be migrated without writing anything. |
 | `--preset <name>` | Migration preset: `full` (all compatible settings) or `user-data` (excludes infrastructure config). Neither preset imports secrets — pass `--migrate-secrets` explicitly. |
-| `--overwrite` | Overwrite existing Hermes files on conflicts (default: refuse to apply when the plan has conflicts). |
+| `--overwrite` | Overwrite existing Aurora files on conflicts (default: refuse to apply when the plan has conflicts). |
 | `--migrate-secrets` | Include API keys in migration. Required even under `--preset full`. |
-| `--no-backup` | Skip the pre-migration zip snapshot of `~/.hermes/` (by default a single restore-point archive is written to `~/.hermes/backups/pre-migration-*.zip` before apply; restorable with `hermes import`). |
+| `--no-backup` | Skip the pre-migration zip snapshot of `~/.aurora/` (by default a single restore-point archive is written to `~/.aurora/backups/pre-migration-*.zip` before apply; restorable with `aurora import`). |
 | `--source <path>` | Custom OpenClaw directory (default: `~/.openclaw`). |
 | `--workspace-target <path>` | Target directory for workspace instructions (AGENTS.md). |
 | `--skill-conflict <mode>` | Handle skill name collisions: `skip` (default), `overwrite`, or `rename`. |
 | `--yes` | Skip the confirmation prompt. |
 
-`hermes claw cleanup` renames leftover OpenClaw directories to `*.pre-migration` once you have migrated (OpenClaw stops working after this; rename them back to undo).
+`aurora claw cleanup` renames leftover OpenClaw directories to `*.pre-migration` once you have migrated (OpenClaw stops working after this; rename them back to undo).
 
 #### What gets migrated
 
-The migration covers 30+ categories across persona, memory, skills, model providers, messaging platforms, agent behavior, session policies, MCP servers, TTS, and more. Items are either **directly imported** into Hermes equivalents or **archived** for manual review.
+The migration covers 30+ categories across persona, memory, skills, model providers, messaging platforms, agent behavior, session policies, MCP servers, TTS, and more. Items are either **directly imported** into Aurora equivalents or **archived** for manual review.
 
 **Directly imported:** SOUL.md, MEMORY.md, USER.md, AGENTS.md, skills (4 source directories), default model, custom providers, MCP servers, messaging platform tokens and allowlists (Telegram, Discord, Slack, WhatsApp, Signal, Matrix, Mattermost), agent defaults (reasoning effort, compression, human delay, timezone, sandbox), approval rules, TTS config, browser settings, tool settings, exec timeout, command allowlist, gateway config, and API keys from 3 sources.
 
@@ -1916,38 +1916,38 @@ For the complete config key mapping, SecretRef handling details, and post-migrat
 
 ```bash
 # Preview what would be migrated
-hermes import-agent openclaw --dry-run
+aurora import-agent openclaw --dry-run
 
 # Full migration (all compatible settings, no secrets)
-hermes import-agent openclaw --preset full
+aurora import-agent openclaw --preset full
 
 # Full migration including API keys
-hermes import-agent openclaw --preset full --migrate-secrets
+aurora import-agent openclaw --preset full --migrate-secrets
 
 # Migrate user data only (no secrets), overwrite conflicts
-hermes import-agent openclaw --preset user-data --overwrite
+aurora import-agent openclaw --preset user-data --overwrite
 
 # Migrate from a custom OpenClaw path
-hermes import-agent openclaw --source /home/user/old-openclaw
+aurora import-agent openclaw --source /home/user/old-openclaw
 ```
 
-## `hermes serve`
+## `aurora serve`
 
 ```bash
-hermes serve [options]
+aurora serve [options]
 ```
 
-Start the Hermes **backend server** — the JSON-RPC/WebSocket gateway the [desktop app](../user-guide/desktop.md) and remote clients connect to. It is the same server `hermes dashboard` runs, but **headless**: it never opens a browser UI. The desktop app launches its own `hermes serve` backend; use this command directly when you want a headless backend on a remote host. Accepts the same `--host` / `--port` / `--insecure` / `--skip-build` / `--stop` / `--status` options as `hermes dashboard` below (a non-loopback bind engages the same auth gate). Requires the `[web]` extra; the embedded Chat socket additionally needs `[pty]` on a POSIX host.
+Start the Aurora **backend server** — the JSON-RPC/WebSocket gateway the [desktop app](../user-guide/desktop.md) and remote clients connect to. It is the same server `aurora dashboard` runs, but **headless**: it never opens a browser UI. The desktop app launches its own `aurora serve` backend; use this command directly when you want a headless backend on a remote host. Accepts the same `--host` / `--port` / `--insecure` / `--skip-build` / `--stop` / `--status` options as `aurora dashboard` below (a non-loopback bind engages the same auth gate). Requires the `[web]` extra; the embedded Chat socket additionally needs `[pty]` on a POSIX host.
 
-**Port conflicts:** if the requested port (default `9119`) is already held by another process (e.g. a second `hermes serve` or the gateway), the command prints a machine-readable sentinel line `BACKEND_PORT_IN_USE port=<port>` to stdout, a human hint naming the likely holder, and exits with code **75** (`EX_TEMPFAIL`) instead of a generic error — so scripts and the desktop app can tell "port occupied" apart from "backend broken". Pass `--port 0` to bind a free ephemeral port (the successful boot announces the chosen port via `HERMES_BACKEND_READY port=<port>`).
+**Port conflicts:** if the requested port (default `9119`) is already held by another process (e.g. a second `aurora serve` or the gateway), the command prints a machine-readable sentinel line `BACKEND_PORT_IN_USE port=<port>` to stdout, a human hint naming the likely holder, and exits with code **75** (`EX_TEMPFAIL`) instead of a generic error — so scripts and the desktop app can tell "port occupied" apart from "backend broken". Pass `--port 0` to bind a free ephemeral port (the successful boot announces the chosen port via `AURORA_BACKEND_READY port=<port>`).
 
-## `hermes dashboard`
+## `aurora dashboard`
 
 ```bash
-hermes dashboard [options]
+aurora dashboard [options]
 ```
 
-Launch the web dashboard to manage configuration, API keys, and sessions. For a headless backend, use [`hermes serve`](#hermes-serve). FastAPI, Uvicorn, and the platform PTY helper are core dependencies. The `web` extra adds exact HTTP-stack constraints and is selected by standard PM setup through `all`. If dependencies are damaged, run `hermes pm repair`. The embedded Chat tab requires a POSIX PTY environment, such as Linux, macOS, or WSL2. See [Web Dashboard](../user-guide/features/web-dashboard.md).
+Launch the web dashboard to manage configuration, API keys, and sessions. For a headless backend, use [`aurora serve`](#aurora-serve). FastAPI, Uvicorn, and the platform PTY helper are core dependencies. The `web` extra adds exact HTTP-stack constraints and is selected by standard PM setup through `all`. If dependencies are damaged, run `aurora pm repair`. The embedded Chat tab requires a POSIX PTY environment, such as Linux, macOS, or WSL2. See [Web Dashboard](../user-guide/features/web-dashboard.md).
 
 | Option | Default | Description |
 |--------|---------|-------------|
@@ -1957,38 +1957,38 @@ Launch the web dashboard to manage configuration, API keys, and sessions. For a 
 | `--insecure` | off | **Deprecated / no-op.** Formerly bypassed auth on a non-loopback bind. Since the June 2026 hardening a public bind *always* requires an auth provider (password or OAuth). Bind `127.0.0.1` and tunnel to keep it local. |
 | `--skip-build` | off | Skip the web UI build step and serve the existing `dist` directly. Useful for non-interactive contexts (Windows Scheduled Tasks, CI) where pnpm isn't available. Pre-build with `cd web && pnpm run build`. |
 | `--isolated` | off | When launched from a named profile (`worker dashboard`), run a dedicated per-profile server instead of routing to the machine dashboard. |
-| `--stop` | — | Stop the running `hermes dashboard` / `hermes serve` backend **of this Hermes home** and exit (`-p <profile>` / `HERMES_HOME` select which; backends of other profiles, other installs on the machine, and the shell you typed the command into are never touched — a backend whose owner cannot be read is left alone). SIGTERM, a 10s grace, then SIGKILL; a hosted Chat TUI that outlives its backend is stopped too (it would otherwise keep the deleted `state.db-wal` open and block the next start). Messaging-gateway bots started from the dashboard are not touched. |
-| `--status` | — | List running `hermes dashboard` processes and exit. |
+| `--stop` | — | Stop the running `aurora dashboard` / `aurora serve` backend **of this Aurora home** and exit (`-p <profile>` / `AURORA_HOME` select which; backends of other profiles, other installs on the machine, and the shell you typed the command into are never touched — a backend whose owner cannot be read is left alone). SIGTERM, a 10s grace, then SIGKILL; a hosted Chat TUI that outlives its backend is stopped too (it would otherwise keep the deleted `state.db-wal` open and block the next start). Messaging-gateway bots started from the dashboard are not touched. |
+| `--status` | — | List running `aurora dashboard` processes and exit. |
 
-### `hermes dashboard register`
+### `aurora dashboard register`
 
-Register this install as a self-hosted dashboard with your Nous Portal account. Creates an OAuth client, writes `HERMES_DASHBOARD_OAUTH_CLIENT_ID` into `~/.hermes/.env`, and prints how to engage the login gate. Requires being logged in (`hermes setup`).
+Register this install as a self-hosted dashboard with your Nous Portal account. Creates an OAuth client, writes `AURORA_DASHBOARD_OAUTH_CLIENT_ID` into `~/.aurora/.env`, and prints how to engage the login gate. Requires being logged in (`aurora setup`).
 
 | Option | Description |
 |--------|-------------|
 | `--name` | Human-readable label for the dashboard (default: auto-generated). |
-| `--redirect-uri` | Public HTTPS OAuth redirect URI (e.g. `https://hermes.example.com/auth/callback`). Omit for localhost-only use. |
-| `--portal-url` | Override the Nous Portal base URL for registration (default: the portal you logged into). Also settable via `HERMES_DASHBOARD_PORTAL_URL`. |
+| `--redirect-uri` | Public HTTPS OAuth redirect URI (e.g. `https://aurora.example.com/auth/callback`). Omit for localhost-only use. |
+| `--portal-url` | Override the Nous Portal base URL for registration (default: the portal you logged into). Also settable via `AURORA_DASHBOARD_PORTAL_URL`. |
 
 ```bash
 # Default — opens browser to http://127.0.0.1:9119
-hermes dashboard
+aurora dashboard
 
 # Custom port, no browser
-hermes dashboard --port 8080 --no-open
+aurora dashboard --port 8080 --no-open
 
 # From a profile alias — routes to the machine dashboard with the
 # profile preselected in the sidebar switcher (attach if running)
 worker dashboard
 ```
 
-## `hermes webapp`
+## `aurora webapp`
 
 ```bash
-hermes webapp [options]
+aurora webapp [options]
 ```
 
-Open the Hermes Desktop workspace in a normal browser. The gateway serves it on its own listener when
+Open the Aurora Desktop workspace in a normal browser. The gateway serves it on its own listener when
 `webapp.enabled` is `true` in the config ([Configuration → Webapp](../user-guide/configuration.md#webapp)).
 This command builds the Webapp bundle when it is out of date, starts the gateway if it is not running,
 and opens a one-use sign-in link. Chats run on that gateway, the same one the CLI, Desktop and messaging
@@ -2002,10 +2002,10 @@ standard users cannot read. On macOS, the BSDs and illumos neither holds, so the
 the link to a browser launcher: it writes it into a page only your OS user can read
 (`webapp/launch-*.html` in the gateway home) and opens that page. Where it cannot open a browser, and
 on WSL, it prints the link for you to open. On macOS a browser can open where you don't see it (over
-SSH, on the Mac's own screen): if none did, run `hermes webapp --no-open` for the link. Until it is
+SSH, on the Mac's own screen): if none did, run `aurora webapp --no-open` for the link. Until it is
 used it signs a browser in as you, so keep it private.
 
-For a named profile served by the default gateway (`hermes -p work webapp`), the Webapp opens on that
+For a named profile served by the default gateway (`aurora -p work webapp`), the Webapp opens on that
 profile.
 
 Behind the dashboard sign-in gate (`webapp.host: 0.0.0.0` or `::`, or `webapp.public_url` set), the
@@ -2015,7 +2015,7 @@ for (`webapp/sign-in-registration.json`), while it is still this machine's LAN a
 Webapp's port; otherwise the loopback address, which serves a password provider or sign-in set up by
 hand for it. You sign in there with your dashboard account. When the gateway cannot
 serve the Webapp, the command says why; the gateway reads its Webapp settings when it starts, so run
-`hermes gateway restart` after fixing the cause. A Webapp bundle that is not built yet is the
+`aurora gateway restart` after fixing the cause. A Webapp bundle that is not built yet is the
 exception: this command builds it, and the running gateway serves it at once.
 
 | Option | Description |
@@ -2029,18 +2029,18 @@ exception: this command builds it, and the running gateway serves it at once.
 
 ```bash
 # Turn it on once, then open it
-hermes config set webapp.enabled true
-hermes gateway restart
-hermes webapp
+aurora config set webapp.enabled true
+aurora gateway restart
+aurora webapp
 ```
 
-## `hermes profile`
+## `aurora profile`
 
 ```bash
-hermes profile <subcommand>
+aurora profile <subcommand>
 ```
 
-Manage profiles — multiple isolated Hermes instances, each with its own config, sessions, skills, and home directory.
+Manage profiles — multiple isolated Aurora instances, each with its own config, sessions, skills, and home directory.
 
 | Subcommand | Description |
 |------------|-------------|
@@ -2060,51 +2060,51 @@ Manage profiles — multiple isolated Hermes instances, each with its own config
 Examples:
 
 ```bash
-hermes profile list
-hermes profile create work --clone
-hermes profile create work --clone --sync-imports   # also carry over the import-agent sync manifest
-hermes profile use work
-hermes profile alias work --name h-work
-hermes profile export work -o work-backup.tar.gz
-hermes profile import work-backup.tar.gz --name restored
-hermes profile install github.com/user/my-distro --alias
-hermes profile update work
-hermes -p work chat -q "Hello from work profile"
+aurora profile list
+aurora profile create work --clone
+aurora profile create work --clone --sync-imports   # also carry over the import-agent sync manifest
+aurora profile use work
+aurora profile alias work --name h-work
+aurora profile export work -o work-backup.tar.gz
+aurora profile import work-backup.tar.gz --name restored
+aurora profile install github.com/user/my-distro --alias
+aurora profile update work
+aurora -p work chat -q "Hello from work profile"
 ```
 
-## `hermes completion`
+## `aurora completion`
 
 ```bash
-hermes completion [bash|zsh|fish]
+aurora completion [bash|zsh|fish]
 ```
 
-Print a shell completion script to stdout. Source the output in your shell profile for tab-completion of Hermes commands, subcommands, and profile names.
+Print a shell completion script to stdout. Source the output in your shell profile for tab-completion of Aurora commands, subcommands, and profile names.
 
 Examples:
 
 ```bash
 # Bash
-hermes completion bash >> ~/.bashrc
+aurora completion bash >> ~/.bashrc
 
 # Zsh
-hermes completion zsh >> ~/.zshrc
+aurora completion zsh >> ~/.zshrc
 
 # Fish
-hermes completion fish > ~/.config/fish/completions/hermes.fish
+aurora completion fish > ~/.config/fish/completions/aurora.fish
 ```
 
-## `hermes pm`
+## `aurora pm`
 
 Manage pinned tools, Python dependency environments, and their diagnostics.
-This command does not update the Hermes application itself.
+This command does not update the Aurora application itself.
 
 ```bash
-hermes pm --help
-hermes pm doctor
-hermes pm status
-hermes pm repair
-hermes pm install
-hermes pm install chromium
+aurora pm --help
+aurora pm doctor
+aurora pm status
+aurora pm repair
+aurora pm install
+aurora pm install chromium
 ```
 
 For source development, run the setup script once, then activate the installed
@@ -2116,10 +2116,10 @@ daily commands, dependency refresh, and test environments.
 See [Package management](./package-management.md) for every subcommand,
 source-versus-bundle behavior, lazy-install policy, and maintainer commands.
 
-## `hermes update`
+## `aurora update`
 
 ```bash
-hermes update [--gateway] [--check] [--plan] [--no-backup] [--backup] [--yes]
+aurora update [--gateway] [--check] [--plan] [--no-backup] [--backup] [--yes]
 ```
 
 Updates an admitted source checkout and prepares dependencies through PM.
@@ -2127,7 +2127,7 @@ Use `--check` to compare with its configured source target without applying
 the update. Desktop bundles, Docker, Nix, and Termux packages retain their
 external update owner. See [Updating & Uninstalling](../getting-started/updating.md).
 
-`hermes update` follows this installation's update channel. A source checkout of the official repository defaults to `stable`, the latest published `vX.Y.Z` GitHub release at its exact commit; forks and mirrors default to `main`. To follow every commit on `main` instead, run `hermes update --set-channel main`; `hermes update --set-channel stable` switches back. On the `main` channel, a checkout on another branch may be switched to the update branch before pulling. Commit branch work before updating when you want to keep it outside the update autostash flow.
+`aurora update` follows this installation's update channel. A source checkout of the official repository defaults to `stable`, the latest published `vX.Y.Z` GitHub release at its exact commit; forks and mirrors default to `main`. To follow every commit on `main` instead, run `aurora update --set-channel main`; `aurora update --set-channel stable` switches back. On the `main` channel, a checkout on another branch may be switched to the update branch before pulling. Commit branch work before updating when you want to keep it outside the update autostash flow.
 
 | Option | Description |
 |--------|-------------|
@@ -2137,30 +2137,30 @@ external update owner. See [Updating & Uninstalling](../getting-started/updating
 | `--branch NAME` | Select a source branch for this invocation; takes precedence over source channel selection. |
 | `--gateway` | Internal mode used by the messaging `/update` command. Uses file-based IPC for prompts and progress streaming instead of reading from terminal stdin. Not a gateway restart flag. |
 | `--check` | Check whether an update is available without pulling, installing dependencies, or restarting anything. |
-| `--plan` | Print the update plan and exit without changing anything: install kind (git/Docker/Nix/apt), every running Hermes service across all profiles with its supervisor and running code version, and how each will be restarted. On image- or package-managed installs, reports the correct external update command instead. Read-only. |
+| `--plan` | Print the update plan and exit without changing anything: install kind (git/Docker/Nix/apt), every running Aurora service across all profiles with its supervisor and running code version, and how each will be restarted. On image- or package-managed installs, reports the correct external update command instead. Read-only. |
 | `--no-backup` | Skip all pre-update backups for this run (both the quick state snapshot and the full zip), regardless of `updates.pre_update_backup`. |
-| `--backup` | Force a **full** pre-update backup for this run: the quick state snapshot plus a complete zip of `HERMES_HOME` (config, auth, sessions, skills, pairing data). The default mode is `quick` — a lightweight state snapshot only. Set the permanent mode via `updates.pre_update_backup: quick | full | off` in `config.yaml`. |
-| `--yes`, `-y` | Assume yes for interactive prompts such as config migration and stash restore. API-key entry is skipped; run `hermes config migrate` separately for those. |
+| `--backup` | Force a **full** pre-update backup for this run: the quick state snapshot plus a complete zip of `AURORA_HOME` (config, auth, sessions, skills, pairing data). The default mode is `quick` — a lightweight state snapshot only. Set the permanent mode via `updates.pre_update_backup: quick | full | off` in `config.yaml`. |
+| `--yes`, `-y` | Assume yes for interactive prompts such as config migration and stash restore. API-key entry is skipped; run `aurora config migrate` separately for those. |
 
 Additional behavior:
 
-- **Gateway restart.** After a successful update, Hermes attempts to restart all running gateway profiles of the home being updated (its root and every `profiles/<name>` under it) automatically so they pick up the new code. Gateways and `hermes-gateway*` services that belong to a different `HERMES_HOME` on the same machine — another install, or a scratch home running `hermes update` — are named in the output and left alone. Use `hermes gateway restart` when you want to restart a gateway without applying an update.
+- **Gateway restart.** After a successful update, Aurora attempts to restart all running gateway profiles of the home being updated (its root and every `profiles/<name>` under it) automatically so they pick up the new code. Gateways and `aurora-gateway*` services that belong to a different `AURORA_HOME` on the same machine — another install, or a scratch home running `aurora update` — are named in the output and left alone. Use `aurora gateway restart` when you want to restart a gateway without applying an update.
 - **Restart-phase recovery.** If the in-process restart phase aborts while importing the freshly pulled tree, supervised gateway profiles are retried through a clean Python process. Only restarts independently confirmed by systemd (`systemctl --user is-active`) are reported as verified; a relaunch that merely exited 0 is recorded as `relaunch_attempted` and the restart stays owed (a `gateway_restart` follow-up; the update itself still exits 0 because the code is in place). Manual gateways and serve/dashboard runtimes are never killed without a relaunch authority; they are recorded as skipped with a reason and remain in the incomplete-update report with the exact restart command.
-- **Update receipts + fleet version check.** Every run writes a machine-readable receipt to `~/.hermes/logs/update_receipts/` in the root Hermes home, even from a sticky profile (pre-update fleet plan, steps, skips with reasons, restart outcome, follow-ups; `latest.json` points at the newest and reads `running` while an update is in progress). After the restart phase the updater verifies each live gateway's running code against the updated checkout and prints a per-profile version matrix. A gateway still on pre-update code does not fail the update once the new code is in place: the update prints a `⚠` line with the exact restart command, exits 0, records a `gateway_restart` follow-up, and keeps the restart owed — every CLI start warns about it and the next `hermes update` retries it.
+- **Update receipts + fleet version check.** Every run writes a machine-readable receipt to `~/.aurora/logs/update_receipts/` in the root Aurora home, even from a sticky profile (pre-update fleet plan, steps, skips with reasons, restart outcome, follow-ups; `latest.json` points at the newest and reads `running` while an update is in progress). After the restart phase the updater verifies each live gateway's running code against the updated checkout and prints a per-profile version matrix. A gateway still on pre-update code does not fail the update once the new code is in place: the update prints a `⚠` line with the exact restart command, exits 0, records a `gateway_restart` follow-up, and keeps the restart owed — every CLI start warns about it and the next `aurora update` retries it.
 - **Local source changes.** For git installs, dirty tracked files are auto-stashed before branch checkout or pull, together with any untracked file at a path the update adds. Other untracked files and folders stay where they are, untouched, because they cannot block the update. Interactive terminal updates ask "Keep these changes after updating?" before anything is stashed: yes stashes them and puts them back after the pull, no deletes them right away, so no stash entry is left behind. A run with nothing to pull does not ask. Non-interactive updates restore it by default; set `updates.non_interactive_local_changes: discard` only on managed installs where local source edits should be thrown away after a successful pull. If stash restore conflicts or the pull fails, the stash is left in place for manual recovery.
-- **npm lockfile churn.** Before stashing or switching branches, Hermes makes a best-effort cleanup of tracked `package-lock.json` diffs that npm installs leave in the npm projects (the WhatsApp bridge and the Photon sidecar). `pnpm-lock.yaml` is never reverted: installs do not rewrite it. Commit or manually stash intentional lockfile edits before running `hermes update`.
-- **Pairing data snapshot.** Even when `--backup` is off, `hermes update` takes a lightweight snapshot of `~/.hermes/pairing/` and the Feishu comment rules before `git pull`. You can roll it back with `hermes backup restore --state pre-update` if a pull rewrites a file you were editing.
-- **Legacy `hermes.service` warning.** If Hermes detects a pre-rename `hermes.service` systemd unit (instead of the current `hermes-gateway.service`), it prints a one-time migration hint so you can avoid flap-loop issues.
+- **npm lockfile churn.** Before stashing or switching branches, Aurora makes a best-effort cleanup of tracked `package-lock.json` diffs that npm installs leave in the npm projects (the WhatsApp bridge and the Photon sidecar). `pnpm-lock.yaml` is never reverted: installs do not rewrite it. Commit or manually stash intentional lockfile edits before running `aurora update`.
+- **Pairing data snapshot.** Even when `--backup` is off, `aurora update` takes a lightweight snapshot of `~/.aurora/pairing/` and the Feishu comment rules before `git pull`. You can roll it back with `aurora backup restore --state pre-update` if a pull rewrites a file you were editing.
+- **Legacy `aurora.service` warning.** If Aurora detects a pre-rename `aurora.service` systemd unit (instead of the current `aurora-gateway.service`), it prints a one-time migration hint so you can avoid flap-loop issues.
 - **Exit codes.** `0` on success, `1` on pull/install/post-install errors, `2` on unexpected working-tree changes that block `git pull`.
 
 ## Maintenance commands
 
 | Command | Description |
 |---------|-------------|
-| `hermes --version` | Print version information. |
-| `hermes update` | Pull latest changes and reinstall dependencies. |
+| `aurora --version` | Print version information. |
+| `aurora update` | Pull latest changes and reinstall dependencies. |
 
-| `hermes uninstall [--full] [--gui] [--data] [--dry-run] [--yes]` | Remove owned source-install files. `--gui` selects source-built desktop removal; `--full` also removes data. `--data` removes user data without deleting package-owned code. Sealed installs use their package owner for application removal. `--dry-run` previews the scope; `--yes` skips confirmation. |
+| `aurora uninstall [--full] [--gui] [--data] [--dry-run] [--yes]` | Remove owned source-install files. `--gui` selects source-built desktop removal; `--full` also removes data. `--data` removes user data without deleting package-owned code. Sealed installs use their package owner for application removal. `--dry-run` previews the scope; `--yes` skips confirmation. |
 
 ## See also
 

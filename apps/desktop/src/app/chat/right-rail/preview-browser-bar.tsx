@@ -103,7 +103,7 @@ export function normalizePreviewAddress(value: string): null | string {
 
 /** "Open in browser" for a window that can neither pop out nor pop in. */
 export function externalOpenerFor(url: string): (() => void) | undefined {
-  return !isBrowserWindow() && !canOpenBrowserWindow() ? () => void window.hermesDesktop?.openExternal(url) : undefined
+  return !isBrowserWindow() && !canOpenBrowserWindow() ? () => void window.auroraDesktop?.openExternal(url) : undefined
 }
 
 export function PreviewBrowserBar({

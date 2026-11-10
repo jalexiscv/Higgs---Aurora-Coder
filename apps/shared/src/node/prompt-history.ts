@@ -1,12 +1,12 @@
-// The Hermes prompt history file (`<HERMES_HOME>/.hermes_history`, the classic CLI's format), with
-// HERMES_HOME read once at import.
+// The Aurora prompt history file (`<AURORA_HOME>/.aurora_history`, the classic CLI's format), with
+// AURORA_HOME read once at import.
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
 const MAX = 1000
-const dir = process.env.HERMES_HOME ?? join(homedir(), '.hermes')
-const file = join(dir, '.hermes_history')
+const dir = process.env.AURORA_HOME ?? join(homedir(), '.aurora')
+const file = join(dir, '.aurora_history')
 
 let cache: string[] | null = null
 

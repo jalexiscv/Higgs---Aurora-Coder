@@ -1,15 +1,15 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { HermesConnection } from '@/global'
+import type { AuroraConnection } from '@/global'
 import { connectionScopeSuffix } from '@/lib/connection-scoped'
 import { readKey, storedStringArray, writeKey } from '@/lib/storage'
-import type { SessionInfo } from '@/types/hermes'
+import type { SessionInfo } from '@/types/aurora'
 
 const patch = vi.fn<(id: string, pinned: boolean, profile?: null | string) => Promise<{ ok: boolean }>>(() =>
   Promise.resolve({ ok: true })
 )
 
-vi.mock('@/hermes', () => ({
+vi.mock('@/aurora', () => ({
   setApiRequestProfile: () => {},
   setSessionPinnedRemote: (id: string, pinned: boolean, profile?: null | string) => patch(id, pinned, profile)
 }))
@@ -20,16 +20,16 @@ import { $sessions, setConnection } from '@/store/session'
 
 import { resetSessionPinMirror, watchSessionPins } from './session-pin-sync'
 
-const PIN_KEY = 'hermes.desktop.pinnedSessions'
+const PIN_KEY = 'aurora.desktop.pinnedSessions'
 
-const remote = (profile: string, baseUrl = 'https://gw.example:8443'): HermesConnection =>
+const remote = (profile: string, baseUrl = 'https://gw.example:8443'): AuroraConnection =>
   ({
     baseUrl,
     mode: 'remote',
     profile,
     token: 't',
     wsUrl: 'ws://x'
-  }) as unknown as HermesConnection
+  }) as unknown as AuroraConnection
 
 const row = (id: string, extra: Partial<SessionInfo> = {}): SessionInfo =>
   ({ id, message_count: 1, source: 'cli', started_at: 0, title: id, ...extra }) as SessionInfo
@@ -38,7 +38,7 @@ const flush = () => Promise.resolve()
 
 beforeAll(() => {
   ;(globalThis as { window?: unknown }).window ??= {}
-  ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = {}
+  ;(window as unknown as { auroraDesktop: unknown }).auroraDesktop = {}
   watchSessionPins()
 })
 
@@ -90,7 +90,7 @@ describe('desktop pin list is connection-scoped, not profile-scoped', () => {
 
   it("never adopts the previous gateway's pinned rows still on screen after a pick", async () => {
     const gateway = (connectionId: string) =>
-      ({ ...remote('default', `https://gw-${connectionId}.example`), connectionId }) as HermesConnection
+      ({ ...remote('default', `https://gw-${connectionId}.example`), connectionId }) as AuroraConnection
 
     setConnection(gateway('a'))
     $sessions.set([row('only-on-a', { connection_id: 'a', pinned: true, profile: 'default' })])
@@ -109,7 +109,7 @@ describe('desktop pin list is connection-scoped, not profile-scoped', () => {
   })
 
   it("repaints only the active gateway's row when another gateway lists the same id", async () => {
-    setConnection({ ...remote('default', 'https://gw-b.example'), connectionId: 'b' } as HermesConnection)
+    setConnection({ ...remote('default', 'https://gw-b.example'), connectionId: 'b' } as AuroraConnection)
     $sessions.set([
       row('shared', { connection_id: 'a', pinned: false, profile: 'default' }),
       row('shared', { connection_id: 'b', pinned: false, profile: 'default' })
@@ -127,13 +127,13 @@ describe('desktop pin list is connection-scoped, not profile-scoped', () => {
   it("never adopts This device's untagged pinned rows into a remote gateway's set", async () => {
     // This device is the primary: its rows are listed untagged.
     $primaryGatewayRoute.set({ connectionId: 'local', mode: 'local' })
-    setConnection({ connectionId: 'local', mode: 'local', profile: 'default' } as unknown as HermesConnection)
+    setConnection({ connectionId: 'local', mode: 'local', profile: 'default' } as unknown as AuroraConnection)
     $sessions.set([row('only-local', { pinned: true, profile: 'default' })])
     await flush()
     expect($pinnedSessionIds.get()).toEqual(['only-local'])
 
     // Picking registry gateway B leaves the primary (and its rows) in place.
-    setConnection({ ...remote('default', 'https://gw-b.example'), connectionId: 'b' } as HermesConnection)
+    setConnection({ ...remote('default', 'https://gw-b.example'), connectionId: 'b' } as AuroraConnection)
     await flush()
     expect($pinnedSessionIds.get()).toEqual([])
 

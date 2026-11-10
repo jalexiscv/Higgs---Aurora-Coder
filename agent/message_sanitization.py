@@ -446,7 +446,7 @@ _IMAGE_CORRUPT_PHRASES = (
 def strip_images_for_rejecting_model(agent: Any, api_messages: Any) -> bool:
     """Send-path image strip for a model that rejected image content (see turn_recovery).
 
-    Runs on the per-call ``api_messages`` copy in Hermes's own message format, BEFORE the
+    Runs on the per-call ``api_messages`` copy in Aurora's own message format, BEFORE the
     provider-specific conversion: the part types this stripper knows are that format's, and a
     converted payload (Bedrock Converse ``{"image": ...}`` blocks carry no ``type``) would slip
     past it. History is never touched. Keyed on each rejecting (provider, model), so a model
@@ -458,7 +458,7 @@ def strip_images_for_rejecting_model(agent: Any, api_messages: Any) -> bool:
 
 
 def _messages_carry_images(messages: Any) -> bool:
-    """True when any message holds an image part in Hermes's own message format."""
+    """True when any message holds an image part in Aurora's own message format."""
     return isinstance(messages, list) and any(
         isinstance(m, dict) and isinstance(m.get("content"), list)
         and any(isinstance(p, dict) and p.get("type") in _IMAGE_PART_TYPES for p in m["content"])

@@ -59,7 +59,7 @@ describe('desktopPluginFolderName', () => {
 
 describe('resolveSubdirWithin', () => {
   it('rejects path traversal', () => {
-    const root = mkdtemp('hermes-plugin-root-')
+    const root = mkdtemp('aurora-plugin-root-')
 
     expect(() => resolveSubdirWithin(root, '../escape')).toThrow(/escapes/)
   })
@@ -67,7 +67,7 @@ describe('resolveSubdirWithin', () => {
 
 describe('findDesktopEntry', () => {
   it('finds root plugin.js', () => {
-    const root = mkdtemp('hermes-plugin-detect-')
+    const root = mkdtemp('aurora-plugin-detect-')
     fs.mkdirSync(path.join(root, 'desktop'), { recursive: true })
     fs.writeFileSync(path.join(root, 'plugin.js'), 'export default {}')
 
@@ -75,7 +75,7 @@ describe('findDesktopEntry', () => {
   })
 
   it('finds desktop/plugin.js', () => {
-    const root = mkdtemp('hermes-plugin-detect-')
+    const root = mkdtemp('aurora-plugin-detect-')
     fs.mkdirSync(path.join(root, 'desktop'), { recursive: true })
     fs.writeFileSync(path.join(root, 'desktop', 'plugin.js'), 'export default {}')
 
@@ -96,7 +96,7 @@ describe('detectPluginComponents', () => {
   })
 
   it('detects a manifest-only package — dashboard backend, no __init__.py', async () => {
-    const root = mkdtemp('hermes-plugin-manifest-only-')
+    const root = mkdtemp('aurora-plugin-manifest-only-')
     roots.push(root)
     fs.writeFileSync(path.join(root, 'plugin.yaml'), 'name: bulletin\n')
     fs.mkdirSync(path.join(root, 'dashboard'), { recursive: true })
@@ -114,7 +114,7 @@ describe('detectPluginComponents', () => {
   })
 
   it('detects agent-only layout', async () => {
-    const root = mkdtemp('hermes-plugin-agent-')
+    const root = mkdtemp('aurora-plugin-agent-')
     roots.push(root)
     fs.writeFileSync(path.join(root, 'plugin.yaml'), 'name: hello-agent\n')
     fs.writeFileSync(path.join(root, '__init__.py'), 'def register(ctx): pass\n')
@@ -127,7 +127,7 @@ describe('detectPluginComponents', () => {
   })
 
   it('detects dual layout', async () => {
-    const root = mkdtemp('hermes-plugin-dual-')
+    const root = mkdtemp('aurora-plugin-dual-')
     roots.push(root)
     fs.mkdirSync(path.join(root, 'desktop'), { recursive: true })
     fs.writeFileSync(path.join(root, 'plugin.yaml'), 'name: dual\n')
@@ -150,7 +150,7 @@ interface DetectionCase {
   expect: { agent: boolean; desktop: boolean; agent_name: null | string }
 }
 
-// Shared with the gateway's detector (tests/hermes_cli/test_plugins_cmd_inspect.py).
+// Shared with the gateway's detector (tests/aurora_cli/test_plugins_cmd_inspect.py).
 const DETECTION_CASES = (
   JSON.parse(
     fs.readFileSync(
@@ -170,7 +170,7 @@ describe('detectPluginComponents on the shared detection cases', () => {
   })
 
   it.each(DETECTION_CASES)('$name', async ({ root, files, expect: expected }) => {
-    const parent = mkdtemp('hermes-detect-')
+    const parent = mkdtemp('aurora-detect-')
     roots.push(parent)
     const pluginRoot = path.join(parent, root)
     fs.mkdirSync(pluginRoot)
@@ -196,10 +196,10 @@ describe('probePluginRepo', () => {
   })
 
   it('probes a monorepo subdirectory through the sparse partial clone', async () => {
-    const repo = mkdtemp('hermes-plugin-monorepo-')
+    const repo = mkdtemp('aurora-plugin-monorepo-')
     roots.push(repo)
     const git = (...args: string[]) => execFileSync('git', args, { cwd: repo, stdio: 'pipe' })
-    const plugin = path.join(repo, 'integrations', 'hermes')
+    const plugin = path.join(repo, 'integrations', 'aurora')
     fs.mkdirSync(plugin, { recursive: true })
     fs.writeFileSync(path.join(plugin, 'plugin.yaml'), 'name: nested-agent\n')
     fs.writeFileSync(path.join(plugin, '__init__.py'), 'def register(ctx): pass\n')
@@ -209,7 +209,7 @@ describe('probePluginRepo', () => {
     git('add', '.')
     git('-c', 'user.email=fixture@example.com', '-c', 'user.name=Fixture', 'commit', '-qm', 'init')
 
-    const result = await probePluginRepo('git', `${pathToFileURL(repo).href}#integrations/hermes`)
+    const result = await probePluginRepo('git', `${pathToFileURL(repo).href}#integrations/aurora`)
 
     expect(result).toMatchObject({ ok: true, agent: true, agentName: 'nested-agent' })
   })
@@ -227,7 +227,7 @@ describe('installDesktopPluginFromGit', () => {
   /** A git repo whose root is one plugin: `desktop/plugin.js` plus, when
    *  `agentName` is given, the agent half that makes it a unified package. */
   function pluginRepo(agentName: null | string, desktopFiles: Record<string, string> = {}): string {
-    const repo = mkdtemp('hermes-plugin-install-')
+    const repo = mkdtemp('aurora-plugin-install-')
     roots.push(repo)
     const git = (...args: string[]) => execFileSync('git', args, { cwd: repo, stdio: 'pipe' })
 
@@ -253,7 +253,7 @@ describe('installDesktopPluginFromGit', () => {
   it('installs the commit the dialog reviewed after the branch moved, and refuses one the source lacks', async () => {
     const repo = pluginRepo(null, { 'panel.js': 'reviewed\n' })
     const git = (...args: string[]) => execFileSync('git', args, { cwd: repo, stdio: 'pipe' }).toString().trim()
-    const appRoot = mkdtemp('hermes-plugin-root-')
+    const appRoot = mkdtemp('aurora-plugin-root-')
     roots.push(appRoot)
     const probe = await probePluginRepo('git', pathToFileURL(repo).href)
     expect(probe.sha).toBe(git('rev-parse', 'HEAD'))
@@ -284,7 +284,7 @@ describe('installDesktopPluginFromGit', () => {
     git(...ident, 'commit', '-qam', 'moved')
     const tagObject = git('rev-parse', 'v1.0')
     expect(tagObject).not.toBe(git('rev-parse', 'v1.0^{commit}'))
-    const appRoot = mkdtemp('hermes-plugin-root-')
+    const appRoot = mkdtemp('aurora-plugin-root-')
     roots.push(appRoot)
 
     const result = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot, { sha: tagObject })
@@ -308,8 +308,8 @@ describe('installDesktopPluginFromGit', () => {
   ])('refuses a desktop tree with %s and publishes nothing', async (_label, link) => {
     // A symlink in the copied tree would publish whatever it points at on this machine as plugin files.
     const repo = pluginRepo(null)
-    const outside = mkdtemp('hermes-plugin-outside-')
-    const appRoot = mkdtemp('hermes-plugin-root-')
+    const outside = mkdtemp('aurora-plugin-outside-')
+    const appRoot = mkdtemp('aurora-plugin-root-')
     roots.push(outside, appRoot)
     link(repo, outside)
     execFileSync('git', ['add', '-A'], { cwd: repo, stdio: 'pipe' })
@@ -328,7 +328,7 @@ describe('installDesktopPluginFromGit', () => {
   it('keeps the installed plugin when a forced reinstall refuses the new tree', async () => {
     const repo = pluginRepo(null, { 'panel.js': 'working\n' })
     const git = (...args: string[]) => execFileSync('git', args, { cwd: repo, stdio: 'pipe' })
-    const appRoot = mkdtemp('hermes-plugin-root-')
+    const appRoot = mkdtemp('aurora-plugin-root-')
     roots.push(appRoot)
     const installed = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot)
     expect(installed).toMatchObject({ ok: true })
@@ -358,8 +358,8 @@ describe('installDesktopPluginFromGit', () => {
 
   it("leaves the clone's .git out of a root-layout half and out of its size cap", async () => {
     // 36 MB of incompressible payload is under the 64 MB cap; counted twice (files + packed .git) it is over.
-    const repo = mkdtemp('hermes-plugin-install-')
-    const appRoot = mkdtemp('hermes-plugin-root-')
+    const repo = mkdtemp('aurora-plugin-install-')
+    const appRoot = mkdtemp('aurora-plugin-root-')
     roots.push(repo, appRoot)
     const git = (...args: string[]) => execFileSync('git', args, { cwd: repo, stdio: 'pipe' })
     fs.writeFileSync(path.join(repo, 'plugin.js'), 'export function register() {}\n')
@@ -378,9 +378,9 @@ describe('installDesktopPluginFromGit', () => {
     'refuses a package named %s on a forced install and deletes nothing',
     async name => {
       // The folder name comes from the package's manifest: `..` would make a forced install replace
-      // the Hermes home that holds desktop-plugins/.
+      // the Aurora home that holds desktop-plugins/.
       const repo = pluginRepo(name)
-      const home = mkdtemp('hermes-home-')
+      const home = mkdtemp('aurora-home-')
       roots.push(home)
       const appRoot = path.join(home, 'desktop-plugins')
       fs.mkdirSync(appRoot)
@@ -405,7 +405,7 @@ describe('installDesktopPluginFromGit', () => {
       cwd: repo,
       stdio: 'pipe'
     })
-    const appRoot = mkdtemp('hermes-plugin-root-')
+    const appRoot = mkdtemp('aurora-plugin-root-')
     roots.push(appRoot)
 
     const result = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot)
@@ -424,7 +424,7 @@ describe('installDesktopPluginFromGit', () => {
       cwd: repo,
       stdio: 'pipe'
     })
-    const appRoot = mkdtemp('hermes-plugin-root-')
+    const appRoot = mkdtemp('aurora-plugin-root-')
     roots.push(appRoot)
 
     const result = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot)
@@ -452,7 +452,7 @@ describe('installDesktopPluginFromGit', () => {
       cwd: repo,
       stdio: 'pipe'
     })
-    const appRoot = mkdtemp('hermes-plugin-root-')
+    const appRoot = mkdtemp('aurora-plugin-root-')
     roots.push(appRoot)
 
     const result = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot)
@@ -468,15 +468,15 @@ describe('installDesktopPluginFromGit', () => {
     // agent row's desktop half: the row sits on "copying…" while the copy shows
     // up as a second, default-enabled standalone row, and reconcile refuses to
     // re-copy the folder ever again.
-    const repo = pluginRepo('hermes-talk')
-    const appRoot = mkdtemp('hermes-plugin-root-')
+    const repo = pluginRepo('aurora-talk')
+    const appRoot = mkdtemp('aurora-plugin-root-')
     roots.push(appRoot)
 
     const result = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot)
 
-    expect(result).toMatchObject({ ok: true, pluginName: 'hermes-talk' })
-    const marker = JSON.parse(fs.readFileSync(path.join(appRoot, 'hermes-talk', PACKAGE_MARKER), 'utf8'))
-    expect(marker.package).toBe('hermes-talk')
+    expect(result).toMatchObject({ ok: true, pluginName: 'aurora-talk' })
+    const marker = JSON.parse(fs.readFileSync(path.join(appRoot, 'aurora-talk', PACKAGE_MARKER), 'utf8'))
+    expect(marker.package).toBe('aurora-talk')
     expect(marker.repo).toBe(pathToFileURL(repo).href)
   })
 
@@ -484,15 +484,15 @@ describe('installDesktopPluginFromGit', () => {
     // Remote backends (and a Desktop-only install) never have
     // plugins/<name>/desktop locally. The marker used to name the temp clone,
     // which this function deletes, so the next reconcile ghost-pruned the half.
-    const repo = pluginRepo('hermes-talk')
-    const home = mkdtemp('hermes-plugin-home-')
+    const repo = pluginRepo('aurora-talk')
+    const home = mkdtemp('aurora-plugin-home-')
     roots.push(home)
     const appRoot = path.join(home, 'desktop-plugins')
 
     const result = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot)
 
-    expect(result).toMatchObject({ ok: true, pluginName: 'hermes-talk' })
-    const published = path.join(appRoot, 'hermes-talk')
+    expect(result).toMatchObject({ ok: true, pluginName: 'aurora-talk' })
+    const published = path.join(appRoot, 'aurora-talk')
     const marker = JSON.parse(fs.readFileSync(path.join(published, PACKAGE_MARKER), 'utf8'))
     expect(marker.source).toBe(published)
     expect(fs.existsSync(path.join(marker.source, 'plugin.js'))).toBe(true)
@@ -504,27 +504,27 @@ describe('installDesktopPluginFromGit', () => {
   })
 
   it('lets a local agent package replace the git-installed half on reconcile', async () => {
-    const repo = pluginRepo('hermes-talk')
-    const home = mkdtemp('hermes-plugin-home-')
+    const repo = pluginRepo('aurora-talk')
+    const home = mkdtemp('aurora-plugin-home-')
     roots.push(home)
     const appRoot = path.join(home, 'desktop-plugins')
 
     await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot)
 
-    const packageDesktop = path.join(home, 'plugins', 'hermes-talk', 'desktop')
+    const packageDesktop = path.join(home, 'plugins', 'aurora-talk', 'desktop')
     fs.mkdirSync(packageDesktop, { recursive: true })
     fs.writeFileSync(path.join(packageDesktop, 'plugin.js'), 'from the agent package\n')
 
     await reconcileUnifiedDesktopHalves(home, appRoot)
 
-    expect(fs.readFileSync(path.join(appRoot, 'hermes-talk', 'plugin.js'), 'utf8')).toBe('from the agent package\n')
-    const marker = JSON.parse(fs.readFileSync(path.join(appRoot, 'hermes-talk', PACKAGE_MARKER), 'utf8'))
+    expect(fs.readFileSync(path.join(appRoot, 'aurora-talk', 'plugin.js'), 'utf8')).toBe('from the agent package\n')
+    const marker = JSON.parse(fs.readFileSync(path.join(appRoot, 'aurora-talk', PACKAGE_MARKER), 'utf8'))
     expect(marker.source).toBe(packageDesktop)
   })
 
   it('leaves a desktop-only repo unmarked so it stays a standalone plugin', async () => {
     const repo = pluginRepo(null)
-    const appRoot = mkdtemp('hermes-plugin-root-')
+    const appRoot = mkdtemp('aurora-plugin-root-')
     roots.push(appRoot)
 
     const result = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot)
@@ -539,7 +539,7 @@ describe('installDesktopPluginFromGit', () => {
     // it render that package's tool media); only this app may write it.
     const forged = JSON.stringify({ package: 'meshy-ish', source: '/elsewhere' })
     const repo = pluginRepo(null, { [PACKAGE_MARKER]: forged })
-    const appRoot = mkdtemp('hermes-plugin-root-')
+    const appRoot = mkdtemp('aurora-plugin-root-')
     roots.push(appRoot)
 
     const result = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot)

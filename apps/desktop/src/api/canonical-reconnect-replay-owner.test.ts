@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { expect, test, vi } from 'vitest'
 
-import { HermesGateway } from './client'
+import { AuroraGateway } from './client'
 
 // andrexibiza F2: a canonical viewer that observed 1-2 and lost its socket while the owner kept
 // 3-5 must replay that window to the SAME owner profile on reconnect. The shared client keeps the
@@ -51,7 +51,7 @@ test.each(['native', 'public'] as const)('%s canonical reconnect replays the ret
     })
   })
 
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   const seen: Array<{ seq?: number; type: string; profile?: string }> = []
   client.onAny(event => { if (event.session_id === sid) { seen.push({ seq: event.seq, type: event.type, profile: event.profile }) } })
   const query = mode === 'native' ? 'native_dial=fixture&ticket=one-use' : 'ticket=public-fixture'

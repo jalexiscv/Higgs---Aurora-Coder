@@ -13,7 +13,7 @@ import {
   CommandList
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import type { HermesGitBaseBranch } from '@/global'
+import type { AuroraGitBaseBranch } from '@/global'
 import { useI18n } from '@/i18n'
 import type { GitOwnerRoute } from '@/lib/desktop-git'
 import { $repoStatus } from '@/store/coding-status'
@@ -41,7 +41,7 @@ export function BaseBranchPicker({
   const { t } = useI18n()
   const p = t.sidebar.projects
   const repoStatus = useStore($repoStatus)
-  const [branches, setBranches] = useState<HermesGitBaseBranch[]>([])
+  const [branches, setBranches] = useState<AuroraGitBaseBranch[]>([])
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
 

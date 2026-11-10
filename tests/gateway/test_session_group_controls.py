@@ -9,7 +9,7 @@ from websockets.asyncio.client import connect
 from websockets.exceptions import InvalidStatus
 
 from gateway.session_controls import AuthorityConnection
-from hermes_state import SessionDB
+from aurora_state import SessionDB
 from tests.gateway.fixtures.local_recovery_probe import child_env, daemon, rpc, websocket
 
 
@@ -26,7 +26,7 @@ def test_group_management_on_ordinary_authenticated_socket(tmp_path):
                   'base_url': 'http://127.0.0.1:1/v1'},
         'auxiliary': {'title_generation': {'enabled': False}},
     }))
-    env = child_env() | dict(HOME=str(user), USERPROFILE=str(user), HERMES_HOME=str(home),
+    env = child_env() | dict(HOME=str(user), USERPROFILE=str(user), AURORA_HOME=str(home),
                              PYTHONPATH=str(root), PYTHONUNBUFFERED='1')
 
     async def probe(desc):
@@ -68,10 +68,10 @@ def test_group_management_on_ordinary_authenticated_socket(tmp_path):
 def test_profile_discovery_and_group_controls_enforce_actor_scope(tmp_path, monkeypatch):
     home = tmp_path / 'state'
     home.mkdir()
-    monkeypatch.setenv('HERMES_HOME', str(home))
+    monkeypatch.setenv('AURORA_HOME', str(home))
     monkeypatch.setenv('HOME', str(tmp_path / 'user'))
     (home / 'config.yaml').write_text('model:\n  default: fixture-model\n  provider: custom\n')
-    (home / 'profile.yaml').write_text('display_name: Fixture\nui_meta:\n  hermes-bots:\n    color: blue\n')
+    (home / 'profile.yaml').write_text('display_name: Fixture\nui_meta:\n  aurora-bots:\n    color: blue\n')
     with SessionDB(home / 'state.db') as db:
         db.create_session('private', source='cli', user_id='another')
         db.set_session_title('private', 'Bot Chat')
@@ -92,7 +92,7 @@ def test_profile_discovery_and_group_controls_enforce_actor_scope(tmp_path, monk
             row, = result['result']['profiles']
             assert row['model'] == 'fixture-model'
             assert row['display_name'] == 'Fixture'
-            assert row['ui_meta']['hermes-bots']['color'] == 'blue'
+            assert row['ui_meta']['aurora-bots']['color'] == 'blue'
             assert row['canonical_session'] is None
             assert row['last_session'] is None
             assert db.get_session('private')['title'] == 'Bot Chat'
@@ -118,7 +118,7 @@ def test_groups_list_pages_the_actor_visible_rooms(tmp_path):
     before the authorization filter (which returned empty/short pages ahead of visible rooms)."""
     from gateway import hosted_rooms as rooms
     from gateway.session_group_controls import _group
-    from hermes_state_runtime import RuntimeStoreError
+    from aurora_state_runtime import RuntimeStoreError
     db_path = tmp_path / 'state.db'
     with SessionDB(db_path) as db:
         for index, name in enumerate(['f1', 'f2', 'm1', 'f3', 'm2', 'm3']):
@@ -146,14 +146,14 @@ def test_profiles_list_names_every_profile_on_disk_and_its_install(tmp_path, mon
     """RT-38 (#140417): with one gateway per profile (no multiplexing, no hosted_rooms entries) the
     authority's roster must still name every profile under this root, and carry ``install_id`` as
     the pre-authority ``profiles.list`` did. Desktop's roster merge drops every union agent the
-    active source did not return, so a default-only answer showed one bot after ``hermes update``."""
+    active source did not return, so a default-only answer showed one bot after ``aurora update``."""
     home = tmp_path / 'state'
     for name in ('helper', 'writer'):
         (home / 'profiles' / name).mkdir(parents=True)
         (home / 'profiles' / name / 'config.yaml').write_text('model:\n  default: m\n')
     (home / 'profiles' / 'writer' / 'profile.yaml').write_text('display_name: Writer Bot\n')
     (home / 'profiles' / 'ghost').mkdir()  # no identity marker: never listed
-    monkeypatch.setenv('HERMES_HOME', str(home))
+    monkeypatch.setenv('AURORA_HOME', str(home))
     monkeypatch.setenv('HOME', str(tmp_path / 'user'))
     (home / 'config.yaml').write_text('model:\n  default: fixture-model\n')
     with SessionDB(home / 'state.db') as db:
@@ -168,7 +168,7 @@ def test_profiles_list_names_every_profile_on_disk_and_its_install(tmp_path, mon
             connection = AuthorityConnection(authority, object(), {'user_id': 'reader'})
             return await connection.dispatch({'id': 'r', 'method': 'profiles.list', 'params': {}})
         result = asyncio.run(probe())['result']
-    from hermes_cli.install_identity import get_install_id
+    from aurora_cli.install_identity import get_install_id
     assert result['install_id'] and result['install_id'] == get_install_id()
     rows = {row['name']: row for row in result['profiles']}
     assert list(rows) == ['default', 'helper', 'writer'], rows
@@ -191,18 +191,18 @@ def test_profiles_list_discovered_rows_keep_the_profiles_own_metadata(tmp_path, 
     (writer / 'profile.yaml').write_text(
         'description: Writes the release notes\n'
         'display_name: Writer Bot\n'
-        'ui_meta:\n  hermes-bots:\n    title: Writer\n'
-        '_ui_meta_revisions:\n  hermes-bots: 3\n')
+        'ui_meta:\n  aurora-bots:\n    title: Writer\n'
+        '_ui_meta_revisions:\n  aurora-bots: 3\n')
     (writer / 'assets').mkdir()
     (writer / 'assets' / 'avatar.png').write_bytes(b'\x89PNG\r\n\x1a\n')
-    monkeypatch.setenv('HERMES_HOME', str(home))
+    monkeypatch.setenv('AURORA_HOME', str(home))
     monkeypatch.setenv('HOME', str(tmp_path / 'user'))
     (home / 'config.yaml').write_text('model:\n  default: fixture-model\n')
     rows = {row['name']: row for row in _list_profiles(home)['result']['profiles']}
     assert rows['writer']['description'] == 'Writes the release notes'
     assert rows['writer']['display_name'] == 'Writer Bot'
     assert rows['writer']['has_avatar'] is True
-    assert rows['writer']['ui_meta_revisions'] == {'hermes-bots': 3}
+    assert rows['writer']['ui_meta_revisions'] == {'aurora-bots': 3}
     # No ``display_name`` in profile.yaml means no override at all: Desktop title-cases the
     # handle itself only while the field is empty.
     assert rows['helper']['display_name'] == ''
@@ -217,7 +217,7 @@ def _roster_home(tmp_path, monkeypatch):
         (home / 'profiles' / name).mkdir(parents=True)
         (home / 'profiles' / name / 'config.yaml').write_text('model:\n  default: m\n')
     (home / 'profiles' / 'writer' / 'profile.yaml').write_text('display_name: Writer Bot\n')
-    monkeypatch.setenv('HERMES_HOME', str(home))
+    monkeypatch.setenv('AURORA_HOME', str(home))
     monkeypatch.setenv('HOME', str(tmp_path / 'user'))
     (home / 'config.yaml').write_text('model:\n  default: fixture-model\n')
     return home
@@ -271,14 +271,14 @@ def test_profiles_list_reuses_its_disk_scan_until_a_profile_changes(tmp_path, mo
     cache; a new profile or an edited profile.yaml is picked up on the next call."""
     import os
 
-    from hermes_cli import profiles
-    import hermes_yaml
+    from aurora_cli import profiles
+    import aurora_yaml
     home = _roster_home(tmp_path, monkeypatch)
     scans, parses = [], []
-    real_iter, real_load = profiles._iter_named_profile_dirs, hermes_yaml.safe_load
+    real_iter, real_load = profiles._iter_named_profile_dirs, aurora_yaml.safe_load
     monkeypatch.setattr(profiles, '_iter_named_profile_dirs',
                         lambda *a, **k: scans.append(1) or real_iter(*a, **k))
-    monkeypatch.setattr(hermes_yaml, 'safe_load', lambda text: parses.append(text) or real_load(text))
+    monkeypatch.setattr(aurora_yaml, 'safe_load', lambda text: parses.append(text) or real_load(text))
 
     def sibling_parses():
         return sum('Writer' in str(text) for text in parses)

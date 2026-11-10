@@ -8,7 +8,7 @@ import { join } from 'node:path'
 import { app, BrowserWindow, session } from 'electron'
 
 // Real Electron, not a mocked frame or a debugger with focus emulation.
-const runtimeDir = mkdtempSync(join(tmpdir(), 'hermes-preview-activity-'))
+const runtimeDir = mkdtempSync(join(tmpdir(), 'aurora-preview-activity-'))
 app.setPath('userData', runtimeDir)
 app.setPath('sessionData', runtimeDir)
 const watchdog = setTimeout(() => {
@@ -73,7 +73,7 @@ async function run() {
     await window.loadURL(
       'data:text/html,' +
         encodeURIComponent(
-          `<webview partition="persist:hermes-preview" src="${base}/old" style="width:600px;height:400px"></webview>`
+          `<webview partition="persist:aurora-preview" src="${base}/old" style="width:600px;height:400px"></webview>`
         )
     )
     const [, guest] = await attached

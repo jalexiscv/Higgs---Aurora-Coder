@@ -30,7 +30,7 @@ export function WebappOauthPasteField(): null | ReactElement {
     setBusy(true)
 
     try {
-      await completeWebappOauth(window.hermesDesktop.api, pending.connectionId, url.trim())
+      await completeWebappOauth(window.auroraDesktop.api, pending.connectionId, url.trim())
       setUrl('')
     } catch (err) {
       notifyError(err, copy.failed)

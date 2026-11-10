@@ -30,8 +30,8 @@ def _fake_proc():
     """A live wrapper whose spawn-time PGID/start-time baselines were captured."""
     return SimpleNamespace(
         pid=12345,
-        _hermes_pgid=67890,
-        _hermes_pgid_start=RECORDED,
+        _aurora_pgid=67890,
+        _aurora_pgid_start=RECORDED,
         poll=lambda: 0,
         wait=lambda timeout=None: 0,
         kill=lambda: None,

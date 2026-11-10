@@ -1,18 +1,18 @@
 // @vitest-environment jsdom
 // The update store's own entry points refuse a Cloud-owned target, so no button,
-// toast or flow left anywhere can start an update Hermes Cloud owns.
+// toast or flow left anywhere can start an update Aurora Cloud owns.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { HermesConnection } from '@/global'
+import type { AuroraConnection } from '@/global'
 
-const checkHermesUpdateSpy = vi.fn()
-const updateHermesSpy = vi.fn()
+const checkAuroraUpdateSpy = vi.fn()
+const updateAuroraSpy = vi.fn()
 
-vi.mock('@/hermes', async importOriginal => ({
+vi.mock('@/aurora', async importOriginal => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  checkHermesUpdate: (...args: unknown[]) => checkHermesUpdateSpy(...args),
+  checkAuroraUpdate: (...args: unknown[]) => checkAuroraUpdateSpy(...args),
   getActionStatus: vi.fn(),
-  updateHermes: (...args: unknown[]) => updateHermesSpy(...args)
+  updateAurora: (...args: unknown[]) => updateAuroraSpy(...args)
 }))
 const notifySpy = vi.fn()
 
@@ -24,7 +24,7 @@ const { setConnection } = await import('./session')
 const clientCheck = vi.fn().mockResolvedValue({ supported: true, behind: 2, targetSha: 'a' })
 const clientApply = vi.fn().mockResolvedValue({ ok: true })
 
-const remote = (baseUrl: string): HermesConnection => ({
+const remote = (baseUrl: string): AuroraConnection => ({
   baseUrl,
   isFullscreen: false,
   logs: [],
@@ -38,20 +38,20 @@ const remote = (baseUrl: string): HermesConnection => ({
 
 beforeEach(() => {
   vi.clearAllMocks()
-  checkHermesUpdateSpy.mockResolvedValue({ behind: 1, can_apply: true, current_version: '1', update_available: true })
-  updateHermesSpy.mockResolvedValue({ ok: true, name: 'hermes-update' })
-  window.hermesDesktop = { updates: { apply: clientApply, check: clientCheck, onProgress: () => () => {} } } as never
+  checkAuroraUpdateSpy.mockResolvedValue({ behind: 1, can_apply: true, current_version: '1', update_available: true })
+  updateAuroraSpy.mockResolvedValue({ ok: true, name: 'aurora-update' })
+  window.auroraDesktop = { updates: { apply: clientApply, check: clientCheck, onProgress: () => () => {} } } as never
   updates.$updateOverlayOpen.set(false)
 })
 
 afterEach(() => {
   vi.unstubAllGlobals()
-  document.documentElement.removeAttribute('data-hermes-desktop-host')
+  document.documentElement.removeAttribute('data-aurora-desktop-host')
 })
 
-describe('update entry points under Hermes Cloud', () => {
+describe('update entry points under Aurora Cloud', () => {
   it('a Webapp tab served by a Cloud agent checks, applies and opens nothing', async () => {
-    document.documentElement.dataset.hermesDesktopHost = 'browser'
+    document.documentElement.dataset.auroraDesktopHost = 'browser'
     vi.stubGlobal('location', new URL('https://lab--app.agents.nousresearch.com/'))
     setConnection(remote('https://lab--app.agents.nousresearch.com'))
 
@@ -65,8 +65,8 @@ describe('update entry points under Hermes Cloud', () => {
 
     expect(clientCheck).not.toHaveBeenCalled()
     expect(clientApply).not.toHaveBeenCalled()
-    expect(checkHermesUpdateSpy).not.toHaveBeenCalled()
-    expect(updateHermesSpy).not.toHaveBeenCalled()
+    expect(checkAuroraUpdateSpy).not.toHaveBeenCalled()
+    expect(updateAuroraSpy).not.toHaveBeenCalled()
     expect(updates.$updateOverlayOpen.get()).toBe(false)
   })
 
@@ -75,8 +75,8 @@ describe('update entry points under Hermes Cloud', () => {
 
     await updates.checkBackendUpdates({ force: true })
     expect(await updates.applyBackendUpdate()).toMatchObject({ ok: false, error: 'cloud-managed' })
-    expect(checkHermesUpdateSpy).not.toHaveBeenCalled()
-    expect(updateHermesSpy).not.toHaveBeenCalled()
+    expect(checkAuroraUpdateSpy).not.toHaveBeenCalled()
+    expect(updateAuroraSpy).not.toHaveBeenCalled()
 
     await updates.checkUpdates({ force: true })
     expect(clientCheck).toHaveBeenCalled()
@@ -92,11 +92,11 @@ describe('update entry points under Hermes Cloud', () => {
 
     await vi.waitFor(() => expect(clientApply).toHaveBeenCalled())
     expect(updates.$updateOverlayTarget.get()).toBe('client')
-    expect(updateHermesSpy).not.toHaveBeenCalled()
+    expect(updateAuroraSpy).not.toHaveBeenCalled()
   })
 
   it('a Cloud-served tab running older code than its agent offers Reload, not an updater', () => {
-    document.documentElement.dataset.hermesDesktopHost = 'browser'
+    document.documentElement.dataset.auroraDesktopHost = 'browser'
     const reload = vi.fn()
     vi.stubGlobal('location', Object.assign(new URL('https://lab--app.agents.nousresearch.com/'), { reload }))
 

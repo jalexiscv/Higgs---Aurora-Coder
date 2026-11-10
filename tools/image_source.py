@@ -190,8 +190,8 @@ _MEDIA_CACHE_SUBDIRS = (
 
 
 def _media_cache_roots() -> list:
-    from hermes_constants import get_hermes_home
-    home = get_hermes_home()
+    from aurora_constants import get_aurora_home
+    home = get_aurora_home()
     return [home / sub for sub in _MEDIA_CACHE_SUBDIRS]
 
 

@@ -68,7 +68,7 @@ def test_reporter_reproducer_explicit_invalidation_reaches_quiet_memo(mail_state
     assert get_tool_definitions(**kwargs) == []
 
     mail_state["up"] = True
-    invalidate_check_fn_cache()  # e.g. hermes_platform.declaration.on_change
+    invalidate_check_fn_cache()  # e.g. aurora_platform.declaration.on_change
 
     assert _names(get_tool_definitions(**kwargs)) == {MAIL}
 
@@ -218,7 +218,7 @@ def test_long_running_agent_bridge_recovers_after_mcp_reconnect(mail_state, cloc
 def direct_tools():
     """Tool Search off, so the MCP tools sit in tools[] itself. Written once: a config write
     moves the memo key on its own and would hide a stale entry."""
-    from hermes_cli.config import atomic_config_write, get_config_path
+    from aurora_cli.config import atomic_config_write, get_config_path
 
     atomic_config_write(get_config_path(), {"tools": {"tool_search": {"enabled": "off"}}})
 
@@ -302,7 +302,7 @@ BRIDGE = {"tool_search", "tool_describe", "tool_call"}
 @pytest.fixture
 def tool_search_on():
     """Written once, before any agent is built (see ``direct_tools``)."""
-    from hermes_cli.config import atomic_config_write, get_config_path
+    from aurora_cli.config import atomic_config_write, get_config_path
 
     atomic_config_write(get_config_path(), {"tools": {"tool_search": {"enabled": "on"}}})
 
@@ -345,7 +345,7 @@ def test_selection_widened_by_a_late_connection_appends_with_the_generation_unch
     """``adopt_late_connections`` widens the selection to a server another session already
     connected in this process: nothing registers, the generation stays put, and the server's
     tools must still append between turns, as on main."""
-    from hermes_constants import hermes_home_key
+    from aurora_constants import aurora_home_key
     from tools.connectors import mcp as connectors_mcp
     from tools.mcp_tool_agent import refresh_agent_mcp_tools
 
@@ -357,7 +357,7 @@ def test_selection_widened_by_a_late_connection_appends_with_the_generation_unch
     agent.session_id = "late-session"
     sent = list(agent.tools)
     generation = registry._generation
-    monkeypatch.setitem(connectors_mcp._LATE_ATTEMPTS, (hermes_home_key(), "late-session"),
+    monkeypatch.setitem(connectors_mcp._LATE_ATTEMPTS, (aurora_home_key(), "late-session"),
                         {"probe_late": _ApprovedLateAttempt()})
     monkeypatch.setattr("tools.mcp_tool_config._load_mcp_config", lambda: {"probe_late": {"command": "probe"}})
     monkeypatch.setattr("tools.mcp_tool_discovery.register_mcp_servers", lambda servers: None)  # connected already
@@ -469,7 +469,7 @@ def test_pin_restore_in_the_same_process_keeps_the_pinned_bridge_through_an_outa
     ``/model``, a fresh agent per turn) while its only deferrable tools are down: the bridge is
     synthesized, never registered, so the restore must carry it like the between-turns refresh does.
     Otherwise tools[] shrinks to the fresh build, the narrowed pin is persisted, and recovery keeps it."""
-    from hermes_state import SessionDB
+    from aurora_state import SessionDB
     from tools.mcp_tool_agent import persist_agent_tool_names, restore_agent_tool_prefix
 
     selection = ["mcp-probe-mail", "clarify"]

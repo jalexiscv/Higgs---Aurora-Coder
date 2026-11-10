@@ -1,4 +1,4 @@
-// @hermes/shared is what a third-party client builds against: it must typecheck on its own, and no
+// @aurora/shared is what a third-party client builds against: it must typecheck on its own, and no
 // file of another workspace (ui-tui's Ink source above all) may enter its program, directly or through
 // a transitive import.
 import { execFileSync } from 'node:child_process'

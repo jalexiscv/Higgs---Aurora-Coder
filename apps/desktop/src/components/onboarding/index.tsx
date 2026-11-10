@@ -1,13 +1,13 @@
-import type { ModelOptionProvider } from '@hermes/shared'
+import type { ModelOptionProvider } from '@aurora/shared'
 import { useStore } from '@nanostores/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { getGlobalModelOptions } from '@/aurora'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import { getGlobalModelOptions } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { Check, ChevronDown, ChevronLeft, KeyRound, Loader2 } from '@/lib/icons'
 import { isSubmitEnter } from '@/lib/ime'
@@ -37,7 +37,7 @@ import {
   startProviderOAuth
 } from '@/store/onboarding'
 import { $onboardingSurfaces, onboardingSurfaceActive } from '@/store/onboarding-presence'
-import type { OAuthProvider } from '@/types/hermes'
+import type { OAuthProvider } from '@/types/aurora'
 
 import { DocsLink, FlowPanel, Status } from './flow'
 import { FreeTierSetupNotice } from './free-tier-setup-notice'
@@ -125,7 +125,7 @@ const API_KEY_OPTIONS: ApiKeyOption[] = [
 ]
 
 // Build the FULL API-key provider catalog from the backend model options so the
-// onboarding / Providers key form lists every `api_key` provider `hermes model`
+// onboarding / Providers key form lists every `api_key` provider `aurora model`
 // knows about — not just the hand-curated five. Curated entries keep their
 // richer copy + placeholders and float to the top (recommended defaults); every
 // other api_key provider is appended with a generic "paste {KEY}" affordance.
@@ -590,7 +590,7 @@ export const FEATURED_ID = 'nous'
 // (it failed or came back empty, which drops the picker onto the key form).
 // Starting sign-in only needs the id; the backend's start reply decides the flow.
 const NOUS_FALLBACK: OAuthProvider = {
-  cli_command: 'hermes auth add nous',
+  cli_command: 'aurora auth add nous',
   docs_url: 'https://portal.nousresearch.com',
   flow: 'device_code',
   id: FEATURED_ID,
@@ -598,7 +598,7 @@ const NOUS_FALLBACK: OAuthProvider = {
   status: { logged_in: false }
 }
 
-const SHOW_ALL_KEY = 'hermes-onboarding-show-all-v1'
+const SHOW_ALL_KEY = 'aurora-onboarding-show-all-v1'
 
 const readShowAll = () => {
   try {

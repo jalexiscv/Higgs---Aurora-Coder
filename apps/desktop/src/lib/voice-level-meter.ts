@@ -70,7 +70,7 @@ export function startVoiceLevelMeter(
     }
 
     running = true
-    node = new AudioWorkletNode(context, 'hermes-voice-level', {
+    node = new AudioWorkletNode(context, 'aurora-voice-level', {
       numberOfInputs: 1,
       numberOfOutputs: 1,
       outputChannelCount: [1],

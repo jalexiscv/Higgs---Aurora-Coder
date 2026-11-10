@@ -11,14 +11,14 @@
 
 import { computed } from 'nanostores'
 
-import type { HermesActiveWork } from '@/global'
+import type { AuroraActiveWork } from '@/global'
 import { $sessions } from '@/store/session'
 import { $workingSessionIds } from '@/store/session-states'
 import { $voiceStreamPaintOwners } from '@/store/voice-stream-paint'
 
 const $activeWork = computed(
   [$workingSessionIds, $sessions, $voiceStreamPaintOwners],
-  (workingIds, sessions, voiceOwners): HermesActiveWork => {
+  (workingIds, sessions, voiceOwners): AuroraActiveWork => {
     const titleById = new Map(sessions.map(session => [session.id, session.title?.trim() ?? '']))
 
     return {
@@ -43,6 +43,6 @@ if (typeof window !== 'undefined') {
     }
 
     lastSent = next
-    window.hermesDesktop?.setActiveWork?.(work)
+    window.auroraDesktop?.setActiveWork?.(work)
   })
 }

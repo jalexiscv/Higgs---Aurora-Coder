@@ -15,14 +15,14 @@ import { writeSecretFileAtomic } from './hardening'
 import { appliedPrimaryWindowRoute } from './window-connection-route'
 
 function fixture(kind: 'cloud' | 'remote' | 'ssh', primary = 'saved-ssh') {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-connection-removal-'))
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'aurora-connection-removal-'))
   onTestFinished(() => fs.rmSync(root, { recursive: true, force: true }))
   const configPath = path.join(root, 'connection.json')
   const registryPath = path.join(root, 'connections.json')
 
   const remote =
     kind === 'ssh'
-      ? { mode: 'ssh', host: 'old.example.invalid', user: 'hermes', keyPath: '/offline/old-key' }
+      ? { mode: 'ssh', host: 'old.example.invalid', user: 'aurora', keyPath: '/offline/old-key' }
       : { url: 'http://127.0.0.1:9119', authMode: 'oauth' }
 
   const config = {
@@ -42,7 +42,7 @@ function fixture(kind: 'cloud' | 'remote' | 'ssh', primary = 'saved-ssh') {
     connections: [
       { id: 'local', kind: 'local', label: 'This device' },
       { id: 'old-gateway', kind, label: 'Old gateway', ...remote },
-      { id: 'saved-ssh', kind: 'ssh', label: 'Saved SSH', host: 'saved.example.invalid', user: 'hermes' }
+      { id: 'saved-ssh', kind: 'ssh', label: 'Saved SSH', host: 'saved.example.invalid', user: 'aurora' }
     ]
   })
 
@@ -179,7 +179,7 @@ it('applying another remote profile on a saved SSH host adds it and leaves the s
         kind: 'ssh',
         label: 'Box (coder)',
         host: 'box.example.invalid',
-        user: 'hermes',
+        user: 'aurora',
         remoteProfile: 'coder'
       }
     ]
@@ -187,7 +187,7 @@ it('applying another remote profile on a saved SSH host adds it and leaves the s
 
   const next = registerGlobalRoute(registry, {
     mode: 'ssh',
-    remote: { host: 'box.example.invalid', user: 'hermes', remoteProfile: 'writer' }
+    remote: { host: 'box.example.invalid', user: 'aurora', remoteProfile: 'writer' }
   })
 
   const ssh = next.connections.filter(c => c.kind === 'ssh')
@@ -196,7 +196,7 @@ it('applying another remote profile on a saved SSH host adds it and leaves the s
   expect(next.connections.find(c => c.id === next.primary)?.remoteProfile).toBe('writer')
 })
 
-it('saving a corrected key or Hermes path updates the matching SSH entry in place, set or cleared', () => {
+it('saving a corrected key or Aurora path updates the matching SSH entry in place, set or cleared', () => {
   const registry = normalizeRegistry({
     version: 2,
     primary: 'coder',
@@ -209,34 +209,34 @@ it('saving a corrected key or Hermes path updates the matching SSH entry in plac
         kind: 'ssh',
         label: 'Box (coder)',
         host: 'box.example.invalid',
-        user: 'hermes',
+        user: 'aurora',
         remoteProfile: 'coder',
         keyPath: '/old/key',
-        remoteHermesPath: '/old/hermes'
+        remoteAuroraPath: '/old/aurora'
       }
     ]
   })
 
-  const route = { host: 'box.example.invalid', user: 'hermes', remoteProfile: 'coder' }
+  const route = { host: 'box.example.invalid', user: 'aurora', remoteProfile: 'coder' }
 
   const fixed = registerGlobalRoute(registry, {
     mode: 'ssh',
-    remote: { ...route, keyPath: '/new/key', remoteHermesPath: '/new/hermes' }
+    remote: { ...route, keyPath: '/new/key', remoteAuroraPath: '/new/aurora' }
   })
 
   const entry = fixed.connections.find(c => c.id === 'coder')
   expect(fixed.connections.filter(c => c.kind === 'ssh')).toHaveLength(1)
-  expect([entry?.label, entry?.keyPath, entry?.remoteHermesPath]).toEqual(['Box (coder)', '/new/key', '/new/hermes'])
+  expect([entry?.label, entry?.keyPath, entry?.remoteAuroraPath]).toEqual(['Box (coder)', '/new/key', '/new/aurora'])
 
   const cleared = registerGlobalRoute(fixed, { mode: 'ssh', remote: route }).connections.find(c => c.id === 'coder')
-  expect([cleared?.keyPath, cleared?.remoteHermesPath]).toEqual([undefined, undefined])
+  expect([cleared?.keyPath, cleared?.remoteAuroraPath]).toEqual([undefined, undefined])
 })
 
 it('Apply routes the window to each applied SSH profile, back to one already saved; Save never re-picks', () => {
   let registry = normalizeRegistry({ connections: [{ id: 'local', kind: 'local', label: 'This device' }] })
   const route = (remoteProfile: string) => ({
     mode: 'ssh',
-    remote: { host: 'box.example.invalid', user: 'hermes', remoteProfile }
+    remote: { host: 'box.example.invalid', user: 'aurora', remoteProfile }
   })
 
   const routedProfile = (r: ConnectionRegistry) => {

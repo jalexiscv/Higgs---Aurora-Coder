@@ -1,6 +1,6 @@
 """A peer DM into a Bot Chat is answered by that chat, never by a second writer.
 
-``hermes peer dm`` posts to ``/api/sessions/{id}/chat`` on the peer. Under session authority the
+``aurora peer dm`` posts to ``/api/sessions/{id}/chat`` on the peer. Under session authority the
 Bot Chat's single writer is the authority FIFO and the turn enters through the ``bot_relay.deliver``
 door (``tests/gateway/test_peer_dm_bot_chat_authority.py``). This file keeps the no-authority lane:
 a Desktop lease is a viewer, not an executor (the lease-advertised mailbox consumer was retired), so
@@ -21,8 +21,8 @@ from aiohttp.test_utils import TestClient, TestServer
 
 from gateway.config import PlatformConfig
 from gateway.platforms.api_server import APIServerAdapter
-from hermes_cli.subcommands import peer as peer_mod
-from hermes_state import SessionDB
+from aurora_cli.subcommands import peer as peer_mod
+from aurora_state import SessionDB
 
 AUTHOR = {"id": "bot:cto", "name": "cto", "is_bot": True}
 
@@ -43,7 +43,7 @@ async def test_a_peer_turn_into_a_bot_chat_without_an_authority_runs_here(tmp_pa
     """Without a profile authority nothing else may execute the Bot Chat's turn: a Desktop viewer
     lease is not an owner, so the turn runs here and no mailbox delivery is admitted."""
     home = tmp_path.resolve()
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("AURORA_HOME", str(home))
     monkeypatch.setattr("tools.bot_mode_dm._LIVE_WAIT_SECONDS", 1.0)
     db = SessionDB(home / "state.db")
     db.create_session("bot-chat", "desktop")
@@ -51,7 +51,7 @@ async def test_a_peer_turn_into_a_bot_chat_without_an_authority_runs_here(tmp_pa
     db.create_session("scratch", "api_server")
     lease = None
     if open_in_desktop:
-        from hermes_cli.active_sessions import try_acquire_active_session
+        from aurora_cli.active_sessions import try_acquire_active_session
         lease, refusal = try_acquire_active_session(
             session_id="bot-chat", surface="desktop", config={}, registry_home=home, track_liveness=True,
             metadata={"live_session_id": "live-1", "bot_live_delivery_consumer": True})
@@ -107,12 +107,12 @@ async def test_a_peer_run_into_a_bot_chat_without_an_authority_runs_here(tmp_pat
     """`peer run` into the Bot Chat with no authority to hand it to runs here like any other
     session; the run keeps its run_id and `peer status` keeps working."""
     home = tmp_path.resolve()
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("AURORA_HOME", str(home))
     db = SessionDB(home / "state.db")
     db.create_session("bot-chat", "desktop")
     db.set_session_title("bot-chat", "Bot Chat")
     db.create_session("scratch", "api_server")
-    from hermes_cli.active_sessions import try_acquire_active_session
+    from aurora_cli.active_sessions import try_acquire_active_session
     lease, refusal = try_acquire_active_session(
         session_id="bot-chat", surface="desktop", config={}, registry_home=home, track_liveness=True,
         metadata={"live_session_id": "live-1", "bot_live_delivery_consumer": True})
@@ -149,7 +149,7 @@ def test_peer_dm_reports_a_turn_queued_in_the_open_bot_chat_as_delivered(monkeyp
     the sender not to resend, instead of printing ``(no reply)`` as if the turn were empty."""
     monkeypatch.setattr(peer_mod, "_ensure_bot_chat", lambda base, key: "bot-chat")
     monkeypatch.setattr(peer_mod, "_request", lambda url, key, **kw: {
-        "object": "hermes.session.chat.queued", "session_id": "bot-chat", "status": "claimed", "delivery_id": "d" * 32})
+        "object": "aurora.session.chat.queued", "session_id": "bot-chat", "status": "claimed", "delivery_id": "d" * 32})
 
     code = peer_mod._peer_dm(SimpleNamespace(json=as_json), "hello", "mini", None, "http://peer:8642", "key")
     out = capsys.readouterr().out

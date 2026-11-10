@@ -1,4 +1,4 @@
-import type { ModelOptionProvider, ProviderUsageAccount } from '@hermes/shared'
+import type { ModelOptionProvider, ProviderUsageAccount } from '@aurora/shared'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 

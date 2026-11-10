@@ -37,10 +37,10 @@ only to an owner whose `runtime.describe` lists `client` in `session_create.para
 
 The name is stored with the frozen creation request, so it is part of the exact-retry identity
 and survives a restart. `session.info` returns it as `client` (absent when none was sent), and
-plugins read it through `hermes_cli.plugin_session.session_client()` and the `client` /
+plugins read it through `aurora_cli.plugin_session.session_client()` and the `client` /
 `client_version` keys of prompt-section session info. It is attribution only: `source` still
 picks the session policy (send `source: "tui"` for terminal-client behaviour), and no toolset,
-approval, permission, prompt text or telemetry reads `client`. Hermes does not verify the name,
+approval, permission, prompt text or telemetry reads `client`. Aurora does not verify the name,
 so any client can claim any name: never grant anything based on it.
 
 Attach another authenticated viewer with `session.resume({session_id})`, and submit
@@ -67,19 +67,19 @@ The server issues `session:operator` only at these existing trusted boundaries:
   legacy session token when that authentication path is enabled. With `webapp.enabled`, that
   session token is the browser-hosted Desktop's credential: the gateway keeps it in its home so
   Webapp tabs survive a restart, hands it out only through a one-use link minted for a same-user
-  control-socket peer, and replaces it on `hermes webapp --sign-out` and whenever the Webapp's
+  control-socket peer, and replaces it on `aurora webapp --sign-out` and whenever the Webapp's
   listener fails to start, since its port then belongs to someone else. Behind the sign-in gate a
-  Webapp login is bound to that token by the `hermes_webapp_signin_<gateway>` cookie (HMAC-SHA256 of
+  Webapp login is bound to that token by the `aurora_webapp_signin_<gateway>` cookie (HMAC-SHA256 of
   `webapp-sign-in` keyed with the token), so replacing it ends those logins too; sign-out closes
   every socket the token or a bound login opened, Bot Desktop viewers included. The Webapp's listener
-  names every sign-in cookie it sets that way (`hermes_session_at_<gateway>` and the rest; `<gateway>`
+  names every sign-in cookie it sets that way (`aurora_session_at_<gateway>` and the rest; `<gateway>`
   comes from a digest of the gateway home), so two gateways' Webapps on one hostname keep their own
   logins, whatever their sign-in providers, and leave the standalone dashboard's cookies alone. The provider tokens
   such a login keeps in its cookies never work there on their own: the Webapp's listener accepts a
   bearer token or a socket's `?token=`, and renews a refresh token, only when it gave that token to a
   native app's RFC 8252 sign-in (digests kept in `webapp/native-sign-in-tokens.json` in the gateway home until they
   expire), so native apps stay signed in across a sign-out and a restart. The deployment session
-  token (`HERMES_DASHBOARD_SESSION_TOKEN`) also works there as a bearer token or `?token=` while the
+  token (`AURORA_DASHBOARD_SESSION_TOKEN`) also works there as a bearer token or `?token=` while the
   session-token provider is enabled; it has no refresh token.
 - The HTTP mutation gate, after a verified dashboard Session, native HTTP owner grant,
   or permitted legacy session token has been accepted.
@@ -109,7 +109,7 @@ listener keeps working.
   The native local routing identity remains server-owned `Platform.LOCAL`; source never
   grants messaging/native trust. Default TUI selection folds in `project`; GUI folds in
   the client-surface toolsets (`project`, `desktop_ui`, `catalog`). GUI policy is
-  independent of `HERMES_DESKTOP` and of the attaching viewer's identity. Without explicit
+  independent of `AURORA_DESKTOP` and of the attaching viewer's identity. Without explicit
   `toolsets`, the gateway applies the coding posture (`agent.coding_context: focus` in a
   code workspace, `agent/coding_context.py`) from the `cwd` a `session.create` names,
   decided once at creation; clients never send it as a pick. Only `session.create` applies
@@ -143,7 +143,7 @@ listener keeps working.
   excludes hidden/archived/internal and foreign-owned rows, and never adopts a session merely
   by listing it. Explicit resume performs adoption; the default live feed is unchanged.
   Both scopes take `workspace`: only conversations whose first row is in that folder, by
-  `hermes -c`'s rule (`hermes_state_sessions.workspace_key`): the row's git repo root equals it, or
+  `aurora -c`'s rule (`aurora_state_sessions.workspace_key`): the row's git repo root equals it, or
   (no root recorded) its cwd is the folder or under it. Pass the caller's repo root (else its cwd).
   With `picker: true` each row also carries what a picker shows (`gateway/session_picker_fields.py`):
   `cwd` and `workspace` from the same first row the filter reads, and from the conversation's current
@@ -260,7 +260,7 @@ fixtures described below provide separate coverage; their results must not be pr
 a new end-to-end cross-authentication gateway-crash test.
 
 `tests/gateway/test_local_session.py` launches a disposable process with temporary HOME
-and HERMES_HOME, the production composed HTTP/WS listener, real single-use authenticated
+and AURORA_HOME, the production composed HTTP/WS listener, real single-use authenticated
 tickets, a loopback OpenAI-compatible model, the real TurnRunner/AIAgent, and the real
 terminal tool. It proves persisted identity and same-agent reattachment; closes both
 viewers while approval is pending; reconnects and consents before deleting only an owned

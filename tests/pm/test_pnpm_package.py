@@ -42,7 +42,7 @@ class _LocalArchives:
 def test_every_target_with_a_pinned_node_can_install_the_js_workspaces():
     """The dashboard, TUI and desktop source builds all install through pnpm on PM's node, so a
     target with a node pin but no pnpm pin cannot build them (Termux: "unavailable on
-    linux-arm64-bionic" from `hermes dashboard`)."""
+    linux-arm64-bionic" from `aurora dashboard`)."""
     package = get_package("pnpm")
     lock = Lockfile(paths.lockfile_path())
     version = lock.version("pnpm")
@@ -86,7 +86,7 @@ def test_pnpm_entry_holds_the_executable_and_the_launchers_dist(tmp_path, target
 
 def test_pnpm_dirs_replace_every_case_twin_of_their_names():
     """Windows hands Python upper-cased env names, and a child given both spellings picks one
-    arbitrarily: the Hermes-owned store must be the only spelling left."""
+    arbitrarily: the Aurora-owned store must be the only spelling left."""
     from pm.packages import pnpm_env
 
     env = pnpm_env({"PNPM_CONFIG_STORE_DIR": "/elsewhere/store", "Pnpm_Config_Cache_Dir": "/elsewhere/cache"})

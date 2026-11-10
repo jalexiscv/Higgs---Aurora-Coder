@@ -34,9 +34,9 @@ node_modules
 
 # Built artifacts that are regenerated inside the image.  Excluded so local
 # rebuilds on the developer's machine don't invalidate the dependency-install layer
-# that now depends on the full ui-tui/packages/hermes-ink/ tree being present.
+# that now depends on the full ui-tui/packages/aurora-ink/ tree being present.
 ui-tui/dist/
-ui-tui/packages/hermes-ink/dist/
+ui-tui/packages/aurora-ink/dist/
 
 # CI/CD
 .github
@@ -44,8 +44,8 @@ ui-tui/packages/hermes-ink/dist/
 # Environment files
 .env
 .env.*
-# ...but keep the template: docker/stage2-hook.sh seeds $HERMES_HOME/.env from
-# /opt/hermes/.env.example on first boot (OOF-285 — excluding it silently broke
+# ...but keep the template: docker/stage2-hook.sh seeds $AURORA_HOME/.env from
+# /opt/aurora/.env.example on first boot (OOF-285 — excluding it silently broke
 # first-boot .env seeding and the API_SERVER_KEY generation that depends on it).
 !.env.example
 
@@ -67,11 +67,11 @@ htmlcov/
 
 # Runtime data (bind-mounted at /opt/data; must not leak into build context)
 data/
-.hermes-docker/
+.aurora-docker/
 .notebooklm-home/
 
 # Compose/profile runtime state (bind-mounted; avoid ownership/secret issues)
-hermes-config/
+aurora-config/
 runtime/
 
 # ---------- Not needed inside the Docker image ----------
@@ -121,8 +121,8 @@ assets/*
 !assets/backgrounds/**
 infographic/
 
-# Plugin-level docs (hermes-achievements ships docs/ but the runtime doesn't read them)
-plugins/hermes-achievements/docs/
+# Plugin-level docs (aurora-achievements ships docs/ but the runtime doesn't read them)
+plugins/aurora-achievements/docs/
 
 # Nix / Homebrew / AUR packaging metadata — irrelevant to Docker
 nix/
@@ -133,7 +133,7 @@ packaging/
 # Design and planning documents
 plans/
 .plans/
-.hermes/
+.aurora/
 
 # Repo-level dotfiles that are git-only or dev-tooling config
 .envrc

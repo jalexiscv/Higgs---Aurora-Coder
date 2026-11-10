@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router'
 import type * as ReactRouterDom from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { ToolsetConfig, WebCapability } from '@/types/hermes'
+import type { ToolsetConfig, WebCapability } from '@/types/aurora'
 
 // Collect the component graph before the behavioral test deadline starts.
 import { ToolsetConfigPanel } from './toolset-config-panel'
@@ -42,14 +42,14 @@ const runToolsetPostSetup = vi.fn()
 const getActionStatus = vi.fn()
 const startOAuthLogin = vi.fn()
 const pollOAuthSession = vi.fn()
-const getHermesConfigRecord = vi.fn()
-const getHermesConfigSchema = vi.fn()
-const saveHermesConfig = vi.fn()
-const saveHermesConfigRecord = vi.fn()
+const getAuroraConfigRecord = vi.fn()
+const getAuroraConfigSchema = vi.fn()
+const saveAuroraConfig = vi.fn()
+const saveAuroraConfigRecord = vi.fn()
 const getElevenLabsVoices = vi.fn()
 
-vi.mock('@/hermes', () => ({
-  // useHermesConfigRecord (via VoiceProviderFields) reads these from the barrel.
+vi.mock('@/aurora', () => ({
+  // useAuroraConfigRecord (via VoiceProviderFields) reads these from the barrel.
   peekConfigReadOrigin: () => undefined,
   retainConfigReadOrigin: (next: unknown) => next,
   getToolsetConfig: (name: string) => getToolsetConfig(name),
@@ -66,10 +66,10 @@ vi.mock('@/hermes', () => ({
   getActionStatus: (name: string, lines?: number) => getActionStatus(name, lines),
   startOAuthLogin: (providerId: string) => startOAuthLogin(providerId),
   pollOAuthSession: (providerId: string, sessionId: string) => pollOAuthSession(providerId, sessionId),
-  getHermesConfigRecord: () => getHermesConfigRecord(),
-  getHermesConfigSchema: () => getHermesConfigSchema(),
-  saveHermesConfig: (config: unknown) => saveHermesConfig(config),
-  saveHermesConfigRecord: (config: unknown, profile?: unknown) => saveHermesConfigRecord(config, profile),
+  getAuroraConfigRecord: () => getAuroraConfigRecord(),
+  getAuroraConfigSchema: () => getAuroraConfigSchema(),
+  saveAuroraConfig: (config: unknown) => saveAuroraConfig(config),
+  saveAuroraConfigRecord: (config: unknown, profile?: unknown) => saveAuroraConfigRecord(config, profile),
   getElevenLabsVoices: () => getElevenLabsVoices(),
   // use-config-record keys its query cache by scope via profileScopeKey; a
   // scoped panel reaches it, so the full-replacement mock must provide it.
@@ -153,7 +153,7 @@ beforeEach(() => {
   selectToolsetProvider.mockResolvedValue({ ok: true, name: 'tts', provider: 'ElevenLabs' })
   setEnvVar.mockResolvedValue({ ok: true })
   deleteEnvVar.mockResolvedValue({ ok: true })
-  getHermesConfigRecord.mockResolvedValue({
+  getAuroraConfigRecord.mockResolvedValue({
     tts: {
       provider: 'edge',
       edge: { voice: 'en-US-AriaNeural' },
@@ -161,9 +161,9 @@ beforeEach(() => {
       elevenlabs: { voice_id: 'pNInz6obpgDQGcFmaJgB', model_id: 'eleven_multilingual_v2' }
     }
   })
-  getHermesConfigSchema.mockResolvedValue({ fields: {}, category_order: [] })
-  saveHermesConfig.mockResolvedValue({ ok: true })
-  saveHermesConfigRecord.mockResolvedValue({ ok: true })
+  getAuroraConfigSchema.mockResolvedValue({ fields: {}, category_order: [] })
+  saveAuroraConfig.mockResolvedValue({ ok: true })
+  saveAuroraConfigRecord.mockResolvedValue({ ok: true })
   getElevenLabsVoices.mockResolvedValue({ available: false, voices: [] })
 })
 
@@ -207,9 +207,9 @@ describe('ToolsetConfigPanel', () => {
     // closed Select.
     const voiceInput = screen.getByDisplayValue('alloy')
     fireEvent.change(voiceInput, { target: { value: 'marin' } })
-    await waitFor(() => expect(saveHermesConfigRecord).toHaveBeenCalled(), { timeout: 3000 })
+    await waitFor(() => expect(saveAuroraConfigRecord).toHaveBeenCalled(), { timeout: 3000 })
 
-    const saved = saveHermesConfigRecord.mock.calls.at(-1)?.[0] as Record<
+    const saved = saveAuroraConfigRecord.mock.calls.at(-1)?.[0] as Record<
       string,
       Record<string, Record<string, string>>
     >
@@ -217,7 +217,7 @@ describe('ToolsetConfigPanel', () => {
     expect(saved.tts.openai.voice).toBe('marin')
     // Unscoped panel (no Capabilities override) → profile rides as undefined,
     // preserving the active-profile default. A scoped panel forwards its scope.
-    expect(saveHermesConfigRecord.mock.calls.at(-1)?.[1]).toBeUndefined()
+    expect(saveAuroraConfigRecord.mock.calls.at(-1)?.[1]).toBeUndefined()
   })
 
   it('autosaves the inline voice fields into the profile the panel is scoped to', async () => {
@@ -245,9 +245,9 @@ describe('ToolsetConfigPanel', () => {
     render(<ToolsetConfigPanel onConfiguredChange={vi.fn()} profile={scope} toolset="tts" />)
 
     fireEvent.change(await screen.findByDisplayValue('alloy'), { target: { value: 'marin' } })
-    await waitFor(() => expect(saveHermesConfigRecord).toHaveBeenCalled(), { timeout: 3000 })
+    await waitFor(() => expect(saveAuroraConfigRecord).toHaveBeenCalled(), { timeout: 3000 })
 
-    const [saved, forwarded] = saveHermesConfigRecord.mock.calls.at(-1) as [
+    const [saved, forwarded] = saveAuroraConfigRecord.mock.calls.at(-1) as [
       Record<string, Record<string, Record<string, string>>>,
       unknown
     ]
@@ -420,7 +420,7 @@ describe('ToolsetConfigPanel', () => {
           {
             name: 'Lightpanda',
             badge: 'local',
-            tag: 'Zig headless browser spawned by Hermes, text-only (no screenshots)',
+            tag: 'Zig headless browser spawned by Aurora, text-only (no screenshots)',
             env_vars: [],
             post_setup: 'lightpanda',
             requires_nous_auth: false,
@@ -468,7 +468,7 @@ describe('ToolsetConfigPanel', () => {
           {
             name: 'Lightpanda',
             badge: 'local',
-            tag: 'Zig headless browser spawned by Hermes, text-only (no screenshots)',
+            tag: 'Zig headless browser spawned by Aurora, text-only (no screenshots)',
             env_vars: [],
             post_setup: 'lightpanda',
             requires_nous_auth: false,
@@ -627,7 +627,7 @@ describe('ToolsetConfigPanel', () => {
             {
               name: 'Lightpanda',
               badge: 'free',
-              tag: 'Zig headless browser spawned by Hermes, text-only (no screenshots)',
+              tag: 'Zig headless browser spawned by Aurora, text-only (no screenshots)',
               env_vars: [],
               post_setup: 'lightpanda',
               requires_nous_auth: false,
@@ -655,7 +655,7 @@ describe('ToolsetConfigPanel', () => {
             {
               name: 'Lightpanda',
               badge: 'free',
-              tag: 'Zig headless browser spawned by Hermes, text-only (no screenshots)',
+              tag: 'Zig headless browser spawned by Aurora, text-only (no screenshots)',
               env_vars: [],
               post_setup: 'lightpanda',
               requires_nous_auth: false,

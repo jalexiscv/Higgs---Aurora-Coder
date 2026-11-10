@@ -1,6 +1,6 @@
 import type { NewSessionSplitHandler } from '@/app/chat/new-session-drag'
 import type { AgentProfileRoute } from '@/store/profile'
-import type { SessionInfo } from '@/types/hermes'
+import type { SessionInfo } from '@/types/aurora'
 
 import {
   branchLaneId,

@@ -1,6 +1,6 @@
-import type { SlashExecResponse } from '@hermes/shared/gateway-types'
-import { parseCommandDispatch, parseSlashCommand } from '@hermes/shared/slash'
-import { scoreSlashMenuItem } from '@hermes/shared/slash-score'
+import type { SlashExecResponse } from '@aurora/shared/gateway-types'
+import { parseCommandDispatch, parseSlashCommand } from '@aurora/shared/slash'
+import { scoreSlashMenuItem } from '@aurora/shared/slash-score'
 
 import type { GatewayClient } from '../gatewayClient.js'
 import { rpcErrorMessage } from '../lib/rpc.js'
@@ -107,7 +107,7 @@ export function createSlashHandler(ctx: SlashHandlerContext): SlashHandler {
     }
 
     // Registry-first fallback: widget apps registered AFTER the static
-    // command table was built (user widgets from $HERMES_HOME/tui-widgets,
+    // command table was built (user widgets from $AURORA_HOME/tui-widgets,
     // /widgets-reload) dispatch straight off the live registry.
     if (getWidgetApp(parsed.name)) {
       countTyped()

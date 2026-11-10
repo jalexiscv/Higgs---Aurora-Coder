@@ -36,10 +36,10 @@ from gateway.session_busy_controls import authorize
 from gateway.session_transcript_rows import (
     ROW_KIND_COMPACTION, ROW_KIND_MESSAGE, page_handoffs, project_entries, shown_occurrences,
 )
-from hermes_state_runtime import RuntimeStoreError
+from aurora_state_runtime import RuntimeStoreError
 
 MAX_PAGE_ROWS = 500
-# Projected JSON per page: well under the gateway clients' 8 MiB frame (hermes_cli/gateway_client.py),
+# Projected JSON per page: well under the gateway clients' 8 MiB frame (aurora_cli/gateway_client.py),
 # with room for the reply envelope; the resume reply's archive budget is 3 MiB.
 PAGE_BYTES = 2 * 1024 * 1024
 # Tool results kept on their call's page beyond ``limit`` (a tool row is labelled from its call).
@@ -194,7 +194,7 @@ def _scope(db, target, lineage):
     guard); False, only *target*, paged on its display index; None, only *target*, whose display index
     lacks a slot (a legacy segment, or a rewrite since the last backfill cleared one), so a page would skip
     that row: ``_whole_lineage`` backfills it, a write, outside any snapshot."""
-    from hermes_state import SessionResumeTooLargeError
+    from aurora_state import SessionResumeTooLargeError
     if len(lineage) > 1:
         try:
             db.assert_resume_safe(target)

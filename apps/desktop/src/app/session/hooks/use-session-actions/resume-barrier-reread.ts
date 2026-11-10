@@ -3,7 +3,7 @@ import {
   graftRefreshedTailOntoBackfill,
   olderPageReader
 } from '@/app/chat/transcript-backfill'
-import { getLatestSessionMessages, type ProfileScope } from '@/hermes'
+import { getLatestSessionMessages, type ProfileScope } from '@/aurora'
 import { type ChatMessage, toChatMessages } from '@/lib/chat-messages'
 import {
   type InFlightRecoveryResult,
@@ -12,7 +12,7 @@ import {
   ownerPendingTurns,
   runningAdmission
 } from '@/lib/inflight-turn-journal'
-import type { SessionMessage, SessionMessagesResponse, SessionResumeResult } from '@/types/hermes'
+import type { SessionMessage, SessionMessagesResponse, SessionResumeResult } from '@/types/aurora'
 
 import type { ClientSessionState } from '../../../types'
 

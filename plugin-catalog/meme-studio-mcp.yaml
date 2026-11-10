@@ -9,7 +9,7 @@ tier: community
 category: tools
 docs_url: https://github.com/MrHydeDev/meme-studio-mcp-plugin
 image: https://raw.githubusercontent.com/MrHydeDev/meme-studio-mcp-plugin/8d8f27722f2549b8154ec7ef9cce609d8a62addb/docs/logo.png
-requires_hermes: ">=0.21.6"
+requires_aurora: ">=0.21.6"
 readme: true
 platforms: []
 capabilities:

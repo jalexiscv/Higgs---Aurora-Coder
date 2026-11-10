@@ -5,7 +5,7 @@ description: "Provision a hosted Postgres backend project on Scribase (api.scrib
 maintainer: caelum0x
 tier: community
 category: tools
-requires_hermes: ">=0.20.1"
+requires_aurora: ">=0.20.1"
 docs_url: "https://docs.scribase.com"
 version: "1.0.0"
 capabilities:

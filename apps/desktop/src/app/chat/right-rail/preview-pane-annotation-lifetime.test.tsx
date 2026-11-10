@@ -8,11 +8,11 @@ import { PreviewPane } from './preview-pane'
 
 vi.mock('./real-profile-consent-dialog', () => ({ RealProfileConsentDialog: () => null }))
 
-const originalDesktop = window.hermesDesktop
+const originalDesktop = window.auroraDesktop
 
 afterEach(() => {
   cleanup()
-  window.hermesDesktop = originalDesktop
+  window.auroraDesktop = originalDesktop
   $selectedStoredSessionId.set(null)
 })
 
@@ -41,7 +41,7 @@ async function setup() {
       return undefined
     }
   })
-  window.hermesDesktop = {
+  window.auroraDesktop = {
     ...originalDesktop,
     beginPreviewGuestActivity: async () => {
       leases.add(++token)
@@ -159,7 +159,7 @@ describe('annotation document lifetime', () => {
       })
       await finishInstall()
 
-      expect(fixture.guestDocument.querySelector('hermes-annotate')).toBeNull()
+      expect(fixture.guestDocument.querySelector('aurora-annotate')).toBeNull()
       const escape = new KeyboardEvent('keydown', { cancelable: true, key: 'Escape' })
       fixture.guestWindow.dispatchEvent(escape)
       expect(escape.defaultPrevented).toBe(false)
@@ -176,11 +176,11 @@ describe('annotation document lifetime', () => {
     await finishInstall?.()
     await finishCleanup?.()
 
-    expect(fixture.guestDocument.querySelectorAll('hermes-annotate')).toHaveLength(1)
+    expect(fixture.guestDocument.querySelectorAll('aurora-annotate')).toHaveLength(1)
     await act(async () => {
       fixture.guestWindow.dispatchEvent(new KeyboardEvent('keydown', { cancelable: true, key: 'Escape' }))
     })
     await waitFor(() => expect(fixture.rendered.getByRole('button', { name: 'Annotate' })).toBeTruthy())
-    expect(fixture.guestDocument.querySelector('hermes-annotate')).toBeNull()
+    expect(fixture.guestDocument.querySelector('aurora-annotate')).toBeNull()
   })
 })

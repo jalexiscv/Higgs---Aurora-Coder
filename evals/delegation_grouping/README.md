@@ -4,7 +4,7 @@ Does a parent that will answer only after every subagent finishes get the result
 parent that must act on each result as it lands still get them one at a time? Run with
 `delegation.independent_completions: true`, the only configuration where the model makes that choice.
 
-- `worker.py <arm> <parent_model> <task> <rep> <out.json>`: one cell in its own process. Temp `HERMES_HOME`,
+- `worker.py <arm> <parent_model> <task> <rep> <out.json>`: one cell in its own process. Temp `AURORA_HOME`,
   `isolate_host`, a real parent `AIAgent` (toolsets `delegation` + `file`) and real background children on
   `DG_CHILD_MODEL`. Between turns the worker does what the CLI drain does: it claims every delivered completion
   unit and feeds each one back to the parent as its own new turn.

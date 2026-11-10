@@ -1,4 +1,4 @@
-import type { SessionInfo } from '@hermes/shared/gateway-types'
+import type { SessionInfo } from '@aurora/shared/gateway-types'
 
 import { LONG_MSG } from '../config/limits.js'
 import { t } from '../i18n/runtime.js'

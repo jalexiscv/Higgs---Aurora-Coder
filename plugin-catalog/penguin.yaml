@@ -3,7 +3,7 @@ title: Penguin
 repo: https://github.com/Crystal32378/hermes-penguin
 sha: d63015de74effae451d5286cc080b6a3afddd6ad
 version: "0.2.2"
-requires_hermes: ">=0.23.0"
+requires_aurora: ">=0.23.0"
 maintainer: Crystal32378
 tier: community
 category: tools

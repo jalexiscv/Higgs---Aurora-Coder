@@ -5,7 +5,7 @@ description: "Spin a real wheel: any list becomes a weighted, animated Desktop w
 maintainer: mchevatheachiever
 tier: community
 category: desktop
-requires_hermes: ">=0.21.5"
+requires_aurora: ">=0.21.5"
 version: "1.0.0"
 title: "WheelSpin"
 readme: true

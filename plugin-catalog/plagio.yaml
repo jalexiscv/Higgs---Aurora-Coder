@@ -8,7 +8,7 @@ maintainer: youssbim
 tier: community
 category: tools
 docs_url: https://docs.plagio.dev
-requires_hermes: ">=0.21.6"
+requires_aurora: ">=0.21.6"
 readme: true
 platforms: []
 capabilities:

@@ -6,7 +6,7 @@ description: Named model, provider and reasoning presets for gateway /model comm
 maintainer: will-lynas
 tier: community
 category: models
-requires_hermes: ">=0.22.5"
+requires_aurora: ">=0.22.5"
 version: "0.1.0"
 docs_url: https://github.com/will-lynas/hermes-model-presets#readme
 readme: true

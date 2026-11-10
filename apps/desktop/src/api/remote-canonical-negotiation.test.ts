@@ -5,7 +5,7 @@ import { expect, test } from 'vitest'
 
 import { type FixtureFrame, type FixtureSocket, listen, publicUrl, readyFrame, reply, shut, transportOpened } from '../test/ws-gateway-fixture'
 
-import { HermesGateway } from './client'
+import { AuroraGateway } from './client'
 
 const snapshot = {
   session_id: 'chat', stored_session_id: 'chat', messages: [], prompts: [], pending: [],
@@ -35,7 +35,7 @@ test('a public authenticated canonical gateway retains the attached profile and 
     })
     socket.send(readyFrame())
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
 
   try {
     await client.connect(publicUrl(server))
@@ -64,7 +64,7 @@ test.each([{}, { session_authority: false }, { session_authority: 'true' }])('a 
     })
     socket.send(readyFrame(canonical ? { session_authority: true } : advertisement))
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   const url = publicUrl(server)
 
   try {
@@ -87,9 +87,9 @@ test.each(['viewer', 'peer'] as const)('%s disconnect rejects an unfinished publ
   const server = await listen()
   let peer: FixtureSocket | undefined
   server.on('connection', (socket: FixtureSocket) => { peer = socket })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   const opened = transportOpened(client)
-  const rejected = expect(client.connect(publicUrl(server))).rejects.toThrow('Hermes gateway connection closed before protocol readiness')
+  const rejected = expect(client.connect(publicUrl(server))).rejects.toThrow('Aurora gateway connection closed before protocol readiness')
 
   try {
     await opened

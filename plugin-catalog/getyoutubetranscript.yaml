@@ -8,7 +8,7 @@ maintainer: TubeAgentKit
 tier: community
 category: tools
 docs_url: https://github.com/tubeagentkit/youtube-transcript-hermes-plugin
-requires_hermes: ">=0.23.0"
+requires_aurora: ">=0.23.0"
 readme: true
 platforms: []
 capabilities:

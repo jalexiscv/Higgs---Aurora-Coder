@@ -3,7 +3,7 @@ repo: https://github.com/dudicslevente/hermes-ascii-worlds
 sha: ba8faabd33426a1a56353d19f16fd89aef025d60
 title: ASCII Worlds
 description: >-
-  Twenty quiet habitats drawn live in text glyphs for Hermes Desktop: koi, jellyfish,
+  Twenty quiet habitats drawn live in text glyphs for Aurora Desktop: koi, jellyfish,
   mantas, sea turtles, seahorses, a fish school, a whale, an octopus, butterflies, luna
   moths, dragonflies, swallows, a sleeping cat, an owl, falling leaves and petals,
   fireflies, bubbles, dandelion seeds and a night sky. Choose a habitat and its controls
@@ -13,7 +13,7 @@ description: >-
 maintainer: dudicslevente
 tier: community
 category: desktop
-requires_hermes: ">=0.21.6"
+requires_aurora: ">=0.21.6"
 docs_url: https://github.com/dudicslevente/hermes-ascii-worlds#readme
 version: "1.2.0"
 image: https://raw.githubusercontent.com/dudicslevente/hermes-ascii-worlds/ba8faabd33426a1a56353d19f16fd89aef025d60/docs/images/banner.png
@@ -26,7 +26,7 @@ screenshots:
   - https://raw.githubusercontent.com/dudicslevente/hermes-ascii-worlds/ba8faabd33426a1a56353d19f16fd89aef025d60/docs/images/habitats/butterflies-light.png
 platforms: []
 known_issues:
-  - The author hand-tested the plugin on macOS with Hermes Desktop. The screenshots are browser captures of the plugin's own preview and settings page.
+  - The author hand-tested the plugin on macOS with Aurora Desktop. The screenshots are browser captures of the plugin's own preview and settings page.
   - Fine glyph density at full speed, high counts and the optional whole-window layer use noticeable CPU. Battery saver and a bolder density turn the cost down.
   - Light-theme Cat and Owl faces, pale seeds, fish and swallows, and quiet halos or stars are lower-contrast. The whale deliberately leaves the frame for a while.
 capabilities:

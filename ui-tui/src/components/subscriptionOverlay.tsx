@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
-import { Box, Text, useInput } from '@hermes/ink'
-import type { SubscriptionStateResponse, SubscriptionTierOption, SubscriptionUpgradeResponse } from '@hermes/shared/gateway-types'
+import { Box, Text, useInput } from '@aurora/ink'
+import type { SubscriptionStateResponse, SubscriptionTierOption, SubscriptionUpgradeResponse } from '@aurora/shared/gateway-types'
 import { useEffect, useRef, useState } from 'react'
 
 import type {

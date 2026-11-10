@@ -3,9 +3,9 @@
 // existing protocol; wire negotiation never changes the transport's auth credentials.
 // Unsupported explicit semantics fail before network admission.
 
-import { randomUuid } from '@hermes/shared'
+import { randomUuid } from '@aurora/shared'
 
-export const CANONICAL_GATEWAY_PROTOCOL = 'hermes-gateway-v1'
+export const CANONICAL_GATEWAY_PROTOCOL = 'aurora-gateway-v1'
 
 /** Dial `/api/ws` or a sibling stream beside it. A local gateway's one-use ticket leaves the URL
  *  for the gateway subprotocol; a remote route keeps its own query credential. */
@@ -18,7 +18,7 @@ export function openGatewaySocket(url: string): WebSocket {
   if (!ticket) {throw new Error('Native gateway requires a fresh private ticket')}
   parsed.searchParams.delete('ticket')
 
-  return new WebSocket(parsed.toString(), [CANONICAL_GATEWAY_PROTOCOL, `hermes-gateway-ticket.${ticket}`])
+  return new WebSocket(parsed.toString(), [CANONICAL_GATEWAY_PROTOCOL, `aurora-gateway-ticket.${ticket}`])
 }
 
 export const canonicalProfile = (profile: unknown): string =>
@@ -55,7 +55,7 @@ export const canonicalOwnerProfile = (value: object): string | undefined => cano
 
 export const recordCanonicalOwner = (value: object, profile: string): void => { canonicalOwners.set(value, profile) }
 
-// Mirrors hermes_cli/gateway_mutations.slash_mutation: the typed directives
+// Mirrors aurora_cli/gateway_mutations.slash_mutation: the typed directives
 // that are canonical mutations, not gateway-executed slash commands. `--provider`
 // (and `--session`) map onto the model mutation like the picker's value; other
 // model flags (--global/--once/--refresh) have no canonical mutation and stay on
@@ -228,7 +228,7 @@ function canonicalProducerFrame(method: string, params: Record<string, unknown>)
   return method === 'bot_relay.deliver' ? canonicalBotDelivery(params) : params
 }
 
-// The levels `hermes_constants.parse_reasoning_effort` accepts: a session `/reasoning <level>` is the
+// The levels `aurora_constants.parse_reasoning_effort` accepts: a session `/reasoning <level>` is the
 // owner's `reasoning` mutation; the display words (show/hide/full/clamp) are config.yaml writes.
 const REASONING_EFFORTS = new Set(['none', 'false', 'disabled', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max', 'ultra'])
 

@@ -5,7 +5,7 @@ description: "Catches fabricated, mismatched and retracted references. Checks ea
 maintainer: ChienNguyen23
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_aurora: ">=0.22.0"
 docs_url: https://github.com/ChienNguyen23/hermes-citation-guard#readme
 version: "0.1.3"
 capabilities:

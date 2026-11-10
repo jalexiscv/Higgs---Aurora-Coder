@@ -22,7 +22,7 @@ vi.mock('@/store/gateway', () => ({
   ensureGatewayForProfile,
   openGatewayForProfile: vi.fn(async () => undefined)
 }))
-vi.mock('@/hermes', () => ({
+vi.mock('@/aurora', () => ({
   getProfiles: vi.fn(async () => ({ profiles: [] })),
   setApiRequestProfile: vi.fn()
 }))
@@ -32,24 +32,24 @@ vi.mock('@/store/starmap', () => ({ reloadOpenStarmapGraph: vi.fn(), resetStarma
 const { $activeGatewayProfile, selectProfile } = await import('./profile')
 const { installBrowserDesktopBridge } = await import('@/lib/browser-desktop-bridge')
 
-const bootstrap = window as Window & { __HERMES_BASE_PATH__?: string; }
+const bootstrap = window as Window & { __AURORA_BASE_PATH__?: string; }
 const savedDefault = { connectionId: 'local', profile: 'research' }
 const urlProfile = () => new URLSearchParams(window.location.search).get('profile')
 
 beforeEach(async () => {
-  bootstrap.__HERMES_BASE_PATH__ = '/hermes'
+  bootstrap.__AURORA_BASE_PATH__ = '/aurora'
   seedWebappSession('served-token')
-  window.history.replaceState(null, '', '/hermes?profile=arrived#/')
+  window.history.replaceState(null, '', '/aurora?profile=arrived#/')
   expect(installBrowserDesktopBridge()).toBe(true)
-  await window.hermesDesktop.profile.setDefault(savedDefault)
+  await window.auroraDesktop.profile.setDefault(savedDefault)
   $activeGatewayProfile.set('arrived')
 })
 
 afterEach(() => {
-  Reflect.deleteProperty(window, 'hermesDesktop')
-  delete bootstrap.__HERMES_BASE_PATH__
+  Reflect.deleteProperty(window, 'auroraDesktop')
+  delete bootstrap.__AURORA_BASE_PATH__
   clearWebappSession()
-  document.documentElement.removeAttribute('data-hermes-desktop-host')
+  document.documentElement.removeAttribute('data-aurora-desktop-host')
   window.localStorage.clear()
   window.history.replaceState(null, '', '/#/')
   vi.clearAllMocks()
@@ -63,7 +63,7 @@ it.each([
 ])('records a live switch in the tab that booted on $boot, and only there', async ({ source }) => {
   activeGatewayConnectionId.mockReturnValue(source)
   const defaultChanged = vi.fn()
-  const unsubscribe = window.hermesDesktop.profile.onDefaultChanged(defaultChanged)
+  const unsubscribe = window.auroraDesktop.profile.onDefaultChanged(defaultChanged)
 
   selectProfile('ops')
   await vi.waitFor(() => expect(urlProfile()).toBe('ops'))
@@ -72,11 +72,11 @@ it.each([
   selectProfile('default')
   await vi.waitFor(() => expect(urlProfile()).toBe('default'))
 
-  expect(window.location.pathname).toBe('/hermes')
+  expect(window.location.pathname).toBe('/aurora')
   expect(window.location.hash).toBe('#/')
-  await expect(window.hermesDesktop.profile.getDefault()).resolves.toEqual(savedDefault)
+  await expect(window.auroraDesktop.profile.getDefault()).resolves.toEqual(savedDefault)
   expect(defaultChanged).not.toHaveBeenCalled()
-  const own = await window.hermesDesktop.getConnection()
+  const own = await window.auroraDesktop.getConnection()
   expect(own.profile).toBeUndefined()
   expect(own.sharedPrimary).toBe(false)
   unsubscribe()

@@ -1,4 +1,4 @@
-import type { GatewayEventName } from '@hermes/shared'
+import type { GatewayEventName } from '@aurora/shared'
 // Tool events route to the bubble that owns the call id, not to whatever is
 // streaming now. A result that lands AFTER its part was sealed (interim
 // commentary, mid-turn user insert, turn settle) must re-attach to that part
@@ -126,7 +126,7 @@ describe('tool events for a part that already exists on a sealed message', () =>
     event('tool.start', 601, { args: { command: 'echo step1' }, name: 'terminal', tool_id: 'call_lost' })
     event('message.complete', 602, { text: 'first turn done' })
 
-    // Same tool_call_id in the next turn (llama.cpp constant id / Hermes
+    // Same tool_call_id in the next turn (llama.cpp constant id / Aurora
     // deterministic id). A sealed-no-result part on a settled prior turn is
     // history, not a new running call's owner, so this seeds its own row in
     // the live bubble instead of clobbering the prior turn's command.

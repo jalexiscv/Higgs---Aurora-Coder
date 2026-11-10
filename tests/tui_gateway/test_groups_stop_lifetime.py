@@ -7,7 +7,7 @@ import pytest
 
 from gateway import hosted_room_driver as driver, hosted_rooms
 from gateway.session_group_controls import _group
-from hermes_state import SessionDB
+from aurora_state import SessionDB
 from tests.tui_gateway.test_hosted_room_service import _FakeRPC
 from tests.tui_gateway.test_hosted_room_stop_replay import _service
 
@@ -17,11 +17,11 @@ def controls(request, tmp_path, monkeypatch):
     import tui_gateway.server as srv
     from tui_gateway import methods_groups_forward
 
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("AURORA_HOME", str(tmp_path))
     with SessionDB(tmp_path / "state.db") as db:
         service = _service(db.db_path)
         service.create_room(room_id="room", name="Stop lifetime", members=[
-            {"member_id": "default", "profile": "default", "handle": "hermes"},
+            {"member_id": "default", "profile": "default", "handle": "aurora"},
             {"member_id": "ops", "profile": "ops", "handle": "ops"}])
         monkeypatch.setattr(service.runtime, "status", lambda: {"running": True})
         monkeypatch.setattr(srv, "get_hosted_room_service", lambda: service)

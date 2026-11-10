@@ -32,15 +32,15 @@ const mocks = vi.hoisted(() => {
     activeProfile: makeAtom('default'),
     apiScope: makeAtom<{ connectionId: null | string; profile: null | string }>({ connectionId: null, profile: null }),
     gatewayState: makeAtom<'closed' | 'open'>('closed'),
-    getHermesConfigRecord: vi.fn(),
+    getAuroraConfigRecord: vi.fn(),
     notify: vi.fn(),
     mcpStatus: vi.fn(),
     setMcpServerEnabled: vi.fn().mockResolvedValue({ ok: true })
   }
 })
 
-vi.mock('@/hermes', () => ({
-  getHermesConfigRecord: mocks.getHermesConfigRecord,
+vi.mock('@/aurora', () => ({
+  getAuroraConfigRecord: mocks.getAuroraConfigRecord,
   setMcpServerEnabled: mocks.setMcpServerEnabled
 }))
 
@@ -98,7 +98,7 @@ afterEach(() => {
   mocks.gatewayState.set('closed')
   mocks.activeProfile.set('default')
   mocks.apiScope.set({ connectionId: null, profile: null })
-  mocks.getHermesConfigRecord.mockReset()
+  mocks.getAuroraConfigRecord.mockReset()
   mocks.notify.mockReset()
   mocks.mcpStatus.mockReset()
   mocks.setMcpServerEnabled.mockClear()
@@ -146,7 +146,7 @@ describe('shouldNotify', () => {
 
 it('shows the toast with Sign in + Disable, then stays quiet for a day and re-nudges after it', async () => {
   const servers = { mcp_servers: { linear: { url: 'https://mcp.linear.app/mcp', auth: 'oauth' } } }
-  mocks.getHermesConfigRecord.mockResolvedValue(servers)
+  mocks.getAuroraConfigRecord.mockResolvedValue(servers)
   mocks.mcpStatus.mockResolvedValue(statusOf(['linear', 'failed', true]))
   window.localStorage.clear()
 
@@ -188,7 +188,7 @@ it('shows the toast with Sign in + Disable, then stays quiet for a day and re-nu
 
 it('honors a persisted snooze in a fresh module session, then re-notifies after it expires', async () => {
   const servers = { mcp_servers: { linear: { url: 'https://mcp.linear.app/mcp', auth: 'oauth' } } }
-  const key = 'hermes:mcp-health-snooze-until:default::linear'
+  const key = 'aurora:mcp-health-snooze-until:default::linear'
   let clock = 1_700_000_000_000
   const until = clock + 24 * 60 * 60 * 1000
   const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => clock)
@@ -196,7 +196,7 @@ it('honors a persisted snooze in a fresh module session, then re-notifies after 
 
   try {
     window.localStorage.setItem(key, String(until))
-    mocks.getHermesConfigRecord.mockResolvedValue(servers)
+    mocks.getAuroraConfigRecord.mockResolvedValue(servers)
     mocks.mcpStatus.mockResolvedValue(statusOf(['linear', 'failed', true]))
 
     // A fresh import drops in-memory transition state, as a renderer restart does.
@@ -227,12 +227,12 @@ it('coalesces reconnects during a sweep into one fresh follow-up sweep', async (
     releaseFirst = resolve
   })
 
-  mocks.getHermesConfigRecord.mockReturnValueOnce(first).mockResolvedValue({ mcp_servers: {} })
+  mocks.getAuroraConfigRecord.mockReturnValueOnce(first).mockResolvedValue({ mcp_servers: {} })
 
   startMcpHealthChecker()
   mocks.gatewayState.set('open')
   await flush()
-  expect(mocks.getHermesConfigRecord).toHaveBeenCalledTimes(1)
+  expect(mocks.getAuroraConfigRecord).toHaveBeenCalledTimes(1)
 
   for (let index = 0; index < 12; index += 1) {
     mocks.gatewayState.set('closed')
@@ -240,12 +240,12 @@ it('coalesces reconnects during a sweep into one fresh follow-up sweep', async (
   }
 
   await flush()
-  expect(mocks.getHermesConfigRecord).toHaveBeenCalledTimes(1)
+  expect(mocks.getAuroraConfigRecord).toHaveBeenCalledTimes(1)
 
   releaseFirst({ mcp_servers: {} })
   await flush()
   await flush()
-  expect(mocks.getHermesConfigRecord).toHaveBeenCalledTimes(2)
+  expect(mocks.getAuroraConfigRecord).toHaveBeenCalledTimes(2)
 })
 
 it('runs one follow-up when the active sweep fails through the handled config-error path', async () => {
@@ -255,7 +255,7 @@ it('runs one follow-up when the active sweep fails through the handled config-er
     rejectFirst = reject
   })
 
-  mocks.getHermesConfigRecord.mockReturnValueOnce(first).mockResolvedValue({ mcp_servers: {} })
+  mocks.getAuroraConfigRecord.mockReturnValueOnce(first).mockResolvedValue({ mcp_servers: {} })
 
   startMcpHealthChecker()
   mocks.gatewayState.set('open')
@@ -266,16 +266,16 @@ it('runs one follow-up when the active sweep fails through the handled config-er
   }
 
   await flush()
-  expect(mocks.getHermesConfigRecord).toHaveBeenCalledTimes(1)
+  expect(mocks.getAuroraConfigRecord).toHaveBeenCalledTimes(1)
 
   rejectFirst(new Error('backend restarting'))
   await flush()
   await flush()
-  expect(mocks.getHermesConfigRecord).toHaveBeenCalledTimes(2)
+  expect(mocks.getAuroraConfigRecord).toHaveBeenCalledTimes(2)
 })
 
 it('never nags about a local server that is not running, but does about a failing remote one', async () => {
-  mocks.getHermesConfigRecord.mockResolvedValue({
+  mocks.getAuroraConfigRecord.mockResolvedValue({
     mcp_servers: {
       'unreal-engine': { url: 'http://127.0.0.1:8000/mcp' },
       blender: { command: 'uvx', args: ['blender-mcp'] },
@@ -296,7 +296,7 @@ it('never nags about a local server that is not running, but does about a failin
 
 it('reads config and runtime status from the same connection as the active window', async () => {
   mocks.apiScope.set({ connectionId: 'remote-1', profile: 'default' })
-  mocks.getHermesConfigRecord.mockResolvedValue({ mcp_servers: { remote: { url: 'https://mcp.example.com/mcp' } } })
+  mocks.getAuroraConfigRecord.mockResolvedValue({ mcp_servers: { remote: { url: 'https://mcp.example.com/mcp' } } })
   mocks.mcpStatus.mockResolvedValue(statusOf(['remote', 'failed']))
   window.localStorage.clear()
 
@@ -305,7 +305,7 @@ it('reads config and runtime status from the same connection as the active windo
   await flush()
   await flush()
 
-  expect(mocks.getHermesConfigRecord).toHaveBeenCalledWith({ connectionId: 'remote-1', profile: 'default' })
+  expect(mocks.getAuroraConfigRecord).toHaveBeenCalledWith({ connectionId: 'remote-1', profile: 'default' })
   expect(mocks.mcpStatus).toHaveBeenCalledWith('remote-1', 'default')
   expect(mocks.notify.mock.calls[0][0].id).toBe('mcp-health-remote-1::default::remote')
 })

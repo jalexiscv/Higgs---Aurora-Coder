@@ -1,5 +1,5 @@
-import type { HermesConnection } from '@/global'
-import type { HermesGateway } from '@/hermes'
+import type { AuroraGateway } from '@/aurora'
+import type { AuroraConnection } from '@/global'
 
 /** One secondary (pool) socket the gateway registry (store/gateway.ts) keeps. */
 export interface Secondary {
@@ -8,8 +8,8 @@ export interface Secondary {
   profile: string
   /** Registry connection serving this socket; null = the local/legacy path. */
   connectionId: null | string
-  connection: HermesConnection | null
-  gateway: HermesGateway
+  connection: AuroraConnection | null
+  gateway: AuroraGateway
   /**
    * Date.now() of the most recent socket 'open'. The live-work pruner's
    * min-lifetime grace reads this: an idle prune can race an on-demand dial

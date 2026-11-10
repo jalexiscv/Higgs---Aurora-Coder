@@ -15,7 +15,7 @@ let fixture: MockBackendFixture | null = null
 
 async function publicLog(page: MockBackendFixture['page']) {
   return page.evaluate(() => {
-    const rooms = JSON.parse(localStorage.getItem('hermes.plugin.hermes-bots.group-chats') || '{}')
+    const rooms = JSON.parse(localStorage.getItem('aurora.plugin.aurora-bots.group-chats') || '{}')
 
     return (rooms['Programmer, Reviewer']?.log || []).map((entry: any) => ({
       from: entry.from.name, text: entry.text, thread: entry.thread
@@ -106,7 +106,7 @@ test.beforeEach(async () => {
   } })
   // Bots created below copy this .env; without the provider's key_env every
   // member turn is refused ("No API key for custom provider 'Mock'").
-  writeEnvFile(fixture.sandbox.hermesHome, 'e2e-mock-key', fixture.mockUrl)
+  writeEnvFile(fixture.sandbox.auroraHome, 'e2e-mock-key', fixture.mockUrl)
   await waitForAppReady(fixture, 120_000)
 })
 

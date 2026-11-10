@@ -1,6 +1,6 @@
 // A desktop-only catalog entry (Accent Picker) installed as a standalone desktop plugin: no agent row
 // carries its catalog_name, so the card matches it through the entry the installer recorded on disk
-// (`packageOrigin.catalogName`, read from `.hermes-origin.json`). Before that it kept its Install "+".
+// (`packageOrigin.catalogName`, read from `.aurora-origin.json`). Before that it kept its Install "+".
 import { QueryClientProvider } from '@tanstack/react-query'
 import { act, cleanup, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'

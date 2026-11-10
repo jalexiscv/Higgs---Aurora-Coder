@@ -4,10 +4,10 @@
 // but hidden and minimized windows need not paint it. A static
 // `backgroundThrottling: false` pins `document.visibilityState` to 'visible',
 // turning visibility-gated polls and clocks into always-on timers. An idle,
-// hidden Hermes burned ~20% CPU forever.
+// hidden Aurora burned ~20% CPU forever.
 //
 // So throttling is a runtime dial instead: the renderers already report
-// "which chats are mid-turn" for the quit guard (`hermes:active-work`), and
+// "which chats are mid-turn" for the quit guard (`aurora:active-work`), and
 // this controller rides the merged edge of those reports. Any turn in flight →
 // visible, non-minimized chat windows get `setBackgroundThrottling(false)`.
 // Native visibility transitions reapply that policy; bounded activity holds

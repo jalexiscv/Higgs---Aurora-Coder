@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import type * as HermesModule from '@/hermes'
+import type * as AuroraModule from '@/aurora'
 import { $activeGatewayProfile } from '@/store/profile'
 
 import { useStatusbarItems } from './use-statusbar-items'
@@ -16,9 +16,9 @@ import { useStatusbarItems } from './use-statusbar-items'
 
 const sockets = vi.hoisted(() => [] as Array<{ requests: Array<[string, unknown]>; wsUrl: string }>)
 
-vi.mock('@/hermes', async importOriginal => ({
-  ...(await importOriginal<typeof HermesModule>()),
-  HermesGateway: class {
+vi.mock('@/aurora', async importOriginal => ({
+  ...(await importOriginal<typeof AuroraModule>()),
+  AuroraGateway: class {
     connectionState = 'closed'
     record = { requests: [] as Array<[string, unknown]>, wsUrl: '' }
     constructor() {
@@ -83,7 +83,7 @@ afterEach(() => {
   closeSecondaryGateways()
   sockets.length = 0
   $activeGatewayProfile.set('default')
-  delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as unknown as { auroraDesktop?: unknown }).auroraDesktop
 })
 
 describe('approval-mode chip on a remote-only profile', () => {
@@ -98,7 +98,7 @@ describe('approval-mode chip on a remote-only profile', () => {
 
     const getConnectionFor = vi.fn(async () => homelabMarina)
 
-    ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = { getConnection, getConnectionFor }
+    ;(window as unknown as { auroraDesktop: unknown }).auroraDesktop = { getConnection, getConnectionFor }
 
     configureGatewayRegistry({ onActiveRouteChanged: profile => $activeGatewayProfile.set(profile), onEvent: vi.fn() })
     setPrimaryGateway({ connectionState: 'open', request: vi.fn() } as never, 'default')
@@ -127,7 +127,7 @@ describe('approval-mode chip on a remote-only profile', () => {
 
     const primaryRequest = vi.fn(async () => ({ value: 'manual' }))
 
-    ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = {
+    ;(window as unknown as { auroraDesktop: unknown }).auroraDesktop = {
       getConnection: vi.fn(async () => ({ mode: 'local', port: 4242, token: 'primary-token' })),
       getConnectionFor: vi.fn(async () => boxDefault)
     }

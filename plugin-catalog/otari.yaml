@@ -7,7 +7,7 @@ description: Use Otari, the open-source LLM gateway by Mozilla.ai, as a model pr
 maintainer: mozilla-ai
 tier: community
 category: models
-requires_hermes: ">=0.22.5"
+requires_aurora: ">=0.22.5"
 version: "0.1.0"
 docs_url: https://github.com/mozilla-ai/hermes-provider-otari#readme
 image: https://raw.githubusercontent.com/mozilla-ai/hermes-provider-otari/9d9ba9a55ddb713195d77d1931a4970769de7ae1/assets/banner.png

@@ -1,6 +1,6 @@
-import { fileUrlToNativePath } from '@hermes/shared'
+import { fileUrlToNativePath } from '@aurora/shared'
 
-import type { HermesApiRequest } from '@/global'
+import type { AuroraApiRequest } from '@/global'
 import { translateNow } from '@/i18n'
 import { requireBrowserConnection } from '@/lib/browser-connection'
 import { fetchBrowserImage } from '@/lib/browser-image-download'
@@ -19,7 +19,7 @@ function queryPath(route: string, values: Record<string, boolean | null | string
 }
 
 interface BrowserFilesOptions {
-  api: <T>(request: HermesApiRequest) => Promise<T>
+  api: <T>(request: AuroraApiRequest) => Promise<T>
   bootstrap: BrowserBootstrap
   currentProfile: () => string | null
   /** The bootstrap a file of *connectionId* is read through: a relayed gateway's, when the serving
@@ -34,7 +34,7 @@ export function createBrowserFilesBridge({
   currentProfile,
   bootstrapFor
 }: BrowserFilesOptions): Pick<
-  Window['hermesDesktop'],
+  Window['auroraDesktop'],
   | 'getGatewayFileStreamUrl'
   | 'readDir'
   | 'readFileDataUrl'
@@ -58,14 +58,14 @@ export function createBrowserFilesBridge({
 
     const target = bootstrapFor(connectionId)
 
-    return { api: <T>(request: HermesApiRequest) => browserApi<T>(target, request), bootstrap: target }
+    return { api: <T>(request: AuroraApiRequest) => browserApi<T>(target, request), bootstrap: target }
   }
 
   const downloadUrl = async (url: string, filename = '') => {
     const target = new URL(url, window.location.href)
 
     // Cross-origin anchors ignore download and navigate the current tab.
-    // Fetch without Hermes credentials; CORS denial must not fall back to navigation.
+    // Fetch without Aurora credentials; CORS denial must not fall back to navigation.
     if (target.origin !== window.location.origin && !['blob:', 'data:'].includes(target.protocol)) {
       const image = await fetchBrowserImage(target)
 
@@ -98,11 +98,11 @@ export function createBrowserFilesBridge({
       ).href
     },
     readDir: (path: string) =>
-      fsGet<Awaited<ReturnType<Window['hermesDesktop']['readDir']>>>('list', path),
+      fsGet<Awaited<ReturnType<Window['auroraDesktop']['readDir']>>>('list', path),
     readFileDataUrl: readDataUrl,
     readFileDataUrlForAttach: readDataUrl,
     readFileText: (path: string) =>
-      fsGet<Awaited<ReturnType<Window['hermesDesktop']['readFileText']>>>('read-text', path),
+      fsGet<Awaited<ReturnType<Window['auroraDesktop']['readFileText']>>>('read-text', path),
     saveGatewayFile: async payload => {
       const target = owner(payload.connectionId)
       const query = { path: payload.path, profile: payload.profile ?? currentProfile(), session_id: payload.sessionId }

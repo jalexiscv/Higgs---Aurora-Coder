@@ -4,8 +4,8 @@ import pytest
 from gateway.runtime_bootstrap import _PURPOSE_CAPABILITIES
 from gateway.session_authority import SessionAuthority
 from gateway.session_controls import AuthorityConnection
-from hermes_state import SessionDB
-from hermes_state_runtime import begin_runtime_epoch
+from aurora_state import SessionDB
+from aurora_state_runtime import begin_runtime_epoch
 from tui_gateway import server
 from tui_gateway.ws import _dispatch_request
 

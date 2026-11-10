@@ -173,7 +173,7 @@ def test_a_mac_receipt_with_an_intel_or_a_termux_row_is_refused():
                                "commit": commit, "identity": "test.application",
                                "version": "1.2.4-1",
                                "artifact": {"sha256": "2" * 64,
-                                            "url": f"{BASE}/releases/tag/rc.2-v1.2.4/hermes.deb"}})
+                                            "url": f"{BASE}/releases/tag/rc.2-v1.2.4/aurora.deb"}})
     with pytest.raises(ValueError, match="eceipt"):
             validate_receipt(termux, "darwin-arm64", manifest["tag"], commit, BASE,
                              manifest["releaseEpoch"], archive="rc.2-v1.2.4")
@@ -1053,7 +1053,7 @@ def _fake_stable_context(*, lanes=lane_set.NAMES):
 def _stage_darwin_handoff(built, arch):
     from scripts.releases import handoff
 
-    package = f"HermesBundled-1.2.3-mac-{arch}.zip"
+    package = f"AuroraBundled-1.2.3-mac-{arch}.zip"
     (built / package).write_bytes(f"signed mac zip: {arch}".encode())
     metadata = built / f"metadata-macos-{arch}.json"
     metadata.write_text(json.dumps({
@@ -1067,7 +1067,7 @@ def _stage_darwin_handoff(built, arch):
 def _stage_windows_handoff(built, arch, *, with_metadata=True):
     from scripts.releases import handoff
 
-    package = f"HermesBundled-1.2.3-win-{arch}.msix"
+    package = f"AuroraBundled-1.2.3-win-{arch}.msix"
     (built / package).write_bytes(f"signed msix: {arch}".encode())
     includes = [package]
     if with_metadata:
@@ -1175,7 +1175,7 @@ def _stage_termux_handoff(built):
     metadata = built / "metadata-termux-aarch64.json"
     metadata.write_text(json.dumps({
         "platform": "termux", "arch": "aarch64", "tag": "v1.2.3", "commit": RECEIPT_COMMIT,
-        "baseVersion": "1.2.3", "identity": "hermes-desktop", "version": "1.2.3-1",
+        "baseVersion": "1.2.3", "identity": "aurora-desktop", "version": "1.2.3-1",
         "filename": "deb/product.deb",
     }), encoding="utf-8")
     handoff.stage(ATTEMPT, RECEIPT_COMMIT, "termux", built, ["deb/*", metadata.name])

@@ -46,7 +46,7 @@ import { isPeerInstanceWindow, windowProfileOverride } from '@/store/windows'
 
 import { launchTargetUnreachable, servedProfileSet, startupProfileForConnection } from './startup-profile-restore'
 
-const LAST_PROFILE_STORAGE_KEY = 'hermes.desktop.lastProfileByConnection'
+const LAST_PROFILE_STORAGE_KEY = 'aurora.desktop.lastProfileByConnection'
 
 // Every await of a gateway pick is bounded. A wedged spawn, ticket mint,
 // handshake or IPC (the #93454 class) must surface as a failed click — not a
@@ -99,7 +99,7 @@ $lastProfileByConnection.subscribe(value => persistStringRecord(LAST_PROFILE_STO
 $lastProfileByConnection.listen((value, previous) => {
   for (const [connectionId, profile] of Object.entries(value)) {
     if (previous[connectionId] !== profile) {
-      void window.hermesDesktop?.profile?.rememberConnection?.(connectionId, profile)?.catch(() => undefined)
+      void window.auroraDesktop?.profile?.rememberConnection?.(connectionId, profile)?.catch(() => undefined)
     }
   }
 })
@@ -263,7 +263,7 @@ export function setConnectionsRegistry(registry: DesktopConnectionsRegistry): vo
 
 /** Refresh the renderer cache from Electron's local registry. No backend is contacted. */
 export async function refreshConnectionsRegistry(): Promise<DesktopConnectionsRegistry | null> {
-  const bridge = window.hermesDesktop?.connections
+  const bridge = window.auroraDesktop?.connections
 
   if (!bridge) {
     return null
@@ -281,7 +281,7 @@ export async function refreshConnectionsRegistry(): Promise<DesktopConnectionsRe
 }
 
 async function rememberConnection(connectionId: string): Promise<void> {
-  const setLastUsed = window.hermesDesktop?.connections?.setLastUsed
+  const setLastUsed = window.auroraDesktop?.connections?.setLastUsed
 
   if (!setLastUsed) {
     return
@@ -485,7 +485,7 @@ export async function initializeConnectionsRegistry(): Promise<DesktopConnection
   // Counted from window start, not from here: a chat can be opened before boot
   // reaches the registry.
   const userOpenSince = LAUNCH_USER_SESSION_OPEN
-  void window.hermesDesktop?.profile?.importConnections?.($lastProfileByConnection.get())?.catch(() => undefined)
+  void window.auroraDesktop?.profile?.importConnections?.($lastProfileByConnection.get())?.catch(() => undefined)
 
   const [registry, defaultLoaded] = await Promise.all([
     refreshConnectionsRegistry(),
@@ -680,7 +680,7 @@ export async function selectConnection(connectionId: string, options: SelectConn
 
   const targetKey = `${connectionId}::${targetProfile}`
 
-  // The primary local descriptor (startHermes) historically publishes without
+  // The primary local descriptor (startAurora) historically publishes without
   // a profile of its own; a profile-less descriptor on the source we are
   // landing must not strand the switch — the activation already published the
   // route we asked for, so trust it for the same source instead of comparing

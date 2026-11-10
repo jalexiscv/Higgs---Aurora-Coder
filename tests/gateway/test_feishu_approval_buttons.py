@@ -124,7 +124,7 @@ class TestFeishuExecApproval:
         # Check buttons
         actions = card["elements"][1]["actions"]
         assert len(actions) == 4
-        action_names = [a["value"]["hermes_action"] for a in actions]
+        action_names = [a["value"]["aurora_action"] for a in actions]
         assert action_names == [
             "approve_once", "approve_session", "approve_always", "deny"
         ]
@@ -193,7 +193,7 @@ class TestFeishuUpdatePrompt:
         card = json.loads(kwargs["payload"])
         assert "Restore stashed changes after update?" in card["elements"][0]["content"]
         actions = card["elements"][1]["actions"]
-        assert [a["value"]["hermes_update_prompt_action"] for a in actions] == ["y", "n"]
+        assert [a["value"]["aurora_update_prompt_action"] for a in actions] == ["y", "n"]
 
 
 # ===========================================================================
@@ -298,7 +298,7 @@ class TestCardActionCallbackResponse:
     def test_drops_action_when_loop_not_ready(self, _patch_callback_card_types):
         adapter = _make_adapter()
         adapter._loop = None
-        data = _make_card_action_data({"hermes_action": "approve_once", "approval_id": 1})
+        data = _make_card_action_data({"aurora_action": "approve_once", "approval_id": 1})
 
         with patch("asyncio.run_coroutine_threadsafe") as mock_submit:
             response = adapter._on_card_action_trigger(data)
@@ -318,7 +318,7 @@ class TestCardActionCallbackResponse:
             "chat_id": "oc_12345",
         }
         data = _make_card_action_data(
-            {"hermes_action": "approve_once", "approval_id": 1},
+            {"aurora_action": "approve_once", "approval_id": 1},
             open_id="ou_bob",
         )
         adapter._sender_name_cache["ou_bob"] = ("Bob", 9999999999)
@@ -345,7 +345,7 @@ class TestCardActionCallbackResponse:
             "chat_id": "oc_12345",
         }
         data = _make_card_action_data(
-            {"hermes_action": "approve_once", "approval_id": 4},
+            {"aurora_action": "approve_once", "approval_id": 4},
             open_id="ou_expired",
         )
         adapter._sender_name_cache["ou_expired"] = ("Old Name", 1)
@@ -368,7 +368,7 @@ class TestCardActionCallbackResponse:
             "chat_id": "oc_12345",
         }
         data = _make_card_action_data(
-            {"hermes_action": "approve_once", "approval_id": 5},
+            {"aurora_action": "approve_once", "approval_id": 5},
             open_id="ou_attacker",
         )
 
@@ -392,7 +392,7 @@ class TestCardActionCallbackResponse:
             "chat_id": "oc_12345",
         }
         data = _make_card_action_data(
-            {"hermes_action": "approve_once", "approval_id": 6},
+            {"aurora_action": "approve_once", "approval_id": 6},
             open_id="ou_attacker",
         )
 
@@ -415,7 +415,7 @@ class TestCardActionCallbackResponse:
         }
         adapter._allowed_group_users = {"ou_allowed"}
         data = _make_card_action_data(
-            {"hermes_update_prompt_action": "y", "update_prompt_id": 1},
+            {"aurora_update_prompt_action": "y", "update_prompt_id": 1},
             open_id="ou_intruder",
         )
 
@@ -439,7 +439,7 @@ class TestCardActionCallbackResponse:
             "chat_id": "oc_12345",
         }
         data = _make_card_action_data(
-            {"hermes_update_prompt_action": "y", "update_prompt_id": 7},
+            {"aurora_update_prompt_action": "y", "update_prompt_id": 7},
             open_id="ou_intruder",
         )
 
@@ -462,7 +462,7 @@ class TestCardActionCallbackResponse:
             "chat_id": "oc_expected",
         }
         data = _make_card_action_data(
-            {"hermes_update_prompt_action": "y", "update_prompt_id": 8},
+            {"aurora_update_prompt_action": "y", "update_prompt_id": 8},
             chat_id="oc_mismatch",
             open_id="ou_bob",
         )
@@ -494,7 +494,7 @@ class TestCardActionCallbackResponse:
             "chat_id": "oc_dm_chat",
         }
         data = _make_card_action_data(
-            {"hermes_action": "approve_once", "approval_id": 15},
+            {"aurora_action": "approve_once", "approval_id": 15},
             chat_id="oc_dm_chat",
             open_id="ou_dm_user",
         )
@@ -522,7 +522,7 @@ class TestCardActionCallbackResponse:
             "chat_id": "oc_dm_chat",
         }
         data = _make_card_action_data(
-            {"hermes_update_prompt_action": "y", "update_prompt_id": 23},
+            {"aurora_update_prompt_action": "y", "update_prompt_id": 23},
             chat_id="oc_dm_chat",
             open_id="ou_dm_user",
         )
@@ -547,7 +547,7 @@ class TestCardActionCallbackResponse:
             "chat_id": "oc_dm_chat",
         }
         data = _make_card_action_data(
-            {"hermes_action": "approve_once", "approval_id": 24},
+            {"aurora_action": "approve_once", "approval_id": 24},
             chat_id="oc_dm_chat",
             open_id="",
         )
@@ -573,7 +573,7 @@ class TestCardActionCallbackResponse:
             "chat_id": "oc_dm_chat",
         }
         data = _make_card_action_data(
-            {"hermes_update_prompt_action": "y", "update_prompt_id": 25},
+            {"aurora_update_prompt_action": "y", "update_prompt_id": 25},
             chat_id="oc_dm_chat",
             open_id="",
         )
@@ -599,7 +599,7 @@ class TestCardActionCallbackResponse:
             "chat_id": "oc_dm_chat",
         }
         data = _make_card_action_data(
-            {"hermes_action": "approve_once", "approval_id": 26},
+            {"aurora_action": "approve_once", "approval_id": 26},
             chat_id="oc_forwarded_group",
             open_id="ou_dm_user",
         )
@@ -619,8 +619,8 @@ class TestResolveUpdatePrompt:
     @pytest.mark.asyncio
     async def test_writes_response_file(self, tmp_path, monkeypatch):
         adapter = _make_adapter()
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path / ".hermes"))
-        (tmp_path / ".hermes").mkdir()
+        monkeypatch.setenv("AURORA_HOME", str(tmp_path / ".aurora"))
+        (tmp_path / ".aurora").mkdir()
         adapter.set_authorization_check(lambda *_a, **_kw: True)
         adapter._update_prompt_state[1] = {
             "session_key": "sess-up-1",
@@ -630,14 +630,14 @@ class TestResolveUpdatePrompt:
 
         await adapter._resolve_update_prompt(1, "y", "Alice", open_id="ou_user1", chat_id="oc_12345")
 
-        assert (tmp_path / ".hermes" / ".update_response").read_text() == "y"
+        assert (tmp_path / ".aurora" / ".update_response").read_text() == "y"
         assert 1 not in adapter._update_prompt_state
 
     @pytest.mark.asyncio
     async def test_unauthorized_operator_does_not_write_response(self, tmp_path, monkeypatch):
         adapter = _make_adapter()
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path / ".hermes"))
-        (tmp_path / ".hermes").mkdir()
+        monkeypatch.setenv("AURORA_HOME", str(tmp_path / ".aurora"))
+        (tmp_path / ".aurora").mkdir()
         adapter._allowed_group_users = {"ou_allowed"}
         adapter._group_policy = "open"
         adapter._default_group_policy = "open"
@@ -649,14 +649,14 @@ class TestResolveUpdatePrompt:
 
         await adapter._resolve_update_prompt(2, "y", "Mallory", open_id="ou_intruder", chat_id="oc_12345")
 
-        assert not (tmp_path / ".hermes" / ".update_response").exists()
+        assert not (tmp_path / ".aurora" / ".update_response").exists()
         assert 2 in adapter._update_prompt_state
 
     @pytest.mark.asyncio
     async def test_missing_operator_identity_does_not_write_response(self, tmp_path, monkeypatch):
         adapter = _make_adapter()
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path / ".hermes"))
-        (tmp_path / ".hermes").mkdir()
+        monkeypatch.setenv("AURORA_HOME", str(tmp_path / ".aurora"))
+        (tmp_path / ".aurora").mkdir()
         adapter._allowed_group_users = {"ou_allowed"}
         adapter._update_prompt_state[3] = {
             "session_key": "sess-up-3",
@@ -666,7 +666,7 @@ class TestResolveUpdatePrompt:
 
         await adapter._resolve_update_prompt(3, "y", "Anonymous", open_id="", chat_id="oc_12345")
 
-        assert not (tmp_path / ".hermes" / ".update_response").exists()
+        assert not (tmp_path / ".aurora" / ".update_response").exists()
         assert 3 in adapter._update_prompt_state
 
 
@@ -685,7 +685,7 @@ def test_resolved_card_keeps_the_request(_patch_callback_card_types):
     adapter._loop.is_closed = MagicMock(return_value=False)
     adapter._allowed_group_users = {"ou_bob"}
     adapter._sender_name_cache["ou_bob"] = ("Bob", 9999999999)
-    data = _make_card_action_data({"hermes_action": "approve_once", "approval_id": approval_id}, open_id="ou_bob")
+    data = _make_card_action_data({"aurora_action": "approve_once", "approval_id": approval_id}, open_id="ou_bob")
     with patch("asyncio.run_coroutine_threadsafe", side_effect=_close_submitted_coro):
         card = adapter._on_card_action_trigger(data).card.data
     content = card["elements"][0]["content"]

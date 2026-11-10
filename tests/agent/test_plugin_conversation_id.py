@@ -9,8 +9,8 @@ import pytest
 
 from agent.prompt_cache_scope import conversation_id
 from agent.runtime_session_store import RuntimeSessionStore
-from hermes_state import SessionDB
-from hermes_state_runtime import begin_runtime_epoch, mutate_worker_execution, register_worker_execution
+from aurora_state import SessionDB
+from aurora_state_runtime import begin_runtime_epoch, mutate_worker_execution, register_worker_execution
 from run_agent import AIAgent
 
 PLUGIN = '''
@@ -40,13 +40,13 @@ _GETS_CONVERSATION_ID = {"handler", "pre_tool_call", "post_tool_call"}  # the na
 
 @pytest.fixture
 def probe(tmp_path, monkeypatch):
-    from hermes_cli import plugins
+    from aurora_cli import plugins
     from tools.registry import registry
 
     home = tmp_path / "home"
     plugin = home / "plugins" / "conv_probe"
     plugin.mkdir(parents=True)
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("AURORA_HOME", str(home))
     (home / "config.yaml").write_text("plugins:\n  enabled: [conv_probe]\n")
     (plugin / "plugin.yaml").write_text("name: conv_probe\nversion: '0.1.0'\n")
     (plugin / "__init__.py").write_text(PLUGIN)

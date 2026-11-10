@@ -8,7 +8,7 @@ maintainer: QQQ OÜ
 tier: community
 category: tools
 docs_url: https://qqq.ee/en/mcp-server/
-requires_hermes: ">=0.21.6"
+requires_aurora: ">=0.21.6"
 image: https://raw.githubusercontent.com/meelis545/qqq-ai-visibility-mcp/06278fa89aef5ad40605722f494b069905f62732/icon.png
 readme: true
 platforms: []

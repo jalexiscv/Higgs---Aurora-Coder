@@ -69,4 +69,4 @@ def test_new_root_climb_and_module_sys_path_edit_fail_and_name_the_owner(tmp_pat
     }
     rises = lint.regressions(lint.tally(lint.collect(tmp_path)), {"root_from_file": {"top.py": 1}})
     assert rises == ["root_from_file: pkg/sub/mod.py (1, baseline 0)", "module_sys_path: pkg/sub/mod.py (1, baseline 0)"]
-    assert "hermes_cli._startup_fast.project_root_str()" in lint.FIX_HINT
+    assert "aurora_cli._startup_fast.project_root_str()" in lint.FIX_HINT

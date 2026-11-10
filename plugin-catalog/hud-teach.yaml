@@ -6,7 +6,7 @@ description: 'Step-by-step lessons on any live Mac window — numbered click-thr
 maintainer: iamlukethedev
 tier: community
 category: desktop
-requires_hermes: ">=0.20.0"
+requires_aurora: ">=0.20.0"
 docs_url: https://github.com/iamlukethedev/hermes-hud-teach
 version: "0.2.0"
 platforms: [macos]

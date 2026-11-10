@@ -6,7 +6,7 @@ maintainer: webbigdata-jp
 tier: community
 category: tools
 version: "1.0.2"
-requires_hermes: ">=0.23.0"
+requires_aurora: ">=0.23.0"
 title: TubeSaku Creator Insights
 capabilities:
   provides_tools: []

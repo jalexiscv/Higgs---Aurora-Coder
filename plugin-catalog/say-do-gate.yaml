@@ -6,7 +6,7 @@ description: Checks agent claims against what actually ran this turn. Determinis
 maintainer: jpaulupshaw
 tier: community
 category: general
-requires_hermes: ">=0.22.6"
+requires_aurora: ">=0.22.6"
 docs_url: https://github.com/jpaulupshaw/hermes-say-do-gate#readme
 version: "0.1.0"
 capabilities:

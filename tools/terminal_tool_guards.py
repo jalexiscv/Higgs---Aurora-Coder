@@ -103,7 +103,7 @@ _FOREGROUND_GUIDANCE = (
         _SHELL_LEVEL_BACKGROUND_RE.search,
         "Foreground command uses shell-level background wrappers (nohup/disown/setsid). "
         "Re-send WITHOUT the wrapper as terminal(command=\"<cmd>\", background=true, "
-        "notify_on_complete=true) so Hermes tracks the process, then run readiness "
+        "notify_on_complete=true) so Aurora tracks the process, then run readiness "
         "checks and tests in separate commands.",
     ),
     (
@@ -211,7 +211,7 @@ def trailing_amp_background_command(command: str) -> str | None:
     if not stripped.strip():
         return None
     # Approval runs on what executes (the stripped command). Some patterns key on the `&` itself
-    # (`hermes gateway run &` = gateway outside its service manager), and approvals are stored per
+    # (`aurora gateway run &` = gateway outside its service manager), and approvals are stored per
     # pattern key, so a different key would let a pre-approval for another category pass.
     if _approval_identity(command) != _approval_identity(stripped):
         return None
@@ -263,14 +263,14 @@ def gateway_lifecycle_block(
 ) -> Optional[str]:
     """Refuse gateway lifecycle commands issued from inside the supervised gateway.
 
-    ``systemctl``/``launchctl``/``hermes gateway restart|stop|uninstall``
-    targeting hermes-gateway would SIGTERM the gateway — and this very
+    ``systemctl``/``launchctl``/``aurora gateway restart|stop|uninstall``
+    targeting aurora-gateway would SIGTERM the gateway — and this very
     subprocess — before completing, so the service may never come back.
     Applies unconditionally (``force=True`` cannot bypass it). Gated on the
-    SUPERVISED-gateway probe, not the raw ``_HERMES_GATEWAY`` marker: that
-    marker leaks into every process that merely imports gateway.run (hermes
+    SUPERVISED-gateway probe, not the raw ``_AURORA_GATEWAY`` marker: that
+    marker leaks into every process that merely imports gateway.run (aurora
     serve, CLI, web server), which must still be able to restart the gateway;
-    an unsupervised foreground ``hermes gateway run`` has no KeepAlive to turn
+    an unsupervised foreground ``aurora gateway run`` has no KeepAlive to turn
     a self-restart into a respawn loop, so it passes too.
     Returns the JSON error string when blocked, else None.
     """
@@ -295,7 +295,7 @@ def gateway_lifecycle_block(
             "Blocked: launchctl submit/bootstrap is restricted inside a supervised "
             "gateway regardless of the job label, to prevent indirect gateway "
             "restart loops. This guard does not inspect the job's KeepAlive settings "
-            "or determine whether it is independent of Hermes. Perform authorized "
+            "or determine whether it is independent of Aurora. Perform authorized "
             "LaunchAgent maintenance from a separate shell outside the gateway, "
             "not by switching launchctl verbs to bypass this rejection.",
             "error",
@@ -333,7 +333,7 @@ def gateway_lifecycle_block(
             "Blocked: command or referenced script cannot restart, stop, or "
             "uninstall the gateway from inside the gateway process. The gateway would "
             "kill this command before it could complete (SIGTERM propagates "
-            "to child processes). Run `hermes gateway restart` from a "
+            "to child processes). Run `aurora gateway restart` from a "
             "separate shell outside the running gateway.",
             "error",
         )
@@ -370,7 +370,7 @@ def self_repo_block(
 
 def locked_skill_block(*, command: str, cwd: str, workdir: Optional[str], session_key: str) -> Optional[str]:
     """Refuse commands that write into a skill the user locked, change the lock record, or run
-    ``hermes curator unlock`` (see tools/skill_lock). Local backend only: a remote or container
+    ``aurora curator unlock`` (see tools/skill_lock). Local backend only: a remote or container
     backend cannot reach this profile's skills dir. Returns the JSON error string when blocked."""
     from tools.skill_lock import command_refusal
     from tools.terminal_tool import _resolve_command_cwd

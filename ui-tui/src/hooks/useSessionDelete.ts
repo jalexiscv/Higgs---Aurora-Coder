@@ -1,5 +1,5 @@
-import type { SessionListRow } from '@hermes/shared/gateway-events'
-import type { SessionDeleteResponse } from '@hermes/shared/gateway-types'
+import type { SessionListRow } from '@aurora/shared/gateway-events'
+import type { SessionDeleteResponse } from '@aurora/shared/gateway-types'
 import { useCallback, useRef, useState } from 'react'
 
 import { mutateCanonical } from '../app/slash/canonicalSessionControls.js'

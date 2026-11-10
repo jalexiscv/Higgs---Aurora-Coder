@@ -16,7 +16,7 @@ from aiohttp.test_utils import TestServer
 from tests.waiting import async_wait_until, wait_until
 from tests.tui_gateway.test_hosted_room_service import _FakeRPC, _server
 
-from hermes_cli import urllib_security
+from aurora_cli import urllib_security
 from gateway import hosted_room_driver as driver
 from gateway.config import PlatformConfig
 from gateway.hosted_rooms import local_authority_gateway_id

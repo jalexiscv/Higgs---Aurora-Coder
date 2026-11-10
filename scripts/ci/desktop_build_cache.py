@@ -49,10 +49,10 @@ _INPUT_FILES = (
     # inside functions. A new late import of such a module must be added here by hand.
     "scripts/releases/versioning.py", "scripts/releases/semver.py",
     "scripts/releases/bundle_env.py", "scripts/releases/commit_build.py", "scripts/termux/deb_version.py",
-    "hermes_cli/__init__.py", "hermes_cli/release_channels.py", "hermes_cli/update_channel.py",
-    "hermes_cli/runtime_state.py", "hermes_constants.py", "hermes_platform/__init__.py",
-    "hermes_platform/resolver/__init__.py", "hermes_platform/resolver/base.py",
-    "hermes_platform/resolver/core.py", "hermes_platform/resolver/known_dirs.py",
+    "aurora_cli/__init__.py", "aurora_cli/release_channels.py", "aurora_cli/update_channel.py",
+    "aurora_cli/runtime_state.py", "aurora_constants.py", "aurora_platform/__init__.py",
+    "aurora_platform/resolver/__init__.py", "aurora_platform/resolver/base.py",
+    "aurora_platform/resolver/core.py", "aurora_platform/resolver/known_dirs.py",
 )
 # Python packages preparation owns (or, for pm/, depends on throughout): keyed whole, so a new
 # module or a new late import inside them needs no list edit.
@@ -90,8 +90,8 @@ def describe_cache(source: Path, cache: Path, producer: str, *, work: Path | Non
     source, cache = source.resolve(), cache.resolve()
     if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}", producer):
         raise ValueError("producer must be a nonempty cache namespace")
-    if os.environ.get("HERMES_HOME") and cache.is_relative_to(Path(os.environ["HERMES_HOME"]).resolve()):
-        raise ValueError("cache must be separate from HERMES_HOME")
+    if os.environ.get("AURORA_HOME") and cache.is_relative_to(Path(os.environ["AURORA_HOME"]).resolve()):
+        raise ValueError("cache must be separate from AURORA_HOME")
     payload_only = producer == "payload-test"
     importers = [] if payload_only else section_keys(
         (source / "pnpm-lock.yaml").read_text(encoding="utf-8-sig"), "importers")
@@ -101,7 +101,7 @@ def describe_cache(source: Path, cache: Path, producer: str, *, work: Path | Non
     domains = ("tools", "python/runtime", "native") if payload_only else CACHE_DOMAINS
     paths = [_cache_path(cache / domain) for domain in domains]
     private_roots = {"source": source, "work": work,
-                     "HERMES_HOME": Path(os.environ["HERMES_HOME"]) if os.environ.get("HERMES_HOME") else None}
+                     "AURORA_HOME": Path(os.environ["AURORA_HOME"]) if os.environ.get("AURORA_HOME") else None}
     for name, private in private_roots.items():
         if private is not None and any(private.resolve().is_relative_to(Path(path)) for path in paths):
             raise ValueError(f"{name} must be outside every reusable cache path")

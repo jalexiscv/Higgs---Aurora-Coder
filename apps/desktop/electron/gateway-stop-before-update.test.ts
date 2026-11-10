@@ -4,8 +4,8 @@ import { test } from 'vitest'
 
 import { GATEWAY_STOP_TIMEOUT_MS, stopGatewayBeforeUpdate } from './gateway-stop-before-update'
 
-const CLI = 'C:\\Users\\x\\hermes\\hermes-agent\\venv\\Scripts\\hermes.exe'
-const HOME = 'C:\\Users\\x\\hermes'
+const CLI = 'C:\\Users\\x\\aurora\\aurora-agent\\venv\\Scripts\\aurora.exe'
+const HOME = 'C:\\Users\\x\\aurora'
 
 function fakeExec(ok: boolean) {
   return (_command: string, _args: string[], _options: unknown) => {

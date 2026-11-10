@@ -1,4 +1,4 @@
-import type { GatewayEventName } from '@hermes/shared'
+import type { GatewayEventName } from '@aurora/shared'
 // A tool event can reach the renderer twice. A background `delegate_task`
 // returns in about a second, and a second copy of its start or completion
 // used to draw the whole fan-out again: "5 subagents" showed 10 rows. A copy

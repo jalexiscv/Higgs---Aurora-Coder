@@ -3,7 +3,7 @@ import { normalizeRemoteBaseUrl, normalizeRemoteHeaders, normalizeRemoteProfileN
 // Build + validate a `{ url, authMode, token }` remote block. OAuth gateways
 // authenticate via the login-window session cookie (verified at connect time in
 // resolveRemoteBackend), so only token-auth remotes require a saved token.
-// `org` (optional) is the Hermes Cloud org slug/id the instance was discovered
+// `org` (optional) is the Aurora Cloud org slug/id the instance was discovered
 // under — persisted so Settings can reopen into the same org; omitted from the
 // block when empty so plain remote connections stay unchanged.
 export function buildRemoteBlock(

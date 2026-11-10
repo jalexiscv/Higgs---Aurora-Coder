@@ -47,7 +47,7 @@ const U = (n: number) => `U${n}-journal${nonce}`
 const A = (n: number) => `A${n}-journal${nonce}`
 
 function readState<T>(sandbox: CoreSandbox, read: (db: DatabaseSync) => T, fallback: T): T {
-  const db = new DatabaseSync(path.join(sandbox.hermesHome, 'state.db'), { readOnly: true })
+  const db = new DatabaseSync(path.join(sandbox.auroraHome, 'state.db'), { readOnly: true })
 
   try {
     return read(db)
@@ -231,16 +231,16 @@ async function withWebapp(
 
   const provider = await startScriptedProvider()
   const sandbox = createCoreSandbox(label)
-  writeProviderHome(sandbox.hermesHome, provider.url)
+  writeProviderHome(sandbox.auroraHome, provider.url)
   // todo_list is deferred behind tool_search by default; the scripted model calls it directly.
   fs.appendFileSync(
-    path.join(sandbox.hermesHome, 'config.yaml'),
+    path.join(sandbox.auroraHome, 'config.yaml'),
     `\nwebapp:\n  enabled: true\n  port: ${await freePort()}\ntools:\n  tool_search:\n    defer: []\n`
   )
   let browser: Browser | null = null
 
   try {
-    browser = await chromium.launch({ executablePath: process.env.HERMES_E2E_CHROMIUM || undefined })
+    browser = await chromium.launch({ executablePath: process.env.AURORA_E2E_CHROMIUM || undefined })
     await body(sandbox, provider, browser)
   } finally {
     await browser?.close().catch(() => undefined)

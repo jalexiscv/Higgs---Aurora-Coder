@@ -35,7 +35,7 @@ from agent.turn_context import (
     compose_multimodal_context_part,
     compose_user_api_content,
 )
-from hermes_state import SessionDB
+from aurora_state import SessionDB
 
 
 # ---------------------------------------------------------------------------
@@ -258,7 +258,7 @@ class TestPrologueStamping:
     def test_stamps_api_content_from_plugin_context(self):
         agent = _FakeAgent()
         with patch(
-            "hermes_cli.plugins.invoke_hook",
+            "aurora_cli.plugins.invoke_hook",
             return_value=[{"context": "PLUGIN-CTX"}],
         ):
             ctx = _build(agent)
@@ -273,7 +273,7 @@ class TestPrologueStamping:
 
     def test_no_stamp_without_injections(self):
         agent = _FakeAgent()
-        with patch("hermes_cli.plugins.invoke_hook", return_value=[]):
+        with patch("aurora_cli.plugins.invoke_hook", return_value=[]):
             ctx = _build(agent)
         assert "api_content" not in ctx.messages[ctx.current_turn_user_idx]
         assert agent.api_content_at_persist is None
@@ -284,7 +284,7 @@ class TestPrologueStamping:
         agent = _FakeAgent()
         agent.api_mode = "codex_app_server"
         with patch(
-            "hermes_cli.plugins.invoke_hook",
+            "aurora_cli.plugins.invoke_hook",
             return_value=[{"context": "PLUGIN-CTX"}],
         ):
             ctx = _build(agent)
@@ -300,7 +300,7 @@ class TestPrologueStamping:
         agent = _FakeAgent()
         blocks = [{"type": "image_url", "image_url": {"url": "data:img"}}]
         with patch(
-            "hermes_cli.plugins.invoke_hook",
+            "aurora_cli.plugins.invoke_hook",
             return_value=[{"context": "PLUGIN-CTX"}],
         ):
             ctx = _build(
@@ -456,7 +456,7 @@ def _text_resp(text: str) -> dict:
 
 @pytest.fixture()
 def wire_env():
-    """Mock provider + isolated HERMES_HOME + a shared SessionDB.
+    """Mock provider + isolated AURORA_HOME + a shared SessionDB.
 
     Yields (make_agent, handler, db, sid): ``make_agent()`` builds a fresh
     AIAgent bound to the shared DB/session, so a second call models a
@@ -469,10 +469,10 @@ def wire_env():
     t = threading.Thread(target=srv.serve_forever, daemon=True)
     t.start()
 
-    test_home = tempfile.mkdtemp(prefix="hermes_api_content_")
-    os.makedirs(os.path.join(test_home, ".hermes"))
-    prev_home = os.environ.get("HERMES_HOME")
-    os.environ["HERMES_HOME"] = os.path.join(test_home, ".hermes")
+    test_home = tempfile.mkdtemp(prefix="aurora_api_content_")
+    os.makedirs(os.path.join(test_home, ".aurora"))
+    prev_home = os.environ.get("AURORA_HOME")
+    os.environ["AURORA_HOME"] = os.path.join(test_home, ".aurora")
 
     from run_agent import AIAgent
 
@@ -495,7 +495,7 @@ def wire_env():
 
     try:
         with patch(
-            "hermes_cli.plugins.invoke_hook",
+            "aurora_cli.plugins.invoke_hook",
             side_effect=lambda hook, **kw: (
                 [{"context": "PLUGIN-CTX"}] if hook == "pre_llm_call" else []
             ),
@@ -506,9 +506,9 @@ def wire_env():
         db.close()
         shutil.rmtree(test_home, ignore_errors=True)
         if prev_home is None:
-            os.environ.pop("HERMES_HOME", None)
+            os.environ.pop("AURORA_HOME", None)
         else:
-            os.environ["HERMES_HOME"] = prev_home
+            os.environ["AURORA_HOME"] = prev_home
 
 
 def _chat_requests(handler) -> list:
@@ -646,7 +646,7 @@ class TestPrologueMoaAndInPlaceBackfill:
         the wire."""
         agent = _FakeAgent()
         with patch(
-            "hermes_cli.plugins.invoke_hook",
+            "aurora_cli.plugins.invoke_hook",
             return_value=[{"context": "PLUGIN-CTX"}],
         ):
             ctx = _build(agent, moa_active=True)
@@ -699,7 +699,7 @@ class TestPrologueMoaAndInPlaceBackfill:
             {"role": "assistant", "content": big},
         ]
         with patch(
-            "hermes_cli.plugins.invoke_hook",
+            "aurora_cli.plugins.invoke_hook",
             return_value=[{"context": "PLUGIN-CTX"}],
         ):
             ctx = _build(agent, conversation_history=history)
@@ -1046,7 +1046,7 @@ class TestSessionRowExistsBeforePreflightCompaction:
         sid = "sess-fresh-inplace"
         try:
             agent, seen = self._make_agent(db, sid, in_place=True)
-            with patch("hermes_cli.plugins.invoke_hook", return_value=[]):
+            with patch("aurora_cli.plugins.invoke_hook", return_value=[]):
                 ctx = _build(agent, conversation_history=self._oversized_history())
 
             # The row was created before compression started — without it the
@@ -1073,7 +1073,7 @@ class TestSessionRowExistsBeforePreflightCompaction:
         turn = [{"type": "text", "text": "what is this"}, image]
         try:
             agent, _seen = self._make_agent(db, sid, in_place=True, current_user_content=list(turn))
-            with patch("hermes_cli.plugins.invoke_hook", return_value=[{"context": "PLUGIN-CTX"}]):
+            with patch("aurora_cli.plugins.invoke_hook", return_value=[{"context": "PLUGIN-CTX"}]):
                 ctx = _build(
                     agent, user_message=list(turn), conversation_history=self._oversized_history(),
                     summarize_user_message_for_log=lambda _m: "[image]",
@@ -1093,7 +1093,7 @@ class TestSessionRowExistsBeforePreflightCompaction:
         sid = "sess-fresh-rot"
         try:
             agent, seen = self._make_agent(db, sid, in_place=False)
-            with patch("hermes_cli.plugins.invoke_hook", return_value=[]):
+            with patch("aurora_cli.plugins.invoke_hook", return_value=[]):
                 _build(agent, conversation_history=self._oversized_history())
 
             # The parent row existed before compression started — the child

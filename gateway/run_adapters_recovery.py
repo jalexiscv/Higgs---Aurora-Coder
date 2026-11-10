@@ -29,7 +29,7 @@ _MAX_PLUGIN_LOAD_REARMS = 3  # per queued platform: transient load failures heal
 
 def _adapter_unavailable_message(platform: Platform, *, retrying: bool = True) -> str:
     """Actionable ``adapter_unavailable`` status text, shared by startup and the reconnect watchers so
-    ``hermes status`` keeps the plugin/deps/credentials hint after the first retry."""
+    ``aurora status`` keeps the plugin/deps/credentials hint after the first retry."""
     message = (
         f"No adapter available for enabled {platform.value}; check the plugin, dependencies, and credentials."
     )
@@ -62,7 +62,7 @@ class GatewaySecondaryReconnectMixin:
         """Re-arm a failed plugin load for a queued platform, capped per queue entry, so the next attempt's
         import can succeed. The CALLER's runtime scope picks the plugin manager (one per profile home).
         Off the loop: the re-arm takes the manager's discovery lock, which a sweep or deferred load holds."""
-        from hermes_cli.plugins import get_plugin_manager
+        from aurora_cli.plugins import get_plugin_manager
         rearms = info.get("load_rearms", 0)
         if rearms < _MAX_PLUGIN_LOAD_REARMS and await self._run_in_executor_with_context(
                 get_plugin_manager().rearm_failed_platform, platform.value):
@@ -173,8 +173,8 @@ class GatewaySecondaryReconnectMixin:
         from gateway.platform_registry import platform_registry
         from gateway.run import _platform_has_bot_credential, _profile_runtime_scope
         # Lazy + per-attempt: keeps test monkeypatches on these modules live.
-        from hermes_cli.profiles import get_profile_dir
-        from hermes_cli.env_loader import hydrate_profile_secret_sources
+        from aurora_cli.profiles import get_profile_dir
+        from aurora_cli.env_loader import hydrate_profile_secret_sources
         from gateway.config import load_gateway_config
         profile_home = get_profile_dir(profile_name)
         # Hydrate external secret sources off-loop so they cannot starve heartbeats.

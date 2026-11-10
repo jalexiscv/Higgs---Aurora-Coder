@@ -23,8 +23,8 @@ def _clear():
 @pytest.fixture(autouse=True)
 def _interactive_manual(monkeypatch):
     monkeypatch.setattr(approval_context, "_get_approval_mode", lambda: "manual")
-    monkeypatch.setenv("HERMES_INTERACTIVE", "1")
-    for var in ("HERMES_GATEWAY_SESSION", "HERMES_EXEC_ASK", "HERMES_YOLO_MODE", "HERMES_CRON_SESSION"):
+    monkeypatch.setenv("AURORA_INTERACTIVE", "1")
+    for var in ("AURORA_GATEWAY_SESSION", "AURORA_EXEC_ASK", "AURORA_YOLO_MODE", "AURORA_CRON_SESSION"):
         monkeypatch.delenv(var, raising=False)
     _clear()
     token = set_current_session_key("prov-sess")
@@ -79,7 +79,7 @@ def test_approvals_off_keeps_the_bare_result_for_covered_commands(guard, monkeyp
 
 
 def test_session_grant_left_by_a_withdrawn_always_answer_is_not_called_a_session_answer(monkeypatch):
-    from hermes_cli.config import get_config_path
+    from aurora_cli.config import get_config_path
     from tools import terminal_tool
 
     monkeypatch.setattr(approval_module, "_permanent_baseline_by_home", {})

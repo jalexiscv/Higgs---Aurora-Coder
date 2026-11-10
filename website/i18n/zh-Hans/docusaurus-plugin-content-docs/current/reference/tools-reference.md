@@ -1,22 +1,22 @@
 ---
 sidebar_position: 3
 title: "内置工具参考"
-description: "Hermes 内置工具权威参考，按工具集分组"
+description: "Aurora 内置工具权威参考，按工具集分组"
 ---
 
 # 内置工具参考
 
-本页记录 Hermes 的内置工具，按工具集分组。可用性因平台、凭据和已启用的工具集而异。
+本页记录 Aurora 的内置工具，按工具集分组。可用性因平台、凭据和已启用的工具集而异。
 
 **当前注册表快速统计：** 约 63 个工具 —— 4 个浏览器工具（`browser_exec`、`browser_cdp`、`browser_dialog`、`browser_vault`）、4 个文件工具、2 个终端工具、2 个 Web 工具、5 个 Feishu 工具、9 个 kanban 工具（在 kanban 调度器生成 agent 时注册）、2 个 Discord 工具，以及若干独立工具（`memory`、`clarify`、`delegate_task`、`execute_code`、`cronjob`、`session_search`、`skill_view`/`skill_manage`/`skills_list`、`text_to_speech`、`image_generate`、`video_generate`、`vision_analyze`、`video_analyze`、`send_message`、`todo`、`computer_use`、`process`）。
 
 :::tip MCP 工具
-除内置工具外，Hermes 还可从 MCP 服务器动态加载工具。MCP 工具以 `mcp_<server>_` 为前缀（例如，`github` MCP 服务器的 `mcp_github_create_issue`）。配置方法见 [MCP 集成](../user-guide/features/mcp.md)。
+除内置工具外，Aurora 还可从 MCP 服务器动态加载工具。MCP 工具以 `mcp_<server>_` 为前缀（例如，`github` MCP 服务器的 `mcp_github_create_issue`）。配置方法见 [MCP 集成](../user-guide/features/mcp.md)。
 :::
 
 ## `browser` 工具集
 
-`browser_exec` 和 `browser_vault` 驱动浏览器会话——Hermes 启动的 Chromium、云端浏览器，或通过 `/browser connect` 连接的浏览器。`browser_cdp` 和 `browser_dialog` 仅在配置了 CDP 端点（`/browser connect`、`BROWSER_CDP_URL` 或 `browser.cdp_url`）时提供，并作用于该浏览器；Hermes 启动的会话和云端会话中没有这两个工具。参见[浏览器自动化](../user-guide/features/browser.md)。
+`browser_exec` 和 `browser_vault` 驱动浏览器会话——Aurora 启动的 Chromium、云端浏览器，或通过 `/browser connect` 连接的浏览器。`browser_cdp` 和 `browser_dialog` 仅在配置了 CDP 端点（`/browser connect`、`BROWSER_CDP_URL` 或 `browser.cdp_url`）时提供，并作用于该浏览器；Aurora 启动的会话和云端会话中没有这两个工具。参见[浏览器自动化](../user-guide/features/browser.md)。
 
 | 工具 | 描述 | 所需环境 |
 |------|------|----------|
@@ -35,7 +35,7 @@ description: "Hermes 内置工具权威参考，按工具集分组"
 
 | 工具 | 描述 | 所需环境 |
 |------|------|----------|
-| `execute_code` | 运行可以编程方式调用 Hermes 工具的 Python 脚本。当需要 3 次以上工具调用且调用之间有处理逻辑、需要在大型工具输出进入上下文前过滤/压缩、需要条件分支（…）时使用。 | — |
+| `execute_code` | 运行可以编程方式调用 Aurora 工具的 Python 脚本。当需要 3 次以上工具调用且调用之间有处理逻辑、需要在大型工具输出进入上下文前过滤/压缩、需要条件分支（…）时使用。 | — |
 
 ## `cronjob` 工具集
 
@@ -51,7 +51,7 @@ description: "Hermes 内置工具权威参考，按工具集分组"
 
 ## `feishu_doc` 工具集
 
-仅限飞书文档评论智能回复处理器（`gateway/platforms/feishu_comment.py`）使用。不在 `hermes-cli` 或常规飞书聊天适配器中暴露。
+仅限飞书文档评论智能回复处理器（`gateway/platforms/feishu_comment.py`）使用。不在 `aurora-cli` 或常规飞书聊天适配器中暴露。
 
 | 工具 | 描述 | 所需环境 |
 |------|------|----------|
@@ -81,14 +81,14 @@ description: "Hermes 内置工具权威参考，按工具集分组"
 
 | 工具 | 描述 | 所需环境 |
 |------|------|----------|
-| `computer_use` | 通过 cua-driver 在后台控制 macOS 桌面——截图（SOM / vision / AX）、点击 / 拖拽 / 滚动 / 输入 / 按键 / 等待、`list_apps`、`focus_app`。**不会**抢占用户的光标或键盘焦点。适用于任何支持工具的模型。仅限 macOS。 | `cua-driver` 在 `$PATH` 中（通过 `hermes tools` 安装）。 |
+| `computer_use` | 通过 cua-driver 在后台控制 macOS 桌面——截图（SOM / vision / AX）、点击 / 拖拽 / 滚动 / 输入 / 按键 / 等待、`list_apps`、`focus_app`。**不会**抢占用户的光标或键盘焦点。适用于任何支持工具的模型。仅限 macOS。 | `cua-driver` 在 `$PATH` 中（通过 `aurora tools` 安装）。 |
 
 :::note
-**Honcho 工具**（`honcho_profile`、`honcho_search`、`honcho_context`、`honcho_reasoning`、`honcho_conclude`）不再是内置工具。它们由插件目录中的 Honcho 记忆提供者插件提供（`hermes plugins install honcho`）。安装和使用方法见 [Memory Providers](../user-guide/features/memory-providers.md)。
+**Honcho 工具**（`honcho_profile`、`honcho_search`、`honcho_context`、`honcho_reasoning`、`honcho_conclude`）不再是内置工具。它们由插件目录中的 Honcho 记忆提供者插件提供（`aurora plugins install honcho`）。安装和使用方法见 [Memory Providers](../user-guide/features/memory-providers.md)。
 
-**Home Assistant 工具**（`ha_list_entities`、`ha_get_state`、`ha_list_services`、`ha_call_service`，工具集 `homeassistant`）不再是内置工具。它们由插件目录中的 `homeassistant` 插件提供（`hermes plugins install homeassistant`）。详见 [Home Assistant](../user-guide/messaging/homeassistant.md)。
+**Home Assistant 工具**（`ha_list_entities`、`ha_get_state`、`ha_list_services`、`ha_call_service`，工具集 `homeassistant`）不再是内置工具。它们由插件目录中的 `homeassistant` 插件提供（`aurora plugins install homeassistant`）。详见 [Home Assistant](../user-guide/messaging/homeassistant.md)。
 
-**Spotify 工具**（`spotify_playback`、`spotify_devices`、`spotify_queue`、`spotify_search`、`spotify_playlists`、`spotify_albums`、`spotify_library`，工具集 `spotify`）不再是内置工具。它们由插件目录中的 `spotify` 插件提供（`hermes plugins install spotify`，然后运行 `hermes spotify login`）。详见 [Spotify](../user-guide/features/spotify.md)。
+**Spotify 工具**（`spotify_playback`、`spotify_devices`、`spotify_queue`、`spotify_search`、`spotify_playlists`、`spotify_albums`、`spotify_library`，工具集 `spotify`）不再是内置工具。它们由插件目录中的 `spotify` 插件提供（`aurora plugins install spotify`，然后运行 `aurora spotify login`）。详见 [Spotify](../user-guide/features/spotify.md)。
 :::
 
 ## `image_gen` 工具集
@@ -99,18 +99,18 @@ description: "Hermes 内置工具权威参考，按工具集分组"
 
 ## `kanban` 工具集
 
-在以下情况下注册：(a) agent 由 kanban 调度器生成（设置了 `HERMES_KANBAN_TASK` 环境变量），或 (b) 在显式启用 `kanban` 工具集的 profile 中运行。任务范围的 worker 使用生命周期工具处理其分配的任务；编排器 profile 还额外获得 `kanban_list` 和 `kanban_unblock` 等看板路由工具。完整工作流见 [Kanban 多 Agent](../user-guide/features/kanban.md)。
+在以下情况下注册：(a) agent 由 kanban 调度器生成（设置了 `AURORA_KANBAN_TASK` 环境变量），或 (b) 在显式启用 `kanban` 工具集的 profile 中运行。任务范围的 worker 使用生命周期工具处理其分配的任务；编排器 profile 还额外获得 `kanban_list` 和 `kanban_unblock` 等看板路由工具。完整工作流见 [Kanban 多 Agent](../user-guide/features/kanban.md)。
 
 | 工具 | 描述 | 所需环境 |
 |------|------|----------|
-| `kanban_show` | 显示分配给当前 worker 的活跃 kanban 任务（标题、描述、评论、依赖项）。 | `HERMES_KANBAN_TASK` 或 `kanban` 工具集 |
+| `kanban_show` | 显示分配给当前 worker 的活跃 kanban 任务（标题、描述、评论、依赖项）。 | `AURORA_KANBAN_TASK` 或 `kanban` 工具集 |
 | `kanban_list` | 带过滤器列出看板任务。仅限编排器；对调度器生成的任务 worker 隐藏。 | 含 `kanban` 工具集的 profile |
-| `kanban_complete` | 用结构化交接载荷（结果、产物、后续事项）将当前任务标记为完成。 | `HERMES_KANBAN_TASK` 或 `kanban` 工具集 |
-| `kanban_block` | 因需向用户提问而阻塞当前任务——调度器暂停、呈现问题，并在人工回复后恢复。 | `HERMES_KANBAN_TASK` 或 `kanban` 工具集 |
-| `kanban_heartbeat` | 在长时间运行的操作期间发送进度心跳，让调度器知道 worker 仍在运行。 | `HERMES_KANBAN_TASK` 或 `kanban` 工具集 |
-| `kanban_comment` | 在不改变任务状态的情况下向任务线程添加评论——适用于呈现中间发现。 | `HERMES_KANBAN_TASK` 或 `kanban` 工具集 |
-| `kanban_create` | 从当前任务派生子任务。由编排器和生成后续任务的 worker 使用。 | `HERMES_KANBAN_TASK` 或 `kanban` 工具集 |
-| `kanban_link` | 用父 → 子依赖边链接任务。 | `HERMES_KANBAN_TASK` 或 `kanban` 工具集 |
+| `kanban_complete` | 用结构化交接载荷（结果、产物、后续事项）将当前任务标记为完成。 | `AURORA_KANBAN_TASK` 或 `kanban` 工具集 |
+| `kanban_block` | 因需向用户提问而阻塞当前任务——调度器暂停、呈现问题，并在人工回复后恢复。 | `AURORA_KANBAN_TASK` 或 `kanban` 工具集 |
+| `kanban_heartbeat` | 在长时间运行的操作期间发送进度心跳，让调度器知道 worker 仍在运行。 | `AURORA_KANBAN_TASK` 或 `kanban` 工具集 |
+| `kanban_comment` | 在不改变任务状态的情况下向任务线程添加评论——适用于呈现中间发现。 | `AURORA_KANBAN_TASK` 或 `kanban` 工具集 |
+| `kanban_create` | 从当前任务派生子任务。由编排器和生成后续任务的 worker 使用。 | `AURORA_KANBAN_TASK` 或 `kanban` 工具集 |
+| `kanban_link` | 用父 → 子依赖边链接任务。 | `AURORA_KANBAN_TASK` 或 `kanban` 工具集 |
 | `kanban_unblock` | 将被阻塞的任务恢复为 `ready` 状态。仅限编排器；对调度器生成的任务 worker 隐藏。 | 含 `kanban` 工具集的 profile |
 
 ## `memory` 工具集
@@ -135,7 +135,7 @@ description: "Hermes 内置工具权威参考，按工具集分组"
 
 | 工具 | 描述 | 所需环境 |
 |------|------|----------|
-| `skill_manage` | 管理 skill（创建、更新、删除）。Skill 是你的程序性记忆——针对重复任务类型的可复用方法。新 skill 保存到 `~/.hermes/skills/`；现有 skill 可在其所在位置修改。操作：create（完整 SKILL.m…） | — |
+| `skill_manage` | 管理 skill（创建、更新、删除）。Skill 是你的程序性记忆——针对重复任务类型的可复用方法。新 skill 保存到 `~/.aurora/skills/`；现有 skill 可在其所在位置修改。操作：create（完整 SKILL.m…） | — |
 | `skill_view` | Skill 允许加载特定任务和工作流的信息，以及脚本和模板。加载某个 skill 的完整内容或访问其链接文件（参考资料、模板、脚本）。首次调用返回 SKILL.md 内容及… | — |
 | `skills_list` | 列出可用 skill（名称 + 描述）。使用 `skill_view(name)` 加载完整内容。 | — |
 
@@ -160,7 +160,7 @@ description: "Hermes 内置工具权威参考，按工具集分组"
 
 ## `video` 工具集
 
-可选工具集（默认 `hermes-cli` 集中不加载）。通过 `--toolsets video` 添加，或在 `toolsets:` 配置中包含 `video`。
+可选工具集（默认 `aurora-cli` 集中不加载）。通过 `--toolsets video` 添加，或在 `toolsets:` 配置中包含 `video`。
 
 | 工具 | 描述 | 所需环境 |
 |------|------|----------|
@@ -168,7 +168,7 @@ description: "Hermes 内置工具权威参考，按工具集分组"
 
 ## `video_gen` 工具集
 
-可选工具集（默认 `hermes-cli` 集中不加载）。通过 `--toolsets video_gen` 添加，或在 `hermes tools` → Video Generation 中启用（同时引导你选择后端）。
+可选工具集（默认 `aurora-cli` 集中不加载）。通过 `--toolsets video_gen` 添加，或在 `aurora tools` → Video Generation 中启用（同时引导你选择后端）。
 
 后端以插件形式存放于 `plugins/video_gen/<name>/`：
 
@@ -192,7 +192,7 @@ description: "Hermes 内置工具权威参考，按工具集分组"
 
 | 工具 | 描述 | 所需环境 |
 |------|------|----------|
-| `x_search` | 使用 xAI 内置的 `x_search` Responses 工具搜索 X（Twitter）帖子、主页和话题串。用于获取 X 上的当前讨论、反应或观点，而非通用网页。默认关闭——通过 `hermes tools` → 🐦 X (Twitter) Search 选择启用。仅在配置了 xAI 凭据时注册 schema（check_fn 门控）。 | XAI_API_KEY **或** xAI Grok OAuth（SuperGrok / Premium+）登录 |
+| `x_search` | 使用 xAI 内置的 `x_search` Responses 工具搜索 X（Twitter）帖子、主页和话题串。用于获取 X 上的当前讨论、反应或观点，而非通用网页。默认关闭——通过 `aurora tools` → 🐦 X (Twitter) Search 选择启用。仅在配置了 xAI 凭据时注册 schema（check_fn 门控）。 | XAI_API_KEY **或** xAI Grok OAuth（SuperGrok / Premium+）登录 |
 
 ## `tts` 工具集
 
@@ -202,7 +202,7 @@ description: "Hermes 内置工具权威参考，按工具集分组"
 
 ## `discord` 工具集
 
-在 `hermes-discord` 平台工具集（仅 gateway）上注册。使用与消息适配器相同的 bot token。
+在 `aurora-discord` 平台工具集（仅 gateway）上注册。使用与消息适配器相同的 bot token。
 
 | 工具 | 描述 | 所需环境 |
 |------|------|----------|
@@ -210,10 +210,10 @@ description: "Hermes 内置工具权威参考，按工具集分组"
 
 ## `discord_admin` 工具集
 
-在 `hermes-discord` 平台工具集上注册。审核操作需要 bot 持有相应的 Discord 权限。
+在 `aurora-discord` 平台工具集上注册。审核操作需要 bot 持有相应的 Discord 权限。
 
 | 工具 | 描述 | 所需环境 |
 |------|------|----------|
 | `discord_admin` | 通过 REST API 管理 Discord 服务器：列出 guild/频道/角色，创建/编辑/删除频道，管理角色授予、禁言、踢出和封禁。 | `DISCORD_BOT_TOKEN` + bot 权限 |
 
-**元宝工具**（`yb_*`，工具集 `yuanbao`）已不再内置，改由 `yuanbao` Hermes Labs 插件提供（`hermes plugins install yuanbao`）。参见 [Yuanbao](../user-guide/messaging/yuanbao.md)。
+**元宝工具**（`yb_*`，工具集 `yuanbao`）已不再内置，改由 `yuanbao` Aurora Labs 插件提供（`aurora plugins install yuanbao`）。参见 [Yuanbao](../user-guide/messaging/yuanbao.md)。

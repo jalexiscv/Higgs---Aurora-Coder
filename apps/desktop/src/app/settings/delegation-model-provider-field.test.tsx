@@ -11,7 +11,7 @@ beforeAll(() => {
 
 const getGlobalModelOptions = vi.fn()
 
-vi.mock('@/hermes', async () => ({
+vi.mock('@/aurora', async () => ({
   ...(await vi.importActual('@/api/client')),
   getGlobalModelOptions: (...args: unknown[]) => getGlobalModelOptions(...args)
 }))

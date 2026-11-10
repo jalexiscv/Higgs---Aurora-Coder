@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
+import { previewSkillHub, type ProfileScope, profileScopeKey } from '@/aurora'
 import { Button } from '@/components/ui/button'
 import { CountSkeleton } from '@/components/ui/skeleton'
-import { previewSkillHub, type ProfileScope, profileScopeKey } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { Loader2 } from '@/lib/icons'
-import type { OfficialSkillInfo } from '@/types/hermes'
+import type { OfficialSkillInfo } from '@/types/aurora'
 
 import { PanelPill } from '../../overlays/panel'
 import { asText, prettyName } from '../../settings/helpers'

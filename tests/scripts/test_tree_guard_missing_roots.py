@@ -1,7 +1,7 @@
 """A tree guard fails when one of its scan roots is gone, instead of passing with nothing checked.
 
 Each guard below walks a fixed list of top-level directories. When a directory moves (into
-``src/hermes_agent/`` or a sibling package) a guard that skips missing roots keeps reporting
+``src/aurora_agent/`` or a sibling package) a guard that skips missing roots keeps reporting
 success while it checks none of the moved files.
 """
 from __future__ import annotations

@@ -3,6 +3,7 @@ import { memo, type ReactNode, useCallback, useEffect, useMemo, useState } from 
 
 import { getToolsets, setToolsetEnabled } from '@/api/toolsets'
 import { useGatewayRequest } from '@/app/gateway/hooks/use-gateway-request'
+import type { ProfileScope } from '@/aurora'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import { Switch } from '@/components/ui/switch'
@@ -12,7 +13,6 @@ import { $pluginRecords, enablePackageDesktopHalf, type PluginRecord, setPluginE
 import { useContributions } from '@/contrib/react/use-contributions'
 import { discoverRuntimePlugins, uninstallDiskPlugin } from '@/contrib/runtime-loader'
 import { pluginSettingsRouteHref, SETTINGS_PLUGINS_AREA } from '@/contrib/settings-pages'
-import type { ProfileScope } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { DESKTOP_PLUGIN_TOOLSETS } from '@/lib/desktop-toolsets'
 import { triggerHaptic } from '@/lib/haptics'
@@ -68,14 +68,14 @@ function profileParam(scope: ProfileScope): null | string {
 }
 
 function reveal(file: string) {
-  void window.hermesDesktop?.revealPath?.(file)?.catch(() => undefined)
+  void window.auroraDesktop?.revealPath?.(file)?.catch(() => undefined)
 }
 
 async function revealPluginsDir() {
   try {
     // Electron owns the app-level plugin root — deriving it from the backend's
-    // hermes_home breaks against a remote backend (#66899).
-    const dir = await window.hermesDesktop?.desktopPluginsRoot?.()
+    // aurora_home breaks against a remote backend (#66899).
+    const dir = await window.auroraDesktop?.desktopPluginsRoot?.()
 
     if (!dir) {
       notifyError('Desktop plugins are unavailable', 'Could not resolve the plugins folder')
@@ -83,7 +83,7 @@ async function revealPluginsDir() {
       return
     }
 
-    const result = await window.hermesDesktop?.openDir?.(dir)
+    const result = await window.auroraDesktop?.openDir?.(dir)
 
     if (result && !result.ok) {
       notifyError(result.error ?? 'unknown error', 'Could not open the plugins folder')
@@ -96,7 +96,7 @@ async function revealPluginsDir() {
 /** Copy any changed unified desktop halves into the app root FIRST, then
  *  rescan the root — a concurrent scan would read the pre-copy state. */
 async function rescanAll(requestGateway: GatewayRequest, scope: null | string) {
-  await window.hermesDesktop?.reconcileDesktopPlugins?.().catch(() => undefined)
+  await window.auroraDesktop?.reconcileDesktopPlugins?.().catch(() => undefined)
   await discoverRuntimePlugins()
   await loadAgentPlugins(requestGateway, scope)
 }
@@ -134,7 +134,7 @@ function installAgentHalfHere(record: PluginRecord, profile: null | string) {
 const SERVER_TONE = {
   connected: 'success',
   app_not_running: 'warn',
-  hermes_not_connected: 'warn',
+  aurora_not_connected: 'warn',
   endpoint_unavailable: 'warn',
   no_interactive_session: 'warn',
   unknown: 'warn',
@@ -316,7 +316,7 @@ function PackageRow({
   // the backend and entrypoint (pip-installed) ones go with their package.
   const agentRemovable = agent?.source === 'user' || agent?.source === 'git'
   const unavailableServers = agent?.servers?.filter(server => server.state !== 'connected') ?? []
-  // A STANDALONE desktop plugin (a folder in <HERMES_HOME>/desktop-plugins with
+  // A STANDALONE desktop plugin (a folder in <AURORA_HOME>/desktop-plugins with
   // no agent package behind it) is deleted by Electron. A unified package's
   // desktop half is not offered here: uninstalling the agent half prunes it.
   const desktopRemovable = desktop?.kind === 'disk' && !desktop.packageName && !agent

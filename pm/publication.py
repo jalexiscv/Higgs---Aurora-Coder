@@ -65,7 +65,7 @@ def validate_manifest(source: Path) -> dict:
 
 def _admitted(source: Path, *, new: bool) -> bool:
     """Refuse a change that newly enables or stages a plugin which does not fit; one enabled
-    before it whose ``hermes-agent`` requirement misses this Hermes sits out (False), as the
+    before it whose ``aurora-agent`` requirement misses this Aurora sits out (False), as the
     build leaves it out, rather than refusing every other plugin's change."""
     from pm.plugin_declarations import read_python_declaration, manifest_version_error
     from pm.workspace import core_requirement_error
@@ -81,13 +81,13 @@ def _admitted(source: Path, *, new: bool) -> bool:
 
 class PluginSelection:
     def __init__(self, selection: dict):
-        from hermes_yaml import roundtrip_yaml
+        from aurora_yaml import roundtrip_yaml
         from pm.plugin_eviction import settle_record
 
         self.configs = selection_snapshot()
         self.home = Path(selection["home"]).resolve()
         if not self.home.is_relative_to(dependency_home_root().resolve()):
-            raise ValueError("config path is outside Hermes state")
+            raise ValueError("config path is outside Aurora state")
         self.path = self.home / "config.yaml"
         self.previous = read_bytes_or_none(self.path)  # config-reader: ok — pm publication: byte-level compare-and-swap rewrite of the local file
         expected = selection.get("expected_config")
@@ -163,7 +163,7 @@ class StagedPlugin:
     def publish(self, project: Path) -> None:
         import os
         import uuid
-        from hermes_cli.auth import _file_lock
+        from aurora_cli.auth import _file_lock
         from pm.store import tree_digest
 
         if selection_snapshot() != self.configs:

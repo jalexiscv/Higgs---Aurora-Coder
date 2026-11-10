@@ -148,8 +148,8 @@ class Installed:
             bridge.close()
         return Result(cp, time.monotonic() - t0, edge)
 
-    def hermes(self, *args: str, edge: Edge | None, **kw) -> Result:
-        return self.run([self.sb.hermes, *args], edge=edge, **kw)
+    def aurora(self, *args: str, edge: Edge | None, **kw) -> Result:
+        return self.run([self.sb.aurora, *args], edge=edge, **kw)
 
     # -- observation -------------------------------------------------------------
     def state(self) -> dict:
@@ -158,7 +158,7 @@ class Installed:
         from pm.environments import install_key
 
         key = install_key(self.sb.checkout)
-        inst = self.sb.hermes_home / "installs" / key
+        inst = self.sb.aurora_home / "installs" / key
 
         def read(p: Path) -> str:
             try:
@@ -166,7 +166,7 @@ class Installed:
             except OSError:
                 return "missing"
 
-        tools = self.sb.hermes_home / "tools"
+        tools = self.sb.aurora_home / "tools"
         return {
             "head": self.head(),
             "facts": read(inst / "facts.json"),
@@ -176,14 +176,14 @@ class Installed:
 
     def logs_tail(self, lines: int = 40) -> str:
         out = []
-        for log in sorted((self.sb.hermes_home / "logs").glob("*.log")):
+        for log in sorted((self.sb.aurora_home / "logs").glob("*.log")):
             text = log.read_text(encoding="utf-8", errors="replace").splitlines()[-lines:]
             out.append(f"--- {log.name} (tail) ---\n" + "\n".join(text))
         return "\n".join(out) or "(no logs)"
 
     def version_works(self) -> Result:
-        """The next ``hermes`` invocation, offline: the install must still start."""
-        return self.hermes("--version", edge=None, timeout=120)
+        """The next ``aurora`` invocation, offline: the install must still start."""
+        return self.aurora("--version", edge=None, timeout=120)
 
 
 def seed_install(root: Path, release: str | None = None) -> Installed:
@@ -249,9 +249,9 @@ def canonical(value: object) -> bytes:
 
 
 def _identity(name: str, token: str) -> dict:
-    pascal = f"HermesChannel{token}"
-    return {"token": token, "displayName": f"Hermes {name}", "appId": f"ai.hermes.channel.h{token}",
-            "appNamePascal": pascal, "artifactNamePascal": pascal, "cliName": f"hermes-{name}",
+    pascal = f"AuroraChannel{token}"
+    return {"token": token, "displayName": f"Aurora {name}", "appId": f"ai.aurora.channel.h{token}",
+            "appNamePascal": pascal, "artifactNamePascal": pascal, "cliName": f"aurora-{name}",
             "windowsExecutableName": pascal, "msixAppIdWithOrg": f"NousResearch.{pascal}"}
 
 
@@ -329,7 +329,7 @@ def env_without(env: dict[str, str], *names: str) -> dict[str, str]:
 
 
 def installed_tool(inst: Installed, name: str) -> dict:
-    facts = json.loads((inst.sb.hermes_home / "tools" / "facts.json").read_text(encoding="utf-8"))
+    facts = json.loads((inst.sb.aurora_home / "tools" / "facts.json").read_text(encoding="utf-8"))
     return facts["packages"][name]
 
 
@@ -338,7 +338,7 @@ def tool_missing(inst: Installed, name: str) -> Iterator[dict]:
     """A provisioned tool's store entry is gone (pruned or deleted), so PM must fetch it again.
     The entry is parked, not deleted, and put back afterwards unless the cell re-provisioned it."""
     tool = installed_tool(inst, name)
-    entry = inst.sb.hermes_home / "tools" / tool["entry"]
+    entry = inst.sb.aurora_home / "tools" / tool["entry"]
     parked = inst.root / "parked" / tool["entry"]
     parked.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(str(entry), str(parked))
@@ -356,11 +356,11 @@ SUCCESS_BANNERS = ("Update complete", "Code updated", "Already up to date")
 
 def assert_nothing_changed(inst: Installed, before: dict, r: Result, what: str) -> None:
     """The failure contract: non-zero, says why, nothing reported as success, nothing moved,
-    and the next ``hermes`` still starts."""
+    and the next ``aurora`` still starts."""
     assert r.rc != 0, f"{what}: the command reported success\n" + r.report(inst)
     claimed = [b for b in SUCCESS_BANNERS if b in r.out]
     assert not claimed, f"{what}: failed run printed a success banner {claimed}\n" + r.report(inst)
     after = inst.state()
     assert after == before, f"{what}: install state moved {before} -> {after}\n" + r.report(inst)
     v = inst.version_works()
-    assert v.rc == 0 and I.TRACEBACK not in v.out, f"{what}: `hermes --version` broken afterwards\n" + I.describe(v.cp)
+    assert v.rc == 0 and I.TRACEBACK not in v.out, f"{what}: `aurora --version` broken afterwards\n" + I.describe(v.cp)

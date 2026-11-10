@@ -18,7 +18,7 @@ description: >-
 maintainer: fmercurio
 tier: community
 category: tools
-requires_hermes: ">=0.22.6"
+requires_aurora: ">=0.22.6"
 docs_url: https://github.com/fmercurio/hermes-caprover-operator#readme
 version: "0.3.1"
 platforms: [linux, macos]

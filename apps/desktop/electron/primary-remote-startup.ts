@@ -3,7 +3,7 @@ interface ResolvedPrimaryRemote {
   baseUrl: string
   connectionId?: string
   headers?: Record<string, string>
-  remoteHermesVersion?: string
+  remoteAuroraVersion?: string
   remoteHost?: string
   remoteKind?: 'cloud' | 'ssh' | 'url'
   source?: string
@@ -12,7 +12,7 @@ interface ResolvedPrimaryRemote {
     host?: string
     keyPath?: string
     port?: number
-    remoteHermesPath?: string
+    remoteAuroraPath?: string
     remoteProfile?: string
     user?: string
   }
@@ -37,7 +37,7 @@ export function createPrimaryRemoteConnection<State extends object>(
     authMode: remote.authMode || 'token',
     remoteHost: remote.remoteHost,
     remoteKind: remote.remoteKind,
-    remoteHermesVersion: remote.remoteHermesVersion,
+    remoteAuroraVersion: remote.remoteAuroraVersion,
     ...(remote.connectionId ? { connectionId: remote.connectionId } : {}),
     ...(remote.ssh ? { ssh: remote.ssh } : {}),
     // fetchJsonForBackend reads descriptor.headers for every REST call; the
@@ -144,7 +144,7 @@ export async function connectPrimaryRemote<State extends object>(
 ) {
   options.signal?.throwIfAborted()
   options.assertCurrentAttempt()
-  await options.advanceBootProgress('backend.remote', `Connecting to remote Hermes backend at ${remote.baseUrl}`, 24)
+  await options.advanceBootProgress('backend.remote', `Connecting to remote Aurora backend at ${remote.baseUrl}`, 24)
   await options.waitForRemote(remote)
   options.signal?.throwIfAborted()
   options.assertCurrentAttempt()
@@ -185,7 +185,7 @@ export async function connectPrimaryRemote<State extends object>(
 
   options.updateBootProgress({
     phase: 'backend.ready',
-    message: 'Remote Hermes backend is ready',
+    message: 'Remote Aurora backend is ready',
     progress: 94,
     running: true,
     error: null

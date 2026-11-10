@@ -4,9 +4,9 @@ import { profileHasRemoteConnection } from './connection-config'
  * Which profile a caller of the primary backend asked for, and whether it
  * named one at all. A profile-less caller follows the primary, and only that
  * caller may be moved when a remote boot re-pins the primary onto a profile its
- * gateway serves. The resolved key alone cannot say this: `hermes:connection`
+ * gateway serves. The resolved key alone cannot say this: `aurora:connection`
  * fills an empty request with the primary's name before it reaches
- * ensureBackend/startHermes.
+ * ensureBackend/startAurora.
  */
 export interface PrimaryBootRequest {
   key: string
@@ -69,7 +69,7 @@ export function primaryDialClaimKey(scopeKey: string, inheritsPrimary: boolean):
 }
 
 /**
- * A startHermes attempt may swap a remote primary's stale profile for a served
+ * A startAurora attempt may swap a remote primary's stale profile for a served
  * one only when its profile was inherited: no caller named it, no --profile
  * launch argument and no per-profile route pins it. "Pins" means the default
  * profile's own EFFECTIVE route (what resolveDesktopRemoteRoute would select),

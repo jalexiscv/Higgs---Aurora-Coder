@@ -9,7 +9,7 @@ maintainer: FindBroadband
 tier: community
 category: tools
 docs_url: https://github.com/FindBroadband/mcp/tree/main/plugins/findbroadband-deals
-requires_hermes: ">=0.21.6"
+requires_aurora: ">=0.21.6"
 readme: true
 platforms: []
 capabilities:

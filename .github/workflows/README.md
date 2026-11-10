@@ -327,9 +327,9 @@ branch protection.
 |---|---|---|---|
 | `docker.yml`, **Docker Build, Test, and Publish** | `pull_request`, `push: main`, `workflow_call` (stable) | **PR:** `mode` (phase + classification, one job) → `build` only when the `docker` slow lane is on (Docker meta, dependency manifests, `pm/`, `tests/docker/`, webapp build recipe, or the `run-e2e` label). Builds slim+desktop × amd64+arm64 and runs the docker integration tests. Never pushes. **Push to `main` on the upstream repo:** always builds, then `publish` (env `container-publish`) and `merge` push `:main` / `:main-desktop` only (never `:latest`). **Stable `release-phase: test`:** builds the claim commit, tests it (unless the claim has no `docker-tests` lane), and archives the exact image. **`release-phase: publish`:** pushes the archived bytes under the attempt ref and returns the manifest digest. No `release: published` trigger, on purpose. | none (`gh run rerun`) |
 | `nix.yml`, **Nix flake check** | `pull_request`, `push: main`, `workflow_call` | `flake-check` runs when the `nix` lane is on (`nix/`, `flake.*`, dependency/npm manifests, `.github/`, `run-e2e` label). Every push to `main` turns it on. `release: true` forces it. | none |
-| `pm-bundle.yml`, **PM Bundle** | `pull_request` on `pm/**` (not `*.md`), `scripts/bundles/**`, the Windows build deps, `uv.lock`, `pyproject.toml`, itself; `workflow_dispatch`; `workflow_call` (stable) | Stages and smoke-tests `hermes pm bundle` on darwin-arm64, win32-x64, win32-arm64. Linux targets are commented out; there is no Intel macOS leg. | `gh workflow run pm-bundle.yml [-f ref=<sha>]` |
+| `pm-bundle.yml`, **PM Bundle** | `pull_request` on `pm/**` (not `*.md`), `scripts/bundles/**`, the Windows build deps, `uv.lock`, `pyproject.toml`, itself; `workflow_dispatch`; `workflow_call` (stable) | Stages and smoke-tests `aurora pm bundle` on darwin-arm64, win32-x64, win32-arm64. Linux targets are commented out; there is no Intel macOS leg. | `gh workflow run pm-bundle.yml [-f ref=<sha>]` |
 | `termux-verify.yml`, **Termux verification** | `push: main` / `pull_request` on `scripts/termux/**`, `pm/**` (not `*.md`), `tests/scripts/test_termux*`, itself; `workflow_dispatch`; `workflow_call` (stable) | `contracts` and `tui` always run. `r2-provisioned` is skipped on PRs. `native-runtime` (arm64) runs only when R2 secrets exist or `release: true`. A release run fails loudly without R2. | `gh workflow run termux-verify.yml` |
-| `plugin-catalog-ci.yml`, **Plugin Catalog CI** | `pull_request` on `plugin-catalog/**` | `structural` (schema) and `pinned-source-validate` (the pinned SHA is reachable and the plugin passes `hermes plugins validate`; inner steps skip when no entry file changed). | none |
+| `plugin-catalog-ci.yml`, **Plugin Catalog CI** | `pull_request` on `plugin-catalog/**` | `structural` (schema) and `pinned-source-validate` (the pinned SHA is reachable and the plugin passes `aurora plugins validate`; inner steps skip when no entry file changed). | none |
 | `sandbox-image.yml`, **Sandbox desktop image** | `pull_request` on its Dockerfile and smoke script; `release: published`; `workflow_dispatch` (`publish`) | `build`+smoke on the upstream repo only. `publish`/`merge` (push `nousresearch/hermes-sandbox:desktop`) only on `release` or a dispatch with `publish=true`. Never on `main` pushes. | `gh workflow run sandbox-image.yml -f publish=true` |
 | `windows-bundle-sdk.yml`, **Windows bundle SDK** | `pull_request` on the Windows bundle and signing scripts plus their tests; `workflow_dispatch` | Runs the real Windows SDK downloader on cold Windows runners. | `gh workflow run windows-bundle-sdk.yml --ref <branch>` |
 
@@ -374,7 +374,7 @@ There are three release paths, and none of them starts from a tag push:
 | | Canary | Stable | One-off / channel build |
 |---|---|---|---|
 | Entry | `canary-release.yml` (daily cron or dispatch) | `python scripts/release.py release …` → dispatches `stable-release.yml` | `python scripts/release.py --build-commit REV [--channel NAME] --publish` → dispatches `desktop-bundled-release.yml` |
-| Identity | `v<stable>+canary.<UTC>` tag, separate `hermes-canary` app | `rc.<N>-vX.Y.Z` attempt ref, then a `vX.Y.Z` receipt at publish | commit: `hermes-<sha7>` app; channel: `Hermes NAME` or stable branding |
+| Identity | `v<stable>+canary.<UTC>` tag, separate `aurora-canary` app | `rc.<N>-vX.Y.Z` attempt ref, then a `vX.Y.Z` receipt at publish | commit: `aurora-<sha7>` app; channel: `Aurora NAME` or stable branding |
 | Tests | native smokes of each bundle | full CI (strict) + Docker + Nix + PM bundle + install/update E2E + signed upgrade acceptance, per the claim's lanes | native smokes |
 | Publishes | canary feeds, canary GitHub prerelease | Docker versioned tag → `stable`/`latest`, R2 stable feeds, App Installer, Store, APT, GitHub release | commit/channel pages under R2; never a feed or Store |
 
@@ -505,8 +505,8 @@ gh workflow run desktop-bundle-smoke.yml --ref <test-branch> \
 |---|---|---|
 | `install-e2e.yml`, **Install & Update E2E** | `workflow_dispatch`; `workflow_call` from stable (`route=all`) | "Can a user on a released version get to this commit?" `pick-releases` samples release tags (newest, oldest, spread; `tag-count` or `install-ref`). `generate-matrix` expands `scripts/sandbox/generate-e2e-matrix.mjs` into linux/windows/macos legs. The bundled legs need `windows-bundle-manifest` / `macos-bundle-manifest` and a matching `route`. **Never runs on PRs, pushes, or a schedule.** |
 | `install-e2e-run.yml` | `workflow_call` | Linux/OS-agnostic leg: real `curl \| bash` install, then update. Unsupported method pairs skip (grey). |
-| `install-e2e-windows-run.yml` | `workflow_call` | Windows leg (Hermes-Setup.exe via AutoHotkey, `install.ps1`, app "Update now" under Playwright). Packaged-bundle arm only with `install-method=packaged-app`. Also called by stable for signed acceptance. |
-| `install-e2e-macos-run.yml` | `workflow_call` | macOS leg (script installs, Hermes-Setup.dmg, packaged-bundle arm). Also called by stable. |
+| `install-e2e-windows-run.yml` | `workflow_call` | Windows leg (Aurora-Setup.exe via AutoHotkey, `install.ps1`, app "Update now" under Playwright). Packaged-bundle arm only with `install-method=packaged-app`. Also called by stable for signed acceptance. |
+| `install-e2e-macos-run.yml` | `workflow_call` | macOS leg (script installs, Aurora-Setup.dmg, packaged-bundle arm). Also called by stable. |
 | `install-e2e-red.yml`, **Install & Update E2E red tracker** | `workflow_run` of Install & Update E2E; `workflow_dispatch` (`run-id`, `dry-run` default true) | Keeps one `install-e2e-red` issue in sync. The automatic path runs only when the watched run was a `schedule` event (see [dormant paths](#known-dormant-or-inert-paths)). |
 
 ```sh
@@ -519,7 +519,7 @@ gh workflow run install-e2e-red.yml -f run-id=<id> -f dry-run=false
 
 | Workflow | Triggers | Notes |
 |---|---|---|
-| `bootstrap-installer-build.yml`, **Bootstrap installer build** | `workflow_dispatch` (`ref`, `pin_branch`, `pin_commit`) | Signed Hermes-Setup.exe (Azure Trusted Signing) and notarized Hermes-Setup.dmg. Uploaded as run artifacts only, never published. No caches. |
+| `bootstrap-installer-build.yml`, **Bootstrap installer build** | `workflow_dispatch` (`ref`, `pin_branch`, `pin_commit`) | Signed Aurora-Setup.exe (Azure Trusted Signing) and notarized Aurora-Setup.dmg. Uploaded as run artifacts only, never published. No caches. |
 | `live-providers.yml`, **Live provider canaries** | `push: tags v*`; `workflow_dispatch` (`filter`) | Live calls to real provider APIs, upstream only. Each case skips when its `LIVE_*_API_KEY` secret is missing. Tags pushed by `GITHUB_TOKEN` do not start it, and stable attempt refs (`rc.*`) do not match `v*`. In practice it runs on dispatch or on a `v*` tag a person pushes. `gh workflow run live-providers.yml -f filter='openrouter-anthropic'` |
 | `sandbox-image.yml` | see [standalone](#standalone-pr--main-checks) | Publishes `:desktop` on `release: published` or dispatch. |
 | `deploy-site.yml` | see [post-merge](#post-merge-automation-on-main) | The Vercel deploy runs on `release: published` or dispatch. |
@@ -534,7 +534,7 @@ matching branch, or dispatch:
 | Workflow | Branch pattern | Dispatch | Other callers |
 |---|---|---|---|
 | `windows-venv-e2e.yml`, venv-holder live E2E | `wine2e/**` | no | stable (`windows-live` lane) |
-| `windows-install-update-e2e.yml`, install.ps1 + `hermes update` | `wine2e-install/**` | yes (`strict_acceptance`) | `tests-os.yml` (`e2e_upgrade` lane) |
+| `windows-install-update-e2e.yml`, install.ps1 + `aurora update` | `wine2e-install/**` | yes (`strict_acceptance`) | `tests-os.yml` (`e2e_upgrade` lane) |
 | `windows-desktop-attach-e2e.yml`, Desktop attach to a running gateway | `wine2e-desktop/**` | yes | none |
 
 ```sh

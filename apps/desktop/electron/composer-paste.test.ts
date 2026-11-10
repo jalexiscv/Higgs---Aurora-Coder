@@ -15,13 +15,13 @@ afterEach(() => {
 })
 
 describe('writeComposerPaste', () => {
-  it('lands the paste directly under <HERMES_HOME>/composer-pastes so the backend admits it', async () => {
-    const hermesHome = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-home-'))
-    scratch.push(hermesHome)
+  it('lands the paste directly under <AURORA_HOME>/composer-pastes so the backend admits it', async () => {
+    const auroraHome = fs.mkdtempSync(path.join(os.tmpdir(), 'aurora-home-'))
+    scratch.push(auroraHome)
 
-    const filePath = await writeComposerPaste(hermesHome, 'pasted body')
+    const filePath = await writeComposerPaste(auroraHome, 'pasted body')
 
-    expect(path.dirname(filePath)).toBe(path.join(hermesHome, COMPOSER_PASTES_DIRNAME))
+    expect(path.dirname(filePath)).toBe(path.join(auroraHome, COMPOSER_PASTES_DIRNAME))
     expect(fs.readFileSync(filePath, 'utf8')).toBe('pasted body')
   })
 })

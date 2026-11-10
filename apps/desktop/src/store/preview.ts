@@ -1,4 +1,4 @@
-import { randomUuid } from '@hermes/shared'
+import { randomUuid } from '@aurora/shared'
 import { atom, computed } from 'nanostores'
 
 import { dismissTreePane, isPaneVisible } from '@/components/pane-shell/tree/store'
@@ -99,9 +99,9 @@ export interface PreviewTab {
   pinned?: boolean
 }
 
-const TABS_STORAGE_KEY = 'hermes.desktop.previewTabs.v2'
+const TABS_STORAGE_KEY = 'aurora.desktop.previewTabs.v2'
 /** Superseded by the tab list above; cleared so it can't leak forever. */
-const LEGACY_SESSION_REGISTRY_KEY = 'hermes.desktop.sessionPreviews.v1'
+const LEGACY_SESSION_REGISTRY_KEY = 'aurora.desktop.sessionPreviews.v1'
 
 function isPreviewTarget(value: unknown): value is PreviewTarget {
   if (!value || typeof value !== 'object') {
@@ -340,7 +340,7 @@ export function dropPreviewTabsForProfile(profile: string, local = true) {
   // F4: a REMOTE profile's jar lives on another machine — deleting it must never clear the
   // same-named LOCAL profile's jar. Only a local deletion touches local userData.
   if (local) {
-    void window.hermesDesktop?.dropPreviewSigninsForProfile?.({ profile: key })?.catch(() => undefined)
+    void window.auroraDesktop?.dropPreviewSigninsForProfile?.({ profile: key })?.catch(() => undefined)
   }
 }
 
@@ -379,7 +379,7 @@ export function migratePreviewTabsForProfile(oldProfile: string, newProfile: str
 
   // P2-7 (#150283): move the imported sign-ins record + per-profile cookie jar (Electron main,
   // userData) old→new so the rename does not strand or orphan the cookies.
-  void window.hermesDesktop?.migratePreviewSigninsForProfile?.({ oldProfile: from, newProfile: to })?.catch(() => undefined)
+  void window.auroraDesktop?.migratePreviewSigninsForProfile?.({ oldProfile: from, newProfile: to })?.catch(() => undefined)
 }
 
 if (typeof window !== 'undefined') {
@@ -507,7 +507,7 @@ export function rekeyPreviewTabsSession(previousId: string, nextId: string): voi
  *  workspace the tab is being rendered in — the `viewKey` bucket the caller
  *  (the preview pane) already shows — never a global first-match-by-id search.
  *  A session-less draft tab in a named profile's workspace must ride that
- *  profile's jar, never default the shared `persist:hermes-preview` jar and
+ *  profile's jar, never default the shared `persist:aurora-preview` jar and
  *  expose the default profile's sign-ins to that workspace.
  *
  *  G1 (#150283, security): a draft FILE tab derives its id from the file URL

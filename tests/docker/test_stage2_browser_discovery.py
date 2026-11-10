@@ -12,7 +12,7 @@ from tests.docker.conftest import docker_exec, docker_exec_sh, start_container
 def test_stage2_discovers_chromium_binary(
     built_image: str, container_name: str,
 ) -> None:
-    """The build bakes the full-browser path, not a shell or .so, and Hermes resolves it.
+    """The build bakes the full-browser path, not a shell or .so, and Aurora resolves it.
 
     Exercise it as the runtime user: an executable bit alone does not prove
     Chromium can load its shared libraries.
@@ -21,18 +21,18 @@ def test_stage2_discovers_chromium_binary(
 
     r = docker_exec_sh(
         container_name,
-        "cat /etc/hermes/chromium-executable-path",
+        "cat /etc/aurora/chromium-executable-path",
         timeout=10,
     )
     assert r.returncode == 0, f"no baked Chromium path: {r.stderr}"
     browser_path = r.stdout.strip()
-    assert browser_path, "/etc/hermes/chromium-executable-path is empty"
+    assert browser_path, "/etc/aurora/chromium-executable-path is empty"
 
-    # Hermes's own resolver (the launcher's binary) lands on the same build.
+    # Aurora's own resolver (the launcher's binary) lands on the same build.
     r = docker_exec(
         container_name,
-        "/opt/hermes/.venv/bin/python", "-c",
-        "from hermes_cli.browser_runtime import chromium_executable; "
+        "/opt/aurora/.venv/bin/python", "-c",
+        "from aurora_cli.browser_runtime import chromium_executable; "
         "print(chromium_executable(allow_override=False))",
         timeout=30,
     )
@@ -67,7 +67,7 @@ def test_stage2_discovers_chromium_binary(
         container_name,
         "python3", "-c",
         "import json; from pathlib import Path; "
-        "root = Path('/opt/hermes/tools'); "
+        "root = Path('/opt/aurora/tools'); "
         "packages = json.loads((root / 'facts.json').read_text())['packages']; "
         "print(json.dumps({'packages': list(packages), 'shell_entries': "
         "[p.name for p in root.glob('*headless*shell*')]}))",

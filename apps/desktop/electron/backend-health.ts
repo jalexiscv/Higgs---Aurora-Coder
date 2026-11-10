@@ -1,5 +1,5 @@
-// Relative, not `@hermes/shared`: esbuild bundles electron/ without tsconfig paths.
-import { isHermesCloudUrl } from '../../shared/src/hermes-cloud'
+// Relative, not `@aurora/shared`: esbuild bundles electron/ without tsconfig paths.
+import { isAuroraCloudUrl } from '../../shared/src/aurora-cloud'
 
 // A cold backend boot (plugin discovery + route mounting at web_server import
 // time) can take 45-60s on slower hardware. A 45s deadline makes first-boot
@@ -19,7 +19,7 @@ export const DEFAULT_HEALTH_PROBE_TIMEOUT_MS = 5_000
 type FetchPublicJson = (url: string, options?: { timeoutMs?: number }) => Promise<unknown>
 type FetchJson = (url: string, token?: string | null, options?: { timeoutMs?: number }) => Promise<unknown>
 
-export interface HermesReadyOptions {
+export interface AuroraReadyOptions {
   fetchPublicJson: FetchPublicJson
   fetchJson: FetchJson
   token?: string | null
@@ -39,7 +39,7 @@ export interface HermesReadyOptions {
   probeHealth?: (url: string, options?: { timeoutMs?: number }) => Promise<unknown>
   /**
    * Whether `probeHealth` actually presents credentials. Distinguishes the
-   * two very different meanings of a 401 (see `waitForHermesReady`).
+   * two very different meanings of a 401 (see `waitForAuroraReady`).
    */
   probeIsCredentialed?: boolean
   /**
@@ -61,7 +61,7 @@ export const REMOTE_SESSION_EXPIRED_MESSAGE =
   'Your remote gateway session has expired. Open Settings → Gateway and click "Sign in" again.'
 
 export const REMOTE_UNSIGNED_OAUTH_MESSAGE =
-  'Remote Hermes gateway uses OAuth, but you are not signed in. ' +
+  'Remote Aurora gateway uses OAuth, but you are not signed in. ' +
   'Open Settings → Gateway and click "Sign in", or switch back to Local.'
 
 /**
@@ -119,7 +119,7 @@ export function isServerSideHttpError(error: unknown): {
  *
  *  - OAuth WS-ticket mint (buildRemoteConnection → mintGatewayWsTicket), which
  *    runs BEFORE the readiness loop; and
- *  - readiness-probe exhaustion in waitForHermesReady().
+ *  - readiness-probe exhaustion in waitForAuroraReady().
  *
  * Returns null unless the backend is a *.agents.nousresearch.com host AND the
  * error classifies as 502/503/504. When it matches, returns an error carrying:
@@ -167,13 +167,13 @@ export function makeNousCloudBackendDownError(baseUrl: string, error: unknown): 
 }
 
 /**
- * True when the backend URL points at a Nous-managed Hermes Cloud instance
+ * True when the backend URL points at a Nous-managed Aurora Cloud instance
  * (e.g. ares-3009.agents.nousresearch.com, or its staging twin). These are
  * hosted machines the user cannot restart themselves — a 503 from one means
  * the server is down and the recovery path is Portal/Discord/wait.
  */
 export function isNousCloudAgentUrl(baseUrl: string): boolean {
-  return isHermesCloudUrl(baseUrl)
+  return isAuroraCloudUrl(baseUrl)
 }
 
 export function isMissingHealthEndpointError(error: unknown): boolean {
@@ -222,7 +222,7 @@ export function makeReauthRequiredError(detail?: string): Error {
 
 /**
  * No native token and no live cookie: boot cannot self-heal. Must carry
- * `isReauthRequired` so startHermes latches; a bare `needsOauthLogin` (the
+ * `isReauthRequired` so startAurora latches; a bare `needsOauthLogin` (the
  * IPC-shaped hint) only drives Sign in copy and would retry after #88070,
  * hiding the overlay. A confirmed ticket-mint 401/403 carries the same tag
  * (see gatewayTicketFailure, #95701).
@@ -246,7 +246,7 @@ function supersededError() {
   return error
 }
 
-export async function waitForHermesReady(baseUrl: string, options: HermesReadyOptions): Promise<void> {
+export async function waitForAuroraReady(baseUrl: string, options: AuroraReadyOptions): Promise<void> {
   const timeoutMs = options.timeoutMs ?? DEFAULT_BACKEND_READY_TIMEOUT_MS
   const pollMs = options.pollMs ?? DEFAULT_BACKEND_READY_POLL_MS
   const healthProbeTimeoutMs = options.healthProbeTimeoutMs ?? DEFAULT_HEALTH_PROBE_TIMEOUT_MS
@@ -302,7 +302,7 @@ export async function waitForHermesReady(baseUrl: string, options: HermesReadyOp
       }
 
       if (options.alreadyBound && isConnectionRefusedError(error)) {
-        throw new Error(`Hermes backend did not become ready: ${(error as Error).message}`)
+        throw new Error(`Aurora backend did not become ready: ${(error as Error).message}`)
       }
 
       // An explicitly missing route means the backend predates /api/health.
@@ -335,5 +335,5 @@ export async function waitForHermesReady(baseUrl: string, options: HermesReadyOp
     throw cloudError
   }
 
-  throw new Error(`Hermes backend did not become ready: ${detail}`)
+  throw new Error(`Aurora backend did not become ready: ${detail}`)
 }

@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { expect, test, vi } from 'vitest'
 
-import { HermesGateway } from './client'
+import { AuroraGateway } from './client'
 
 test('named canonical prompt listeners receive replay-safe IDs before answering on the wire', async () => {
   const wsPackage = 'ws'
@@ -17,7 +17,7 @@ test('named canonical prompt listeners receive replay-safe IDs before answering 
     })
     socket.send(JSON.stringify({ jsonrpc: '2.0', method: 'event', params: { type: 'approval.request', session_id: 's', payload: { prompt_id: 'p', execution_generation: 4, choices: ['once', 'deny'] } } }))
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   let projected: any
   let received!: () => void
   const ready = new Promise<void>(resolve => { received = resolve })
@@ -39,7 +39,7 @@ test('named canonical prompt listeners receive replay-safe IDs before answering 
 })
 
 test('a legacy (non-canonical) dial strips canonical-only identity keys the serve contract refuses', async () => {
-  // `hermes serve` answers 4000 "out of sync" for an unknown key, which the remote-topology E2E
+  // `aurora serve` answers 4000 "out of sync" for an unknown key, which the remote-topology E2E
   // surfaced as a permanent "Session unavailable" on a URL+token connection.
   const wsPackage = 'ws'
   const { WebSocketServer } = await import(wsPackage)
@@ -54,7 +54,7 @@ test('a legacy (non-canonical) dial strips canonical-only identity keys the serv
       socket.send(JSON.stringify({ jsonrpc: '2.0', id: frame.id, result: { session_id: 'abc' } }))
     })
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
 
   try {
     const address = server.address() as { port: number }
@@ -91,7 +91,7 @@ test('a legacy dial branches from a message with the serve contract\'s count, ne
         : { jsonrpc: '2.0', id: frame.id, result: { session_id: 'child', kept: frame.params.count } }))
     })
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
 
   try {
     const address = server.address() as { port: number }
@@ -109,7 +109,7 @@ test('a legacy dial branches from a message with the serve contract\'s count, ne
 test('a compress settle resumes under the caller\'s original timeout and abort signal', async () => {
   // R4: the follow-up `session.resume` must not fall back to the default 120 s deadline
   // and ignore the caller's AbortSignal (a cancelled compress would otherwise hang).
-  const { JsonRpcGatewayClient } = await import('@hermes/shared')
+  const { JsonRpcGatewayClient } = await import('@aurora/shared')
   const wire: Array<[string, unknown, AbortSignal | undefined]> = []
 
   const spy = vi.spyOn(JsonRpcGatewayClient.prototype, 'request').mockImplementation(async function (method: string, _params?: unknown, timeoutMs?: number, signal?: AbortSignal) {
@@ -120,7 +120,7 @@ test('a compress settle resumes under the caller\'s original timeout and abort s
       : { session_id: 's', revision: 4, execution_generation: 1, messages: [] }) as never
   })
 
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   Object.assign(client, { canonical: true })
 
   try {
@@ -168,7 +168,7 @@ test('shared-socket equal-ID streams use replay owners and unknown epochs reconc
       socket.send(JSON.stringify({ jsonrpc: '2.0', id: frame.id, result }))
     })
   })
-  const client = new HermesGateway()
+  const client = new AuroraGateway()
   const named: any[] = []
   const wildcard: any[] = []
   client.on('session.info', event => named.push(event))

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { makeSessionInfo } from '@/test/session-info'
-import type { SessionInfo } from '@/types/hermes'
+import type { SessionInfo } from '@/types/aurora'
 
 import { EnteredProjectContent } from './entered-content'
 import { enteredProjectLiveRows, withGatewayProjectRows } from './gateway-project-rows'

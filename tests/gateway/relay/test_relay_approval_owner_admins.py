@@ -17,11 +17,11 @@ def relay(tmp_path, monkeypatch):
     from gateway.relay.adapter import RelayAdapter
     from gateway.relay.descriptor import CONTRACT_VERSION, CapabilityDescriptor
     from gateway.run import GatewayRunner
-    from hermes_cli.profiles import get_profile_dir
-    from hermes_constants import get_hermes_home
+    from aurora_cli.profiles import get_profile_dir
+    from aurora_constants import get_aurora_home
     from tools import approval
 
-    (get_hermes_home() / "config.yaml").write_text("approvals:\n  approvers: []\n")
+    (get_aurora_home() / "config.yaml").write_text("approvals:\n  approvers: []\n")
     secondary = get_profile_dir("satellite")
     secondary.mkdir(parents=True, exist_ok=True)
     (secondary / "config.yaml").write_text("approvals:\n  approvers: []\n")

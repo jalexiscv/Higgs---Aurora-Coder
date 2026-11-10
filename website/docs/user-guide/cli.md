@@ -1,98 +1,98 @@
 ---
 sidebar_position: 1
 title: "CLI Interface"
-description: "Master the Hermes Agent terminal interface — commands, keybindings, personalities, and more"
+description: "Master the Aurora Agent terminal interface — commands, keybindings, personalities, and more"
 ---
 
 # CLI Interface
 
-Hermes Agent's CLI is a full terminal user interface (TUI) — not a web UI. It features multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output. Built for people who live in the terminal.
+Aurora Agent's CLI is a full terminal user interface (TUI) — not a web UI. It features multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output. Built for people who live in the terminal.
 
 :::tip First-time setup
-One command — `hermes setup --portal` — and you're ready to `hermes chat`. See [Nous Portal](../integrations/nous-portal.md).
+One command — `aurora setup --portal` — and you're ready to `aurora chat`. See [Nous Portal](../integrations/nous-portal.md).
 :::
 
 :::tip
-Hermes also ships a modern TUI with modal overlays, mouse selection, and non-blocking input. Launch it with `hermes --tui` — see the [TUI](tui.md) guide.
+Aurora also ships a modern TUI with modal overlays, mouse selection, and non-blocking input. Launch it with `aurora --tui` — see the [TUI](tui.md) guide.
 :::
 
 ## Running the CLI
 
 ```bash
 # Start an interactive session (default)
-hermes
+aurora
 
 # Single query mode (non-interactive)
-hermes chat -q "Hello"
+aurora chat -q "Hello"
 
 # Single query from a file or stdin — nothing is shell-interpreted, so
 # arbitrary text (quotes, $(...), backticks) arrives verbatim
-hermes chat --query-file prompt.txt
-hermes chat --query-file - < prompt.txt
+aurora chat --query-file prompt.txt
+aurora chat --query-file - < prompt.txt
 
 # With a specific model
-hermes chat --model "anthropic/claude-sonnet-4"
+aurora chat --model "anthropic/claude-sonnet-4"
 
 # With a specific provider
-hermes chat --provider nous        # Use Nous Portal
-hermes chat --provider openrouter  # Force OpenRouter
+aurora chat --provider nous        # Use Nous Portal
+aurora chat --provider openrouter  # Force OpenRouter
 
 # With specific toolsets
-hermes chat --toolsets "web,terminal,skills"
+aurora chat --toolsets "web,terminal,skills"
 
 # Start with one or more skills preloaded (rendered once into the session's prompt)
-hermes chat -s hermes-agent-dev,github-auth
+aurora chat -s aurora-agent-dev,github-auth
 
 # Resume previous sessions
-hermes --resume <session_id>  # Resume a specific session by ID (-r)
-hermes --resume "my thread"   # Resume by title (latest "#N" continuation in the lineage)
-hermes -c "my thread" --create-if-missing  # Resume that titled session, creating it if absent
-hermes --continue             # Resume the most recent session (bare -c)
-hermes --resume latest        # Same as bare -c
-hermes --resume latest --in ./dir  # Resume ./dir's latest session, staying in ./dir
+aurora --resume <session_id>  # Resume a specific session by ID (-r)
+aurora --resume "my thread"   # Resume by title (latest "#N" continuation in the lineage)
+aurora -c "my thread" --create-if-missing  # Resume that titled session, creating it if absent
+aurora --continue             # Resume the most recent session (bare -c)
+aurora --resume latest        # Same as bare -c
+aurora --resume latest --in ./dir  # Resume ./dir's latest session, staying in ./dir
 
 # Verbose mode (debug output)
-hermes chat --verbose
+aurora chat --verbose
 
 # Isolated git worktree (for running multiple agents in parallel)
-hermes -w                         # Interactive mode in worktree
-hermes -w -z "Fix issue #123"     # Single query in worktree
+aurora -w                         # Interactive mode in worktree
+aurora -w -z "Fix issue #123"     # Single query in worktree
 ```
 
 ### Worktree cleanup
 
-`hermes -w` sessions create disposable worktrees under `<repo>/.worktrees/`.
-With `hermes --tui -w`, closing the terminal detaches from the gateway-owned
+`aurora -w` sessions create disposable worktrees under `<repo>/.worktrees/`.
+With `aurora --tui -w`, closing the terminal detaches from the gateway-owned
 session. A clean worktree is removed with its branch on quit unless something
 still needs it. It is retained when it has uncommitted changes or unpushed
 commits, when the gateway still has a turn queued or running there, when a
 session in it has an active `/loop`, `/heartbeat` or `/goal`, when an enabled
 cron job runs in it or is bound to such a session, or when another viewer (a
 Desktop window, say) still holds that session. Resuming a session uses its
-working directory: if quit removed the worktree, `hermes --tui --resume <id>`,
-`hermes --tui -c` and the classic `hermes --resume`/`-c` recreate it at the same
+working directory: if quit removed the worktree, `aurora --tui --resume <id>`,
+`aurora --tui -c` and the classic `aurora --resume`/`-c` recreate it at the same
 path before attaching (on its branch if that still exists, else on a new branch
 of the same name from the repo's current `HEAD`). Only worktrees that
-`hermes --tui -w` itself created are recreated. The quit-time check reads the
+`aurora --tui -w` itself created are recreated. The quit-time check reads the
 session store and then removes the tree; a viewer that attaches and submits in
 the moment between the two is not seen, so that turn can find its directory
 gone.
-A sweep runs automatically at `hermes -w` startup and every 6 hours from the
+A sweep runs automatically at `aurora -w` startup and every 6 hours from the
 cron ticker: idle clean+merged trees are removed, and idle trees with
 uncommitted changes or unpushed commits are **archived, then removed**
-(restorable with `hermes worktree restore <name>`; see
+(restorable with `aurora worktree restore <name>`; see
 [Stale worktree sweep](./git-worktrees.md#stale-worktree-sweep-and-restore)).
 Reclaim or inspect explicitly:
 
 ```bash
-hermes worktree list              # audit: age, size, verdict, reason per tree + archives
-hermes worktree list --json       # machine-readable audit (trees, external trees, branches, archives)
-hermes worktree prune             # run the sweep now + delete merged branches
-hermes worktree prune --dry-run   # print every archive/remove/skip decision and why; changes nothing
-hermes worktree restore <name>    # recreate an archived tree (add --path DIR to put it elsewhere)
-hermes worktree prune --older-than 7   # only reap trees idle for 7+ days
-hermes worktree prune --trees-only     # leave local branches alone
-hermes worktree prune --branches-only  # leave worktrees alone
+aurora worktree list              # audit: age, size, verdict, reason per tree + archives
+aurora worktree list --json       # machine-readable audit (trees, external trees, branches, archives)
+aurora worktree prune             # run the sweep now + delete merged branches
+aurora worktree prune --dry-run   # print every archive/remove/skip decision and why; changes nothing
+aurora worktree restore <name>    # recreate an archived tree (add --path DIR to put it elsewhere)
+aurora worktree prune --older-than 7   # only reap trees idle for 7+ days
+aurora worktree prune --trees-only     # leave local branches alone
+aurora worktree prune --branches-only  # leave worktrees alone
 ```
 
 Worktrees registered **outside** `.worktrees/` (created by hand or by another
@@ -109,7 +109,7 @@ touches the tree the session is running in).
 Safety guarantees (all modes, any age):
 
 - Uncommitted changes and **unique unpushed commits** are never deleted
-  without a restorable archive (`refs/hermes/archive/<tree>`); with
+  without a restorable archive (`refs/aurora/archive/<tree>`); with
   `worktrees.archive_dirty: false` they are never deleted at all — commits that were
   rebase/squash-merged upstream are detected via `git cherry`
   patch-equivalence and count as merged, which is what lets the dominant
@@ -125,12 +125,12 @@ Safety guarantees (all modes, any age):
   removed but its **branch ref is kept**, so the lane is one
   `git worktree add .worktrees/<name> <branch>` away from restored. If the
   remote can't be reached, the tree is preserved.
-- Trees **in use** are never touched: a running hermes session's lock, or any
+- Trees **in use** are never touched: a running aurora session's lock, or any
   live process whose working directory (or, on Linux, an open file) is inside
   the tree. Each tree is checked again right before it is archived or removed,
   and again after its archive is built; a tree that changed meanwhile is kept.
 - **Untracked-only scratch** (PR body drafts, notes) is archived to
-  `~/.hermes/archive/worktree-prune/` before its tree is removed — never
+  `~/.aurora/archive/worktree-prune/` before its tree is removed — never
   destroyed.
 - **Nothing irreproducible is deleted unarchived**: a tree is kept when it holds
   an embedded repository (even a gitignored one), a commit only a per-worktree
@@ -145,7 +145,7 @@ Safety guarantees (all modes, any age):
 
 The same sweep also runs from the cron scheduler (at most once every 6 hours
 per profile, in the background) over every repository the profile created a
-worktree in, so gateway-only machines — where nobody launches `hermes -w` for
+worktree in, so gateway-only machines — where nobody launches `aurora -w` for
 days — no longer accumulate scratch trees between CLI sessions.
 
 When `.worktrees/` grows past 10 trees or 5 GB, startup prints a one-line
@@ -153,19 +153,19 @@ notice pointing at these commands.
 
 ### Plugin management
 
-The `hermes plugins` commands manage native Hermes plugins and portable Agent
+The `aurora plugins` commands manage native Aurora plugins and portable Agent
 Plugins v1 packages through the same opt-in workflow:
 
 ```bash
-hermes plugins install owner/repository --no-enable
-hermes plugins list
-hermes plugins enable <plugin-name>
-hermes plugins disable <plugin-name>
-hermes plugins update <plugin-name>
-hermes plugins remove <plugin-name>
+aurora plugins install owner/repository --no-enable
+aurora plugins list
+aurora plugins enable <plugin-name>
+aurora plugins disable <plugin-name>
+aurora plugins update <plugin-name>
+aurora plugins remove <plugin-name>
 ```
 
-Portable packages remain disabled until explicitly enabled. Hermes currently
+Portable packages remain disabled until explicitly enabled. Aurora currently
 loads portable Agent Skills and stdio MCP entries. See the
 [plugin developer guide](../developer-guide/plugins/index.md#portable-agent-plugins-v1-packages)
 for the exact supported subset and trust boundary.
@@ -173,7 +173,7 @@ for the exact supported subset and trust boundary.
 ## Interface Layout
 
 :::info The classic CLI is a gateway client
-`hermes chat` (and the bare `hermes` prompt when `display.interface` is `cli`) no longer runs the agent inside your terminal process. It discovers or starts the profile's gateway (`hermes gateway ensure`), creates or resumes the session there, and attaches over the gateway's local WebSocket — the same session a Desktop window, the TUI, or a Telegram topic can open at the same time. Closing the terminal detaches (`Detached; accepted work continues at the gateway.`); it does not cancel the turn. Your working directory, `--model`, `--provider`, `--reasoning`, `--toolsets`, `--max-turns`, `--skills`, `--checkpoints`, `--yolo`, `--accept-hooks`, `--pass-session-id`, `--ignore-rules`, `--base-url`/`--api-key`, and `--safe-mode`/`--ignore-user-config` are frozen into the session at creation; `--resume` may repeat the same values but cannot change them. `--resume <id-or-title>` and `-c <title>` name the session; the gateway resolves the title (exact id first, then the latest `"<title> #N"` continuation, followed to its live tip) among the sessions you may read, and reports `No session found matching '…'` (exit 1) otherwise. Bare `-c` and `--resume latest` resume this workspace's most recent CLI session through the gateway. `-c <title> --create-if-missing` creates a session with that title when none exists and resumes it when one does, so programmatic callers (Bot Mode's `Bot Chat` turns) get a deterministic thread. Options that only make sense for an in-process agent — `--image`, `--worktree`/`-w`, `--no-restore-cwd`, `--run-budget`, `--verbose`/`-v`, `--compact`, and `--create-if-missing` without `-c <name>` — are refused up front (`Unsupported gateway CLI options: …`, exit 2); the refusal lists, per flag, where that capability lives now (the TUI flag, the `config.yaml` key, or the `hermes` subcommand), and nothing falls back to a local agent. A `--safe-mode` / `--ignore-user-config` launch reads no profile default model, so it must name one; the refusal prints a complete example such as `hermes chat --safe-mode --provider openrouter --model anthropic/claude-sonnet-4 -q "hello"`. In this mode the slash surface is `/stop`, `/approve <id> <choice>`, `/answer <id> <text>`, `/discard <admission_id>`, `/branch [title]`, `/model <model> [--provider name]`, `/compress [here [N] | <focus>] [--preview]`, `/yolo [on|off]`, `/help` and `/quit`; other slash commands print `Unsupported gateway CLI command; use /help.` Use the TUI (`hermes --tui`) for the full slash registry.
+`aurora chat` (and the bare `aurora` prompt when `display.interface` is `cli`) no longer runs the agent inside your terminal process. It discovers or starts the profile's gateway (`aurora gateway ensure`), creates or resumes the session there, and attaches over the gateway's local WebSocket — the same session a Desktop window, the TUI, or a Telegram topic can open at the same time. Closing the terminal detaches (`Detached; accepted work continues at the gateway.`); it does not cancel the turn. Your working directory, `--model`, `--provider`, `--reasoning`, `--toolsets`, `--max-turns`, `--skills`, `--checkpoints`, `--yolo`, `--accept-hooks`, `--pass-session-id`, `--ignore-rules`, `--base-url`/`--api-key`, and `--safe-mode`/`--ignore-user-config` are frozen into the session at creation; `--resume` may repeat the same values but cannot change them. `--resume <id-or-title>` and `-c <title>` name the session; the gateway resolves the title (exact id first, then the latest `"<title> #N"` continuation, followed to its live tip) among the sessions you may read, and reports `No session found matching '…'` (exit 1) otherwise. Bare `-c` and `--resume latest` resume this workspace's most recent CLI session through the gateway. `-c <title> --create-if-missing` creates a session with that title when none exists and resumes it when one does, so programmatic callers (Bot Mode's `Bot Chat` turns) get a deterministic thread. Options that only make sense for an in-process agent — `--image`, `--worktree`/`-w`, `--no-restore-cwd`, `--run-budget`, `--verbose`/`-v`, `--compact`, and `--create-if-missing` without `-c <name>` — are refused up front (`Unsupported gateway CLI options: …`, exit 2); the refusal lists, per flag, where that capability lives now (the TUI flag, the `config.yaml` key, or the `aurora` subcommand), and nothing falls back to a local agent. A `--safe-mode` / `--ignore-user-config` launch reads no profile default model, so it must name one; the refusal prints a complete example such as `aurora chat --safe-mode --provider openrouter --model anthropic/claude-sonnet-4 -q "hello"`. In this mode the slash surface is `/stop`, `/approve <id> <choice>`, `/answer <id> <text>`, `/discard <admission_id>`, `/branch [title]`, `/model <model> [--provider name]`, `/compress [here [N] | <focus>] [--preview]`, `/yolo [on|off]`, `/help` and `/quit`; other slash commands print `Unsupported gateway CLI command; use /help.` Use the TUI (`aurora --tui`) for the full slash registry.
 :::
 
 If a running turn loses its owner while your finite CLI query is queued, the CLI
@@ -181,8 +181,8 @@ exits with code `3`. Your accepted input stays queued. Resume the printed sessio
 interactively, inspect the unknown turn, and use `/discard <admission_id>` to
 acknowledge it before continuing. Do not resend the queued input.
 
-<img className="docs-terminal-figure" src="/docs/img/docs/cli-layout.svg" alt="Stylized preview of the Hermes CLI layout showing the banner, conversation area, and fixed input prompt." />
-<p className="docs-figure-caption">The Hermes CLI banner, conversation stream, and fixed input prompt rendered as a stable docs figure instead of fragile text art.</p>
+<img className="docs-terminal-figure" src="/docs/img/docs/cli-layout.svg" alt="Stylized preview of the Aurora CLI layout showing the banner, conversation area, and fixed input prompt." />
+<p className="docs-figure-caption">The Aurora CLI banner, conversation stream, and fixed input prompt rendered as a stable docs figure instead of fragile text art.</p>
 
 ### Layout styles
 
@@ -198,7 +198,7 @@ acknowledge it before continuing. Do not resend the queued input.
 │ +def multiply(a, b):
 │ +    return a * b
 ✗ $ pytest -q  0.4s [exit 1]
-☤ Hermes
+☤ Aurora
 Added multiply; pytest isn't installed here, so I ran the tests directly: 2 passed.
 ─ 15.0s · edited 1 file +4 -0 · read 2 files · 8:27 AM
 ── ⠹ Running tests · 14s ─────────────────────────── Add multiply to calc.py ─
@@ -229,12 +229,12 @@ In the `classic` layout a persistent status bar sits above the input area, updat
 | Model name | Current model (truncated if longer than 26 chars) |
 | Token count | Context tokens used / max context window; `~` marks an estimate |
 | Context bar | Visual fill indicator with color-coded thresholds |
-| Cost | Estimated session cost (or `n/a` for unknown/zero-priced models). Rates come from Hermes' bundled official price table, then the provider's `/models` listing; on a direct first-party API (OpenAI, xAI, Anthropic, Google, DeepSeek, Xiaomi) a model missing from both is priced at the vendor's list price from models.dev. Proxies, relays and custom endpoints serving the same model id stay `n/a` rather than inherit that price. |
+| Cost | Estimated session cost (or `n/a` for unknown/zero-priced models). Rates come from Aurora's bundled official price table, then the provider's `/models` listing; on a direct first-party API (OpenAI, xAI, Anthropic, Google, DeepSeek, Xiaomi) a model missing from both is priced at the vendor's list price from models.dev. Proxies, relays and custom endpoints serving the same model id stay `n/a` rather than inherit that price. |
 | 🗜️ N | **Context compression count** — how many times the running session has been auto-compressed. Appears once the first compression fires. |
 | ▶ N | **Active background tasks** — how many `/bg` prompts are still running in the current session. Appears whenever at least one task is in flight. |
 | Duration | Elapsed session time |
 | Session title | Once the session has a title, it appears as a gold badge pinned to the far-right edge. Long titles truncate before displacing the essential model and context fields. |
-| ⚠ YOLO | **YOLO mode warning** — shown whenever `HERMES_YOLO_MODE` is on (either `hermes --yolo` at launch or `/yolo` toggled mid-session). Mirrors the banner-line warning so you can't forget you're in auto-approve mode. |
+| ⚠ YOLO | **YOLO mode warning** — shown whenever `AURORA_YOLO_MODE` is on (either `aurora --yolo` at launch or `/yolo` toggled mid-session). Mirrors the banner-line warning so you can't forget you're in auto-approve mode. |
 
 A `~` before a context count or percentage means it includes a local estimate. This also applies to gateway `/status` and `/context`, the TUI, and the Desktop context gauge. An unchanged provider-usage reading has no `~`; a provider anchor plus unpriced new messages does. `/context` reports the selected source. Category, free-space, skill, and toolset breakdowns are always local estimates, even when the overall occupancy comes from provider usage. These display labels do not change compaction decisions or make extra provider requests.
 
@@ -251,11 +251,11 @@ The bar adapts to terminal width — full layout at ≥ 76 columns, compact at 5
 
 Use `/usage` for a detailed breakdown including per-category costs (input vs output tokens).
 
-On the `openai-codex` provider, `/usage` also shows any banked usage-limit resets on your ChatGPT account ("You have N resets banked - use /usage reset to activate"). `/usage reset` redeems one banked reset, fully restoring your 5-hour and weekly limits. Hermes refuses to redeem while your limits aren't exhausted (a banked reset restores the full allowance, so spending it early wastes it) — pass `/usage reset --force` to redeem anyway.
+On the `openai-codex` provider, `/usage` also shows any banked usage-limit resets on your ChatGPT account ("You have N resets banked - use /usage reset to activate"). `/usage reset` redeems one banked reset, fully restoring your 5-hour and weekly limits. Aurora refuses to redeem while your limits aren't exhausted (a banked reset restores the full allowance, so spending it early wastes it) — pass `/usage reset --force` to redeem anyway.
 
 ### Session Resume Display
 
-When resuming a previous session (`hermes -c` or `hermes --resume <id>`), a "Previous Conversation" panel appears between the banner and the input prompt, showing a compact recap of the conversation history. See [Sessions — Conversation Recap on Resume](sessions.md#conversation-recap-on-resume) for details and configuration.
+When resuming a previous session (`aurora -c` or `aurora --resume <id>`), a "Previous Conversation" panel appears between the banner and the input prompt, showing a compact recap of the conversation history. See [Sessions — Conversation Recap on Resume](sessions.md#conversation-recap-on-resume) for details and configuration.
 
 ## Keybindings
 
@@ -275,8 +275,8 @@ On macOS, `F6`/`F7` mean the physical function keys, not the media/system contro
 | `Esc`, `Esc` | **Backtrack** (same as `/rewind`). On an idle, empty prompt the first `Esc` shows `esc again to edit previous message` (it waits for you; any other key cancels it and acts normally), the second opens a **transcript browser**: every prompt (`›`) and reply (`•`) of the session in a panel sized to the screen, the latest prompt selected in reverse video. `←`/`h` and `→`/`l` pick an older/newer prompt, `↑`/`↓` (`k`/`j`) scroll a row and `PgUp`/`PgDn` a page; `Enter` puts the selected prompt back in the composer for editing, and sending the edit cuts the session back to just before it (nothing is removed until you send; cancel with `Esc Esc`, `Ctrl+C` or an empty submit); `f` forks a new session from just before that prompt with it prefilled, leaving the original untouched; `Esc` or `q` closes, and any other key closes the browser and types normally. With a draft, `Esc Esc` discards it instead (Up recalls it). |
 | `Ctrl+T` / `F6` | Open the full-screen live work monitor (subagents and background processes) without losing the composer draft. The live dock appears automatically above the status bar; arrows select a worker or process, `Enter` shows its recent log, `s` steers a worker, and `x` requests stop with confirmation. See [Monitoring subagents](./features/delegation.md#monitoring-running-subagents-agents). |
 | `Ctrl+R` / `F7` | Toggle the live work dock between its multi-row preview and a single summary line without moving composer focus. `Ctrl+R` is the reliable fallback when macOS reserves the function-key row. Besides subagents and background processes, the dock shows a standing `/goal` (active, parked or paused, with turns used) on its top row and the prompts waiting in `/queue` on its bottom rows. |
-| `Ctrl+D` | Exit (on an empty prompt; with text it deletes under the cursor). While the gateway runs a turn, it exits and leaves the turn running: the gateway finishes it, ends the session afterwards, and `hermes --resume` shows the reply. A turn that asks a question (approval or clarify) meanwhile waits for its timeout or for you to resume. Use `Ctrl+C` to stop the turn instead. |
-| `Ctrl+Z` | Suspend Hermes to background (Unix only). Run `fg` in the shell to resume. |
+| `Ctrl+D` | Exit (on an empty prompt; with text it deletes under the cursor). While the gateway runs a turn, it exits and leaves the turn running: the gateway finishes it, ends the session afterwards, and `aurora --resume` shows the reply. A turn that asks a question (approval or clarify) meanwhile waits for its timeout or for you to resume. Use `Ctrl+C` to stop the turn instead. |
+| `Ctrl+Z` | Suspend Aurora to background (Unix only). Run `fg` in the shell to resume. |
 | `Tab` | Accept auto-suggestion (ghost text) or autocomplete slash commands. While the agent is working in the `modern` layout, `Tab` on a typed message queues it for the next turn |
 | `!<command>` | **Shell mode** — run a shell command yourself without spending a model turn (e.g. `!git status`, `!pytest -x`). See below. |
 
@@ -289,13 +289,13 @@ Start a line with `!` to run it as a shell command instead of sending it to the 
 ```
 > !git status
 > !ls -la
-> !pytest -x tests/hermes_cli
+> !pytest -x tests/aurora_cli
 ```
 
 - **Zero cost.** The model is never invoked — no API call, no tokens, no latency.
 - **Nothing enters the conversation.** The command and its output are not added to history, so your context stays clean and the prompt cache is untouched.
-- **Runs on your machine, in the session working directory.** With the default local terminal backend `!pwd` matches what the agent would see. A remote or sandboxed `terminal.backend` (`ssh`, `docker`, …) is **not** used for `!` commands — they always run on the host where Hermes itself runs, so `!hostname` names your machine while the agent's `terminal` tool names the backend. Ask the agent (or open a shell on the target) to run something *inside* the backend. Path completion in the composer, by contrast, does follow the configured backend and lists the target's filesystem.
-- **Approvals still apply.** A dangerous command (`rm -rf`, writes to `~/.hermes/config.yaml`, etc.) goes through the same approval prompt the agent's `terminal` tool uses. `!` is a cost/latency shortcut, not a security bypass.
+- **Runs on your machine, in the session working directory.** With the default local terminal backend `!pwd` matches what the agent would see. A remote or sandboxed `terminal.backend` (`ssh`, `docker`, …) is **not** used for `!` commands — they always run on the host where Aurora itself runs, so `!hostname` names your machine while the agent's `terminal` tool names the backend. Ask the agent (or open a shell on the target) to run something *inside* the backend. Path completion in the composer, by contrast, does follow the configured backend and lists the target's filesystem.
+- **Approvals still apply.** A dangerous command (`rm -rf`, writes to `~/.aurora/config.yaml`, etc.) goes through the same approval prompt the agent's `terminal` tool uses. `!` is a cost/latency shortcut, not a security bypass.
 - **Non-zero exits are shown.** A failing command prints `! exited <code>` after its output.
 - `!` on its own prints a one-line usage reminder.
 
@@ -305,7 +305,7 @@ Shell mode is CLI-only. Gateway platforms (Discord, Telegram, Slack) and cron ru
 
 ## Slash Commands
 
-Type `/` to see the autocomplete dropdown. Hermes supports a large set of CLI slash commands, dynamic skill commands, and user-defined quick commands.
+Type `/` to see the autocomplete dropdown. Aurora supports a large set of CLI slash commands, dynamic skill commands, and user-defined quick commands.
 
 Common examples:
 
@@ -319,7 +319,7 @@ Common examples:
 | `/btw <question>` | Ask a side question about the current conversation without interrupting it |
 | `/skin` | Show or switch the active CLI skin |
 | `/voice on` | Enable CLI voice mode (press `Ctrl+B` to record) |
-| `/voice tts` | Toggle spoken playback for Hermes replies |
+| `/voice tts` | Toggle spoken playback for Aurora replies |
 | `/reasoning high` | Increase reasoning effort |
 | `/title My Session` | Name the current session |
 | `/status` | Show session info — model/profile/tokens/duration — followed by a local **Session recap** block (recent turn counts, top tools used, files touched, latest user prompt + assistant reply). Pure local compute; no LLM call. |
@@ -339,11 +339,11 @@ Commands are case-insensitive — `/HELP` works the same as `/help`. Installed s
 You can define custom commands that run shell commands instantly without invoking the LLM. These work in both the CLI and messaging platforms (Telegram, Discord, etc.).
 
 ```yaml
-# ~/.hermes/config.yaml
+# ~/.aurora/config.yaml
 quick_commands:
   status:
     type: exec
-    command: systemctl status hermes-agent
+    command: systemctl status aurora-agent
   gpu:
     type: exec
     command: nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader
@@ -359,11 +359,11 @@ Then type `/status`, `/gpu`, or `/restart` in any chat. See the [Configuration g
 If you already know which skills you want active for the session, pass them at launch time:
 
 ```bash
-hermes -s hermes-agent-dev,github-auth
-hermes chat -s github-pr-workflow -s github-auth
+aurora -s aurora-agent-dev,github-auth
+aurora chat -s github-pr-workflow -s github-auth
 ```
 
-Hermes loads each named skill into the session prompt before the first turn. The same flag works in interactive mode and single-query mode.
+Aurora loads each named skill into the session prompt before the first turn. The same flag works in interactive mode and single-query mode.
 
 ### Persistent auto-load via config
 
@@ -372,17 +372,17 @@ To have the same skills active at the start of **every** new session — CLI, TU
 ```yaml
 skills:
   auto_load:
-    - hermes-agent-dev
+    - aurora-agent-dev
     - github-pr-workflow
 ```
 
 Each entry is a skill name. The list is resolved once when a session's system prompt is first built and the rendered bytes are reused for the life of the conversation (model switches, compression), so prompt caching stays intact; config edits take effect in the next session. Missing or disabled skills log a warning and are skipped. `-s` names that overlap the list are loaded once.
 
-`--ignore-rules` (equivalently `HERMES_IGNORE_RULES=1`) skips auto-load together with AGENTS.md, SOUL.md, `.cursorrules` and memory injection; explicit `-s` skills still load. The setting is profile-scoped: each profile's `config.yaml` controls its own list.
+`--ignore-rules` (equivalently `AURORA_IGNORE_RULES=1`) skips auto-load together with AGENTS.md, SOUL.md, `.cursorrules` and memory injection; explicit `-s` skills still load. The setting is profile-scoped: each profile's `config.yaml` controls its own list.
 
 ## Skill Slash Commands
 
-Every installed skill in `~/.hermes/skills/` is automatically registered as a slash command. The skill name becomes the command:
+Every installed skill in `~/.aurora/skills/` is automatically registered as a slash command. The skill name becomes the command:
 
 ```
 /excalidraw sketch the request flow for our API
@@ -407,13 +407,13 @@ Built-in personalities include: `helpful`, `concise`, `technical`, `creative`, `
 
 To go back to the default (no overlay), use `/personality none` — `default` and `neutral` work too.
 
-You can also define custom personalities in `~/.hermes/config.yaml`:
+You can also define custom personalities in `~/.aurora/config.yaml`:
 
 ```yaml
 personalities:
   helpful: "You are a helpful, friendly AI assistant."
   kawaii: "You are a kawaii assistant! Use cute expressions..."
-  pirate: "Arrr! Ye be talkin' to Captain Hermes..."
+  pirate: "Arrr! Ye be talkin' to Captain Aurora..."
   # Add your own!
 ```
 
@@ -430,10 +430,10 @@ There are two ways to enter multi-line messages:
   2. Returns the sum
 ```
 
-`Ctrl+J` and backslash continuation are enabled by default, matching Claude Code / Codex / OpenCode multiline shortcuts. On supported terminals such as iTerm2, Hermes also requests extended key reporting so `Shift+Enter` arrives as a distinct newline key. If your terminal sends LF for plain `Enter` and you need the legacy `Ctrl+J`-as-submit fallback, opt out:
+`Ctrl+J` and backslash continuation are enabled by default, matching Claude Code / Codex / OpenCode multiline shortcuts. On supported terminals such as iTerm2, Aurora also requests extended key reporting so `Shift+Enter` arrives as a distinct newline key. If your terminal sends LF for plain `Enter` and you need the legacy `Ctrl+J`-as-submit fallback, opt out:
 
 ```yaml
-# ~/.hermes/config.yaml
+# ~/.aurora/config.yaml
 display:
   cli_multiline_shortcuts: false
 ```
@@ -446,7 +446,7 @@ In terminals using the Kitty keyboard protocol, `Alt+Enter` on the numeric keypa
 
 ### Shift+Enter compatibility
 
-Most terminals send the same byte sequence for `Enter` and `Shift+Enter` by default, so applications cannot distinguish them. Hermes recognises `Shift+Enter` only when the terminal sends a distinct sequence via the [Kitty keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/) or xterm's `modifyOtherKeys` mode.
+Most terminals send the same byte sequence for `Enter` and `Shift+Enter` by default, so applications cannot distinguish them. Aurora recognises `Shift+Enter` only when the terminal sends a distinct sequence via the [Kitty keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/) or xterm's `modifyOtherKeys` mode.
 
 | Terminal | Status |
 |---|---|
@@ -455,7 +455,7 @@ Most terminals send the same byte sequence for `Enter` and `Shift+Enter` by defa
 | Windows Terminal Preview 1.25+ | Supported once the Kitty protocol is enabled in settings |
 | macOS Terminal.app, stock Windows Terminal (stable) | Not supported — `Shift+Enter` is indistinguishable from `Enter` |
 
-Where the terminal cannot distinguish them, `Alt+Enter` and `Ctrl+J` continue to work by default. **On Windows Terminal specifically, `Alt+Enter` is captured by the terminal (toggles fullscreen) and never reaches Hermes — use `Ctrl+Enter` (delivered as `Ctrl+J`) or `Ctrl+J` directly for a newline.**
+Where the terminal cannot distinguish them, `Alt+Enter` and `Ctrl+J` continue to work by default. **On Windows Terminal specifically, `Alt+Enter` is captured by the terminal (toggles fullscreen) and never reaches Aurora — use `Ctrl+Enter` (delivered as `Ctrl+J`) or `Ctrl+J` directly for a newline.**
 
 ## Redirecting the Agent Mid-Turn
 
@@ -477,7 +477,7 @@ The `display.busy_input_mode` config key controls what happens when you press En
 | `"steer"` | Your message is injected into the current run via `/steer`, arriving at the agent after the next tool call — no interrupt, no new turn |
 
 ```yaml
-# ~/.hermes/config.yaml
+# ~/.aurora/config.yaml
 display:
   busy_input_mode: "steer"   # or "queue" or "interrupt" (default)
 ```
@@ -500,15 +500,15 @@ You can also change it inside the CLI:
 ```
 
 :::tip First-touch hint
-The first time you press Enter while Hermes is working, Hermes prints a one-line reminder explaining the `/busy` knob. It only fires once per install; `onboarding.seen.busy_input_prompt` in `config.yaml` records that it was shown. Delete that key to see the tip again.
+The first time you press Enter while Aurora is working, Aurora prints a one-line reminder explaining the `/busy` knob. It only fires once per install; `onboarding.seen.busy_input_prompt` in `config.yaml` records that it was shown. Delete that key to see the tip again.
 :::
 
 ### Suspending to Background
 
-On Unix systems, press **`Ctrl+Z`** to suspend Hermes to the background — just like any terminal process. The shell prints a confirmation:
+On Unix systems, press **`Ctrl+Z`** to suspend Aurora to the background — just like any terminal process. The shell prints a confirmation:
 
 ```
-Hermes Agent has been suspended. Run `fg` to bring Hermes Agent back.
+Aurora Agent has been suspended. Run `fg` to bring Aurora Agent back.
 ```
 
 Type `fg` in your shell to resume the session exactly where you left off. This is not supported on Windows.
@@ -538,7 +538,7 @@ Cycle through display modes with `/verbose`: `off → new → all → verbose`. 
 The `display.tool_preview_length` config key controls the maximum number of characters shown in tool call preview lines (e.g. file paths, terminal commands). The default is `0`, which means no limit — full paths and commands are shown.
 
 ```yaml
-# ~/.hermes/config.yaml
+# ~/.aurora/config.yaml
 display:
   tool_preview_length: 80   # Truncate tool previews to 80 chars (0 = no limit)
 ```
@@ -550,7 +550,7 @@ This is useful on narrow terminals or when tool arguments contain very long file
 Images show up right in the transcript: the ones you attach (`/paste`, `/image`, drag-and-drop) under your message, and the local image a successful tool call produced or looked at (`vision_analyze`, `image_generate`, a browser or computer-use screenshot) under that tool's line. `read_file` cannot read images, so it shows none. The same setting drives the [TUI](./tui.md).
 
 ```yaml
-# ~/.hermes/config.yaml
+# ~/.aurora/config.yaml
 display:
   inline_images: auto   # auto | kitty | iterm | unicode | off
 ```
@@ -573,7 +573,7 @@ When you exit a CLI session, a resume command is printed:
 
 ```
 Resume this session with:
-  hermes --resume 20260225_143052_a1b2c3
+  aurora --resume 20260225_143052_a1b2c3
 
 Session:        20260225_143052_a1b2c3
 Duration:       12m 34s
@@ -583,24 +583,24 @@ Messages:       28 (5 user, 18 tool calls)
 Resume options:
 
 ```bash
-hermes --continue                          # Resume the most recent CLI session
-hermes -c                                  # Short form
-hermes -c "my project"                     # Resume a named session (latest in lineage)
-hermes -c "my project" --create-if-missing # Same, creating the titled session if none exists
-hermes --resume 20260225_143052_a1b2c3     # Resume a specific session by ID
-hermes --resume "refactoring auth"         # Resume by title
-hermes --resume latest                     # Resume the most recent session (same as -c)
-hermes --resume latest --in ./my-project   # Latest session for ./my-project's workspace
-hermes -r 20260225_143052_a1b2c3           # Short form
+aurora --continue                          # Resume the most recent CLI session
+aurora -c                                  # Short form
+aurora -c "my project"                     # Resume a named session (latest in lineage)
+aurora -c "my project" --create-if-missing # Same, creating the titled session if none exists
+aurora --resume 20260225_143052_a1b2c3     # Resume a specific session by ID
+aurora --resume "refactoring auth"         # Resume by title
+aurora --resume latest                     # Resume the most recent session (same as -c)
+aurora --resume latest --in ./my-project   # Latest session for ./my-project's workspace
+aurora -r 20260225_143052_a1b2c3           # Short form
 ```
 
 Resuming restores the full conversation history from SQLite. The agent sees all previous messages, tool calls, and responses — just as if you never left.
 
-Use `/title My Session Name` inside a chat to name the current session, or `hermes sessions rename <id> <title>` from the command line. Use `hermes sessions list` to browse past sessions.
+Use `/title My Session Name` inside a chat to name the current session, or `aurora sessions rename <id> <title>` from the command line. Use `aurora sessions list` to browse past sessions.
 
 ### Session Storage
 
-CLI sessions are stored in Hermes's SQLite state database under `~/.hermes/state.db`. The database keeps:
+CLI sessions are stored in Aurora's SQLite state database under `~/.aurora/state.db`. The database keeps:
 
 - session metadata (ID, title, timestamps, token counters)
 - message history
@@ -614,7 +614,7 @@ Some messaging adapters also keep per-platform transcript files alongside the da
 Long conversations are automatically summarized when approaching context limits:
 
 ```yaml
-# In ~/.hermes/config.yaml
+# In ~/.aurora/config.yaml
 compression:
   enabled: true
   threshold: 0.50    # Compress at 50% of context limit by default
@@ -635,7 +635,7 @@ Run a prompt in a separate background session while continuing to use the CLI fo
 /bg Analyze the logs in /var/log and summarize any errors from today
 ```
 
-Hermes immediately confirms the task and gives you back the prompt:
+Aurora immediately confirms the task and gives you back the prompt:
 
 ```
 🔄 Background task #1 started: "Analyze the logs in /var/log and summarize..."
@@ -656,7 +656,7 @@ Each `/bg` prompt spawns a **completely separate agent session** in a daemon thr
 When a background task finishes, the result appears as a panel in your terminal:
 
 ```
-╭─ ☤ Hermes (background #1) ──────────────────────────────────╮
+╭─ ☤ Aurora (background #1) ──────────────────────────────────╮
 │ Found 3 errors in syslog from today:                         │
 │ 1. OOM killer invoked at 03:22 — killed process nginx        │
 │ 2. Disk I/O error on /dev/sda1 at 07:15                      │
@@ -685,5 +685,5 @@ By default, the CLI runs in quiet mode which:
 
 For debug output:
 ```bash
-hermes chat --verbose
+aurora chat --verbose
 ```

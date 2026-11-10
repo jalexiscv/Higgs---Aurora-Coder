@@ -11,9 +11,9 @@ import json
 import time
 
 def _write_auth_store(tmp_path, payload: dict) -> None:
-    hermes_home = tmp_path / "hermes"
-    hermes_home.mkdir(parents=True, exist_ok=True)
-    (hermes_home / "auth.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    aurora_home = tmp_path / "aurora"
+    aurora_home.mkdir(parents=True, exist_ok=True)
+    (aurora_home / "auth.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 def _entry(
     error_code: int,
@@ -40,7 +40,7 @@ def _entry(
     return entry
 
 def _load(tmp_path, monkeypatch, entries: list[dict]):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path / "hermes"))
+    monkeypatch.setenv("AURORA_HOME", str(tmp_path / "aurora"))
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     _write_auth_store(
         tmp_path,

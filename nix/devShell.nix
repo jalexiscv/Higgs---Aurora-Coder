@@ -11,14 +11,14 @@
     { pkgs, lib, self', ... }:
     let
       packages = builtins.attrValues self'.packages;
-      hermesNpmLib = self'.packages.default.passthru.hermesNpmLib;
+      auroraNpmLib = self'.packages.default.passthru.auroraNpmLib;
 
       # Collect all packageJsonPath values from pnpm workspace packages.
       npmPackageJsonPaths = builtins.filter (p: p != null) (
         map (p: p.passthru.packageJsonPath or null) packages
       );
 
-      hermesAgentDevShellHook = self'.packages.default.passthru.devShellHook;
+      auroraAgentDevShellHook = self'.packages.default.passthru.devShellHook;
     in
     {
       devShells.default = pkgs.mkShell {
@@ -43,10 +43,10 @@
         ++ self'.packages.default.passthru.devDeps;
         shellHook = ''
           # The editable venv's .pth resolves the checkout through this.
-          export HERMES_PYTHON_SRC_ROOT=$(git rev-parse --show-toplevel)
+          export AURORA_PYTHON_SRC_ROOT=$(git rev-parse --show-toplevel)
 
-          ${hermesAgentDevShellHook}
-          ${hermesNpmLib.mkPnpmDevShellHook npmPackageJsonPaths}
+          ${auroraAgentDevShellHook}
+          ${auroraNpmLib.mkPnpmDevShellHook npmPackageJsonPaths}
 
           # Force Node to use Nix's playwright-test binary instead of node_modules/.bin
           export PATH="${pkgs.playwright-test}/bin:$PATH"
@@ -57,8 +57,8 @@
           export SSL_CERT_FILE="${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
           export NIX_SSL_CERT_FILE="$SSL_CERT_FILE"
 
-          echo "Hermes Agent dev shell in $HERMES_PYTHON_SRC_ROOT"
-          echo "Ready. 'hermes-checkout' runs this checkout; 'hermes' stays your installed Hermes."
+          echo "Aurora Agent dev shell in $AURORA_PYTHON_SRC_ROOT"
+          echo "Ready. 'aurora-checkout' runs this checkout; 'aurora' stays your installed Aurora."
         '';
       };
     };

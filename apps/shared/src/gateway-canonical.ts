@@ -1,4 +1,4 @@
-/** `hermes-gateway-v1` request/result translation for a client written against the stdio-era
+/** `aurora-gateway-v1` request/result translation for a client written against the stdio-era
  *  method names (Ink, and clients built on `./node/gateway-client`). Browser-safe. */
 import type { CanonicalCreateParams } from './gateway-contract.generated.js'
 import { type GatewayText, gatewayText } from './gateway-text.js'

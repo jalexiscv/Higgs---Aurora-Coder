@@ -2,37 +2,37 @@
 sidebar_position: 12
 sidebar_label: "Built-in Plugins"
 title: "Built-in Plugins"
-description: "Plugins shipped with Hermes Agent that run automatically via lifecycle hooks — disk-cleanup and friends"
+description: "Plugins shipped with Aurora Agent that run automatically via lifecycle hooks — disk-cleanup and friends"
 ---
 
 # Built-in Plugins
 
-Hermes ships a small set of plugins bundled with the repository. They live under `<repo>/plugins/<name>/` and load automatically alongside user-installed plugins in `~/.hermes/plugins/`. They use the same plugin surface as third-party plugins — hooks, tools, slash commands — just maintained in-tree.
+Aurora ships a small set of plugins bundled with the repository. They live under `<repo>/plugins/<name>/` and load automatically alongside user-installed plugins in `~/.aurora/plugins/`. They use the same plugin surface as third-party plugins — hooks, tools, slash commands — just maintained in-tree.
 
-See the [Plugins](./plugins.md) page for the general plugin system, and [Build a Hermes Plugin](../../developer-guide/plugins/index.md) to write your own.
+See the [Plugins](./plugins.md) page for the general plugin system, and [Build an Aurora Plugin](../../developer-guide/plugins/index.md) to write your own.
 
 ## How discovery works
 
 The `PluginManager` scans four sources, in order:
 
 1. **Bundled** — `<repo>/plugins/<name>/` (what this page documents)
-2. **User** — `~/.hermes/plugins/<name>/`
-3. **Project** — `./.hermes/plugins/<name>/` (requires `HERMES_ENABLE_PROJECT_PLUGINS=1`)
-4. **Pip entry points** — `hermes_agent.plugins`
+2. **User** — `~/.aurora/plugins/<name>/`
+3. **Project** — `./.aurora/plugins/<name>/` (requires `AURORA_ENABLE_PROJECT_PLUGINS=1`)
+4. **Pip entry points** — `aurora_agent.plugins`
 
 On name collision, later sources win — a user plugin named `disk-cleanup` would replace the bundled one.
 
-`plugins/memory/` and `plugins/context_engine/` are deliberately excluded from bundled scanning. Those directories use their own discovery paths because memory providers and context engines are single-select providers configured through `hermes memory setup` / `context.engine` in config.
+`plugins/memory/` and `plugins/context_engine/` are deliberately excluded from bundled scanning. Those directories use their own discovery paths because memory providers and context engines are single-select providers configured through `aurora memory setup` / `context.engine` in config.
 
 ## Bundled plugins are opt-in
 
-Bundled plugins ship disabled. Discovery finds them (they appear in `hermes plugins list` and the interactive `hermes plugins` UI), but none load until you explicitly enable them:
+Bundled plugins ship disabled. Discovery finds them (they appear in `aurora plugins list` and the interactive `aurora plugins` UI), but none load until you explicitly enable them:
 
 ```bash
-hermes plugins enable disk-cleanup
+aurora plugins enable disk-cleanup
 ```
 
-Or via `~/.hermes/config.yaml`:
+Or via `~/.aurora/config.yaml`:
 
 ```yaml
 plugins:
@@ -40,18 +40,18 @@ plugins:
     - disk-cleanup
 ```
 
-This is the same mechanism user-installed plugins use. Bundled plugins are never auto-enabled — not on fresh install, not for existing users upgrading to a newer Hermes. You always opt in explicitly.
+This is the same mechanism user-installed plugins use. Bundled plugins are never auto-enabled — not on fresh install, not for existing users upgrading to a newer Aurora. You always opt in explicitly.
 
 To turn a bundled plugin off again:
 
 ```bash
-hermes plugins disable disk-cleanup
+aurora plugins disable disk-cleanup
 # or: remove it from plugins.enabled in config.yaml
 ```
 
 ## Currently shipped
 
-The repo ships these bundled plugins under `plugins/`. All are opt-in — enable them via `hermes plugins enable <name>`.
+The repo ships these bundled plugins under `plugins/`. All are opt-in — enable them via `aurora plugins enable <name>`.
 
 | Plugin | Kind | Purpose |
 |---|---|---|
@@ -62,10 +62,10 @@ The repo ships these bundled plugins under `plugins/`. All are opt-in — enable
 | `image_gen/openai` | image backend | OpenAI GPT Image 2 and 2.5 Flare/Sunburst generation and editing (API key) |
 | `image_gen/openai-codex` | image backend | OpenAI image generation via Codex OAuth |
 | `image_gen/xai` | image backend | xAI `grok-2-image` backend |
-| `hermes-achievements` | dashboard tab | Steam-style collectible badges generated from your real Hermes session history |
+| `aurora-achievements` | dashboard tab | Steam-style collectible badges generated from your real Aurora session history |
 | `kanban/dashboard` | dashboard tab | Kanban board UI for the multi-agent dispatcher — tasks, comments, fan-out, board switching. See [Kanban Multi-Agent](./kanban.md). |
 
-Memory providers (`plugins/memory/*`) and context engines (`plugins/context_engine/*`) are listed separately on [Memory Providers](./memory-providers.md) — they're managed through `hermes memory` and `hermes plugins` respectively. The full per-plugin detail for the two long-running hooks-based plugins follows.
+Memory providers (`plugins/memory/*`) and context engines (`plugins/context_engine/*`) are listed separately on [Memory Providers](./memory-providers.md) — they're managed through `aurora memory` and `aurora plugins` respectively. The full per-plugin detail for the two long-running hooks-based plugins follows.
 
 ### disk-cleanup
 
@@ -75,7 +75,7 @@ Auto-tracks and removes ephemeral files created during sessions — test scripts
 
 | Hook | Behaviour |
 |---|---|
-| `post_tool_call` | When `write_file` / `terminal` / `patch` creates a file matching `test_*`, `tmp_*`, or `*.test.*` inside `HERMES_HOME` or `/tmp/hermes-*`, track it silently as `test` / `temp` / `cron-output`. | <!-- no-tmp: ok — documents the plugin's scope guard -->
+| `post_tool_call` | When `write_file` / `terminal` / `patch` creates a file matching `test_*`, `tmp_*`, or `*.test.*` inside `AURORA_HOME` or `/tmp/aurora-*`, track it silently as `test` / `temp` / `cron-output`. | <!-- no-tmp: ok — documents the plugin's scope guard -->
 | `on_session_end` | If any test files were auto-tracked during the turn, run the safe `quick` cleanup and log a one-line summary. Stays silent otherwise. |
 
 **Deletion rules:**
@@ -85,7 +85,7 @@ Auto-tracks and removes ephemeral files created during sessions — test scripts
 | `test` | every session end | Never |
 | `temp` | >7 days since tracked | Never |
 | `cron-output` | >14 days since tracked | Never |
-| empty dirs under HERMES_HOME | always | Never |
+| empty dirs under AURORA_HOME | always | Never |
 | `research` | >30 days, beyond 10 newest | Always (deep only) |
 | `chrome-profile` | >14 days since tracked | Always (deep only) |
 | files >500 MB | never auto | Always (deep only) |
@@ -101,7 +101,7 @@ Auto-tracks and removes ephemeral files created during sessions — test scripts
 /disk-cleanup forget <path>              # stop tracking (does not delete)
 ```
 
-**State** — everything lives at `$HERMES_HOME/disk-cleanup/`:
+**State** — everything lives at `$AURORA_HOME/disk-cleanup/`:
 
 | File | Contents |
 |---|---|
@@ -110,11 +110,11 @@ Auto-tracks and removes ephemeral files created during sessions — test scripts
 | `cleanup.log` | Append-only audit trail of every track / skip / reject / delete |
 
 <!-- no-tmp: ok — documents the plugin's scope guard -->
-**Safety** — cleanup only ever touches paths under `HERMES_HOME` or `/tmp/hermes-*`. Windows mounts (`/mnt/c/...`) are rejected. Well-known top-level state dirs (`logs/`, `memories/`, `sessions/`, `cron/`, `cache/`, `skills/`, `plugins/`, `disk-cleanup/` itself) are never removed even when empty — a fresh install does not get gutted on first session end. User project trees (`workspace/`, `projects/`, `plans/`, `home/`) are never tracked or swept at all: a `test_*.py` or `tmp_*` file inside your project is source code, not scratch. `kanban/` (task attachments and workspaces) is never tracked either, and a tracked *directory* under a protected top level such as `cache/` is never removed — only the files inside it age out.
+**Safety** — cleanup only ever touches paths under `AURORA_HOME` or `/tmp/aurora-*`. Windows mounts (`/mnt/c/...`) are rejected. Well-known top-level state dirs (`logs/`, `memories/`, `sessions/`, `cron/`, `cache/`, `skills/`, `plugins/`, `disk-cleanup/` itself) are never removed even when empty — a fresh install does not get gutted on first session end. User project trees (`workspace/`, `projects/`, `plans/`, `home/`) are never tracked or swept at all: a `test_*.py` or `tmp_*` file inside your project is source code, not scratch. `kanban/` (task attachments and workspaces) is never tracked either, and a tracked *directory* under a protected top level such as `cache/` is never removed — only the files inside it age out.
 
-**Enabling:** `hermes plugins enable disk-cleanup` (or check the box in `hermes plugins`).
+**Enabling:** `aurora plugins enable disk-cleanup` (or check the box in `aurora plugins`).
 
-**Disabling again:** `hermes plugins disable disk-cleanup`.
+**Disabling again:** `aurora plugins disable disk-cleanup`.
 
 ### security-guidance
 
@@ -132,36 +132,36 @@ The file is still written. The model reads the warning in the next turn's tool m
 | `SECURITY_GUIDANCE_BLOCK=1` | **block mode** — write refused, warning returned as the block reason |
 | `SECURITY_GUIDANCE_DISABLE=1` | kill switch — plugin loads but does nothing |
 
-**Enabling:** `hermes plugins enable security-guidance` (or check the box in `hermes plugins`).
+**Enabling:** `aurora plugins enable security-guidance` (or check the box in `aurora plugins`).
 
-**Disabling again:** `hermes plugins disable security-guidance`.
+**Disabling again:** `aurora plugins disable security-guidance`.
 
 **What it does not do (yet):** the upstream Anthropic plugin has two more layers — an LLM diff review on each agent turn that touched files, and an agentic commit-time review that traces data flow across files. Neither is ported. The agent can already run those reviews on demand via `delegate_task`.
 
 ### Langfuse (moved to the plugin catalog)
 
-Langfuse tracing is no longer bundled with Hermes. It ships as the official
-[`langfuse`](https://github.com/NousResearch/hermes-official-plugins/tree/main/langfuse) catalog plugin, with the same hooks, `HERMES_LANGFUSE_*`
+Langfuse tracing is no longer bundled with Aurora. It ships as the official
+[`langfuse`](https://github.com/NousResearch/hermes-official-plugins/tree/main/langfuse) catalog plugin, with the same hooks, `AURORA_LANGFUSE_*`
 environment variables and capture modes:
 
 ```bash
-hermes plugins install langfuse
+aurora plugins install langfuse
 ```
 
 Profiles that had `observability/langfuse` enabled get the plugin installed and
-enabled automatically by `hermes update` (or on the first start after updating),
+enabled automatically by `aurora update` (or on the first start after updating),
 and keep tracing to the same Langfuse project. Setup, tuning and capture modes
 are documented in the [plugin's README](https://github.com/NousResearch/hermes-official-plugins/tree/main/langfuse).
 
 ### NeMo Relay native integration (migration note)
 
-NeMo Relay is no longer a bundled Hermes plugin. Do not run `hermes plugins enable observability/nemo_relay`; Hermes core now owns the Relay session, turn, LLM, and tool lifecycles.
+NeMo Relay is no longer a bundled Aurora plugin. Do not run `aurora plugins enable observability/nemo_relay`; Aurora core now owns the Relay session, turn, LLM, and tool lifecycles.
 
-Configure Relay middleware or exporters through a standard Relay `plugins.toml`. Hermes loads Relay's user configuration (`~/.config/nemo-relay/plugins.toml`) and then its machine-wide system configuration (`/etc/nemo-relay/plugins.toml`, or `%ProgramData%\nemo-relay\plugins.toml` on Windows). Set `HERMES_NEMO_RELAY_PLUGINS_TOML` before starting Hermes only when you want an explicit file to replace the user configuration; the system configuration still has higher precedence. The policy is process-wide for every profile hosted by that Hermes process. Run `hermes doctor` to see which files apply. See the [NeMo Relay observability configuration](https://docs.nvidia.com/nemo/relay/configure-plugins/observability/about) for ATOF, ATIF, and OpenTelemetry options.
+Configure Relay middleware or exporters through a standard Relay `plugins.toml`. Aurora loads Relay's user configuration (`~/.config/nemo-relay/plugins.toml`) and then its machine-wide system configuration (`/etc/nemo-relay/plugins.toml`, or `%ProgramData%\nemo-relay\plugins.toml` on Windows). Set `AURORA_NEMO_RELAY_PLUGINS_TOML` before starting Aurora only when you want an explicit file to replace the user configuration; the system configuration still has higher precedence. The policy is process-wide for every profile hosted by that Aurora process. Run `aurora doctor` to see which files apply. See the [NeMo Relay observability configuration](https://docs.nvidia.com/nemo/relay/configure-plugins/observability/about) for ATOF, ATIF, and OpenTelemetry options.
 
-The old `HERMES_NEMO_RELAY_ATOF_*` and `HERMES_NEMO_RELAY_ATIF_*` settings no longer configure exporters. When `HERMES_NEMO_RELAY_PLUGINS_TOML` is unset, the gateway warns about remaining legacy variables and `hermes doctor` reports them. Independently discovered Relay user or system exporters still apply.
+The old `AURORA_NEMO_RELAY_ATOF_*` and `AURORA_NEMO_RELAY_ATIF_*` settings no longer configure exporters. When `AURORA_NEMO_RELAY_PLUGINS_TOML` is unset, the gateway warns about remaining legacy variables and `aurora doctor` reports them. Independently discovered Relay user or system exporters still apply.
 
-**Automatic migration.** `hermes update` (and `hermes migrate relay`, or `hermes migrate relay --all-profiles` for every profile home) converts the legacy variables into `<hermes home>/relay-plugins.toml`, sets `HERMES_NEMO_RELAY_PLUGINS_TOML` in that profile's `.env`, and comments the legacy lines out (nothing is deleted). Under a multiplexed gateway every profile home gets its own file. The generated file is validated through Relay before it is written; this is the shape it produces (note the `type = "file"` sink discriminator — a sink without it is rejected):
+**Automatic migration.** `aurora update` (and `aurora migrate relay`, or `aurora migrate relay --all-profiles` for every profile home) converts the legacy variables into `<aurora home>/relay-plugins.toml`, sets `AURORA_NEMO_RELAY_PLUGINS_TOML` in that profile's `.env`, and comments the legacy lines out (nothing is deleted). Under a multiplexed gateway every profile home gets its own file. The generated file is validated through Relay before it is written; this is the shape it produces (note the `type = "file"` sink discriminator — a sink without it is rejected):
 
 ```toml
 version = 1
@@ -179,15 +179,15 @@ enabled = true
 
 [[components.config.atof.sinks]]
 type = "file"
-output_directory = "/home/you/.hermes/telemetry/nemo-relay/atof"
-filename = "hermes-atof.jsonl"
+output_directory = "/home/you/.aurora/telemetry/nemo-relay/atof"
+filename = "aurora-atof.jsonl"
 mode = "append"
 
 [components.config.atif]
 enabled = true
-agent_name = "Hermes Agent"
+agent_name = "Aurora Agent"
 model_name = "unknown"
-output_directory = "/home/you/.hermes/telemetry/nemo-relay/atif"
+output_directory = "/home/you/.aurora/telemetry/nemo-relay/atif"
 filename_template = "trajectory-{session_id}.json"
 
 [components.config.opentelemetry]
@@ -200,7 +200,7 @@ unknown_field = "warn"
 unsupported_value = "error"
 ```
 
-Then add `HERMES_NEMO_RELAY_PLUGINS_TOML=/home/you/.hermes/relay-plugins.toml` to `.env` and restart the gateway.
+Then add `AURORA_NEMO_RELAY_PLUGINS_TOML=/home/you/.aurora/relay-plugins.toml` to `.env` and restart the gateway.
 
 #### Session-span segmentation (continuous sessions)
 
@@ -219,7 +219,7 @@ gateway:
 | `on_compaction` | `false` | Rotate after compaction completes, at the next turn boundary. |
 | `max_turns` | `0` | Rotate after every N completed turns; `0` disables the cap. |
 
-Both defaults preserve one session scope for the full session. Rotated spans retain the same `session_id` and add `hermes.session.segment` plus `hermes.session.segment_reason` (`compaction` or `max_turns`).
+Both defaults preserve one session scope for the full session. Rotated spans retain the same `session_id` and add `aurora.session.segment` plus `aurora.session.segment_reason` (`compaction` or `max_turns`).
 
 ### google_meet
 
@@ -230,14 +230,14 @@ Lets the agent **join, transcribe, and participate in Google Meet calls** — ta
 - A headless virtual participant that joins a Meet URL using browser automation
 - Live transcription derived from Meet's own live captions (the bot never decodes the meeting audio, so no STT billing — and captions are lossy and English-biased)
 - A `meet_join` / `meet_status` / `meet_transcript` / `meet_leave` / `meet_say` toolset the agent invokes to join calls, poll the live transcript, and act on what it heard
-- Post-meeting artifacts (transcript, status) saved under `~/.hermes/workspace/meetings/<meeting_id>/`
+- Post-meeting artifacts (transcript, status) saved under `~/.aurora/workspace/meetings/<meeting_id>/`
 
 **Setup:**
 
 ```bash
-hermes plugins enable google_meet
-hermes meet setup   # preflight: playwright, chromium, auth file
-hermes meet auth    # opens a browser to sign into Google and saves session state —
+aurora plugins enable google_meet
+aurora meet setup   # preflight: playwright, chromium, auth file
+aurora meet auth    # opens a browser to sign into Google and saves session state —
                     # needs a Google account with Meet access. Host approval may be
                     # required if the meeting enforces "only invited participants can join".
 ```
@@ -252,18 +252,18 @@ The agent kicks off the meeting join, streams the transcription back into its co
 
 **When to use it:** recurring standups where you want a bot to transcribe + summarize for async attendees; deposition-style interviews where you want structured notes; any case where you'd otherwise need Fireflies / Otter / Grain. When you'd rather not have an AI listening in — don't enable it.
 
-**Disabling:** `hermes plugins disable google_meet`. Any saved transcripts stay in `~/.hermes/workspace/meetings/` until you remove them.
+**Disabling:** `aurora plugins disable google_meet`. Any saved transcripts stay in `~/.aurora/workspace/meetings/` until you remove them.
 
-### hermes-achievements
+### aurora-achievements
 
-Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, tiered badges generated from your real Hermes session history. Tool-chain feats, debugging patterns, vibe-coding streaks, skill/memory usage, model/provider variety, lifestyle quirks (weekend and night sessions). Originally authored by [@PCinkusz](https://github.com/PCinkusz) as an external plugin; brought in-tree so it stays in lockstep with Hermes feature changes.
+Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, tiered badges generated from your real Aurora session history. Tool-chain feats, debugging patterns, vibe-coding streaks, skill/memory usage, model/provider variety, lifestyle quirks (weekend and night sessions). Originally authored by [@PCinkusz](https://github.com/PCinkusz) as an external plugin; brought in-tree so it stays in lockstep with Aurora feature changes.
 
 **How it works:**
 
-- Scans your entire `~/.hermes/state.db` session history on the dashboard backend
+- Scans your entire `~/.aurora/state.db` session history on the dashboard backend
 - Per-session stats are cached by `(started_at, last_active)` fingerprint, so only new or changed sessions re-analyze on subsequent scans
 - First-ever scan runs in a background thread — the dashboard never blocks waiting for it, even on databases with thousands of sessions
-- Unlock state is persisted to `$HERMES_HOME/plugins/hermes-achievements/state.json`
+- Unlock state is persisted to `$AURORA_HOME/plugins/aurora-achievements/state.json`
 
 **Tier progression:** Copper → Silver → Gold → Diamond → Olympian. Each card exposes a "What counts" section listing the exact metric being tracked.
 
@@ -273,9 +273,9 @@ Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, ti
 |---|---|
 | Unlocked | At least one tier achieved |
 | Discovered | Known achievement, progress visible, not yet earned |
-| Secret | Hidden until Hermes detects the first related signal in your history |
+| Secret | Hidden until Aurora detects the first related signal in your history |
 
-**API** — routes mount under `/api/plugins/hermes-achievements/`:
+**API** — routes mount under `/api/plugins/aurora-achievements/`:
 
 | Endpoint | Purpose |
 |---|---|
@@ -286,11 +286,11 @@ Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, ti
 | `POST /rescan` | Manual synchronous rescan (blocks; use when the user clicks the rescan button) |
 | `POST /reset-state` | Clear unlock history and cached snapshot |
 
-**State files** — live under `$HERMES_HOME/plugins/hermes-achievements/`:
+**State files** — live under `$AURORA_HOME/plugins/aurora-achievements/`:
 
 | File | Contents |
 |---|---|
-| `state.json` | Unlock history: which badges you've earned and when. Stable across Hermes updates. |
+| `state.json` | Unlock history: which badges you've earned and when. Stable across Aurora updates. |
 | `scan_snapshot.json` | Last completed scan payload (served immediately on dashboard load) |
 | `scan_checkpoint.json` | Per-session stats cache keyed by fingerprint (makes warm rescans fast) |
 
@@ -301,16 +301,16 @@ Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, ti
 - Warm rescan reuses per-session stats for every session whose `started_at` + `last_active` fingerprint matches the checkpoint — completes in seconds even on large histories.
 - The in-memory snapshot TTL is 120s; stale requests serve the old snapshot immediately and kick a background refresh. You never wait on a spinner just because TTL expired.
 
-**Enabling:** Nothing to enable — `hermes-achievements` is a dashboard-only plugin (no lifecycle hooks, no model-visible tools). It auto-registers as a tab in `hermes dashboard` on first launch. The `plugins.enabled` config only gates lifecycle/tool plugins; dashboard plugins are discovered purely via their `dashboard/manifest.json`.
+**Enabling:** Nothing to enable — `aurora-achievements` is a dashboard-only plugin (no lifecycle hooks, no model-visible tools). It auto-registers as a tab in `aurora dashboard` on first launch. The `plugins.enabled` config only gates lifecycle/tool plugins; dashboard plugins are discovered purely via their `dashboard/manifest.json`.
 
-**Opting out:** Delete or rename `plugins/hermes-achievements/dashboard/manifest.json`, or override it with a user plugin of the same name in `~/.hermes/plugins/hermes-achievements/` that ships no dashboard. The plugin's state files under `$HERMES_HOME/plugins/hermes-achievements/` survive — reinstalling preserves your unlock history.
+**Opting out:** Delete or rename `plugins/aurora-achievements/dashboard/manifest.json`, or override it with a user plugin of the same name in `~/.aurora/plugins/aurora-achievements/` that ships no dashboard. The plugin's state files under `$AURORA_HOME/plugins/aurora-achievements/` survive — reinstalling preserves your unlock history.
 
 ## Adding a bundled plugin
 
-Bundled plugins are written exactly like any other Hermes plugin — see [Build a Hermes Plugin](../../developer-guide/plugins/index.md). The only differences are:
+Bundled plugins are written exactly like any other Aurora plugin — see [Build an Aurora Plugin](../../developer-guide/plugins/index.md). The only differences are:
 
-- Directory lives at `<repo>/plugins/<name>/` instead of `~/.hermes/plugins/<name>/`
-- Manifest source is reported as `bundled` in `hermes plugins list`
+- Directory lives at `<repo>/plugins/<name>/` instead of `~/.aurora/plugins/<name>/`
+- Manifest source is reported as `bundled` in `aurora plugins list`
 - User plugins with the same name override the bundled version
 
 A plugin is a good candidate for bundling when:

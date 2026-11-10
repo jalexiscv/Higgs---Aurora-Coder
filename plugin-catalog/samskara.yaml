@@ -18,7 +18,7 @@ description: >-
   Disclosure — with session-end extraction enabled (default), the plugin sends
   the recent turns of a session to the user's own model through ctx.llm
   (host-owned credentials, no provider override) to extract facts. If the host
-  does not expose ctx.llm — Hermes' in-process memory-provider path does not
+  does not expose ctx.llm — Aurora's in-process memory-provider path does not
   today — extraction is skipped rather than redirected: the session records its
   entity mentions lexically and no model is called. The plugin reads no provider
   API key from the environment and has no default model host. The graph endpoint
@@ -28,7 +28,7 @@ description: >-
   SAMSKARA_LLM_BASE_URL and SAMSKARA_LLM_API_KEY. No telemetry. Credentials
   (SAMSKARA_PASSWORD) are read through agent.secret_scope.get_secret.
 maintainer: SebaWag
-requires_hermes: ">=0.19.0"
+requires_aurora: ">=0.19.0"
 tier: community
 category: memory
 docs_url: https://github.com/SebaWag/hermes-samskara/blob/d807e875da3176301db9955e0352c9c8adb6cb01/README.md

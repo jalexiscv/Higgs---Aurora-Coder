@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { getMemoryProviderConfig, saveMemoryProviderConfig } from '@/aurora'
 import { PageLoader } from '@/components/page-loader'
 import { Button } from '@/components/ui/button'
 import { DisclosureCaret } from '@/components/ui/disclosure-caret'
-import { getMemoryProviderConfig, saveMemoryProviderConfig } from '@/hermes'
 import { SlidersHorizontal } from '@/lib/icons'
 import { refreshMemoryStatus } from '@/store/memory-status'
 import { notifyError } from '@/store/notifications'
-import type { MemoryProviderConfig, MemoryProviderField } from '@/types/hermes'
+import type { MemoryProviderConfig, MemoryProviderField } from '@/types/aurora'
 
 import { ListRow, Pill } from '../primitives'
 

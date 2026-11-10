@@ -6,7 +6,7 @@ description: "@chmod: context references that explain a file permission mode for
 maintainer: olric3015
 tier: community
 category: tools
-requires_hermes: ">=0.21.7"
+requires_aurora: ">=0.21.7"
 docs_url: https://github.com/olric3015/hermes-plugins/tree/main/chmod-ref
 version: "1.0.0"
 image: https://raw.githubusercontent.com/olric3015/hermes-plugins/d2f543a0979eee73202a3fe06bb2c722b04d5765/docs/chmod-ref-card.png

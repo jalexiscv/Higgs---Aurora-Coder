@@ -2,10 +2,10 @@
 sidebar_position: 5
 ---
 
-# Connecting Desktop to Many Hermes Instances
+# Connecting Desktop to Many Aurora Instances
 
-Register every Hermes backend you own — the local runtime, remote gateways on
-your LAN or VPS, SSH hosts, and Hermes Cloud instances — in one desktop app,
+Register every Aurora backend you own — the local runtime, remote gateways on
+your LAN or VPS, SSH hosts, and Aurora Cloud instances — in one desktop app,
 and use the agents on all of them side by side. Every registered gateway is
 connected all the time: Desktop dials each one when it starts, keeps its
 connection open, and redials it if it drops, so there is no switching cost and
@@ -26,7 +26,7 @@ redirect there). Three doors lead to it:
   **Gateways** in the settings nav). The connections registry is a section
   of that page, below the machine-level connection-mode controls.
 - **The sidebar profile rail** — the plug button at the right end of the rail
-  (tooltip: **"Connect another Hermes gateway…"**) deep-links straight to
+  (tooltip: **"Connect another Aurora gateway…"**) deep-links straight to
   the Gateways page. It is always visible, even before you have created
   a second profile or a second connection.
 - **The command palette** — **Cmd/Ctrl+K**, then type *Gateways* (also
@@ -35,16 +35,16 @@ redirect there). Three doors lead to it:
 ## The gateway registry
 
 The **Registered gateways** section of **Settings → Gateways** manages a named
-list of Hermes gateways. Its intro says it plainly: *"Manage this device and
-every Hermes gateway it can reach through remote, SSH, or Cloud connections."*
+list of Aurora gateways. Its intro says it plainly: *"Manage this device and
+every Aurora gateway it can reach through remote, SSH, or Cloud connections."*
 Each entry is a *connection*:
 
 | Kind | What it is | Auth |
 |---|---|---|
-| **Local** | "The Hermes runtime managed by this app." | automatic |
-| **Remote gateway** | "A Hermes gateway reachable over HTTP(S) — LAN, Tailscale, or the internet." | session token or OAuth |
-| **SSH** | "A Hermes install reached over SSH." The app opens the tunnel and starts the dashboard for you | SSH key + adopted token |
-| **Hermes Cloud** | "A hosted instance discovered through your Hermes Cloud account." | portal sign-in |
+| **Local** | "The Aurora runtime managed by this app." | automatic |
+| **Remote gateway** | "An Aurora gateway reachable over HTTP(S) — LAN, Tailscale, or the internet." | session token or OAuth |
+| **SSH** | "An Aurora install reached over SSH." The app opens the tunnel and starts the dashboard for you | SSH key + adopted token |
+| **Aurora Cloud** | "A hosted instance discovered through your Aurora Cloud account." | portal sign-in |
 
 Rules worth knowing:
 
@@ -68,7 +68,7 @@ Rules worth knowing:
   (the *"Reachable"* toast) means chat will actually work — not just that the
   host pinged. In the Webapp, **Test** on an SSH row opens the same managed
   tunnel the gateway uses to reach that host, which starts (or reuses)
-  `hermes serve` on the remote machine without cleaning it up afterwards. It
+  `aurora serve` on the remote machine without cleaning it up afterwards. It
   stops when you remove the connection or stop the gateway, or on its own after
   the remote idle timeout (`dashboard.ssh_isolated_idle_grace_s`, 15 minutes by
   default) while no client is connected and no work is running.
@@ -78,8 +78,8 @@ Rules worth knowing:
   kinds, so a cloud entry and a remote entry can't point at the same URL);
   **SSH** entries are deduplicated on the normalized `user@host:port` plus
   remote profile.
-- Cloud entries normally come from the Hermes Cloud sign-in/discovery flow at
-  the top of the Gateways page — the **Hermes Cloud** kind in the add-connection
+- Cloud entries normally come from the Aurora Cloud sign-in/discovery flow at
+  the top of the Gateways page — the **Aurora Cloud** kind in the add-connection
   editor points you there.
 
 Every registered gateway stays connected, and the **Sessions** sidebar can
@@ -106,7 +106,7 @@ are remembered on this desktop. Collapsing a gateway preserves its profiles'
 individual collapse states. Each profile's new-session action targets that
 profile on its owning gateway.
 
-The Hermes Cloud panel also lists **Saved Cloud gateways** when portal discovery
+The Aurora Cloud panel also lists **Saved Cloud gateways** when portal discovery
 is signed out. **Use gateway** selects an existing saved connection without
 changing the default gateway; **Active in this window** identifies the current
 one. Adding a new instance uses its friendly Cloud name, while existing custom
@@ -118,15 +118,15 @@ authentication; manage sign-in from the registered connection controls.
 1. Open **Settings → Gateways** and scroll to the connections registry (or
    click the plug in the profile rail).
 2. Click **Add connection**.
-3. Pick the kind: **Local**, **Hermes Cloud**, **Remote gateway**, or **SSH**.
+3. Pick the kind: **Local**, **Aurora Cloud**, **Remote gateway**, or **SSH**.
    (**Local** is disabled while the app-managed local entry exists — which is
-   almost always; **Hermes Cloud** directs you to the cloud sign-in/discovery
+   almost always; **Aurora Cloud** directs you to the cloud sign-in/discovery
    flow above.)
 4. Fill the fields:
    - **Name** — required, unique; the "device name" shown everywhere this
      instance appears (placeholder: `Homelab`). Max 64 characters.
    - *Remote gateway only:*
-     - **Gateway URL** — the base URL of a running `hermes serve` backend,
+     - **Gateway URL** — the base URL of a running `aurora serve` backend,
        e.g. `http://homelab.lan:9119`. Reverse-proxy path prefixes work.
      - **Authentication** — choose **Session token** or **OAuth**:
        - **Session token** — paste the dashboard session token from the
@@ -141,10 +141,10 @@ authentication; manage sign-in from the registered connection controls.
        shell; on a `zsh` login shell the probe watchdog cannot kill the whole
        process group, so a hung probe's grandchildren may linger on the remote
        (bash/sh remotes reap them).
-     - **Hermes path (optional)** — full path to the `hermes` executable on
-       the remote (for example `/opt/hermes/bin/hermes`). Leave blank to
+     - **Aurora path (optional)** — full path to the `aurora` executable on
+       the remote (for example `/opt/aurora/bin/aurora`). Leave blank to
        auto-detect. Set it when the remote's non-interactive shell does not
-       have `hermes` on its `PATH` and **Test** reports *"Hermes is not
+       have `aurora` on its `PATH` and **Test** reports *"Aurora is not
        installed on the remote host"*; clearing the field restores
        auto-detection.
 5. Click **Save connection** (or **Cancel**).
@@ -154,7 +154,7 @@ Edit any non-local entry later with the pencil button, or remove it with the
 trash button — removal asks for confirmation and reminds you that *"The
 instance itself is not touched — you can add it again any time."*
 
-:::info The remote backend is a running `hermes serve` process
+:::info The remote backend is a running `aurora serve` process
 Nothing here works unless the backend is actually up and reachable on the
 other machine. The desktop app attaches to it; it does not start it for you
 (except for SSH connections, where the app opens the tunnel and starts the
@@ -190,7 +190,7 @@ The union roster is what multi-gateway surfaces (and the built-in
   stays connected: its default profile holds one open connection for the life
   of the window and is redialed every 30 seconds while it is down. An
   unreachable gateway reports per-row instead of breaking the roster. With a
-  remote primary, **This device** is kept connected too when Hermes is
+  remote primary, **This device** is kept connected too when Aurora is
   installed here, so its local gateway starts with Desktop. Terminals and
   running work on a gateway keep going when you pick another one.
 - Opening an agent dials **its own gateway** — chats, sessions, and memory
@@ -201,11 +201,11 @@ Each `(connection, profile)` pair gets its own socket, and Desktop caches the
 gateway descriptor it dialed so the next open joins the same connection —
 background agents keep streaming while you look at another gateway. Desktop
 never spawns or reaps a *remote* gateway; each one owns its own lifetime. For a
-**local** profile, the first open runs `hermes gateway ensure`, which attaches
+**local** profile, the first open runs `aurora gateway ensure`, which attaches
 to that profile's running gateway or, when there is none, installs and starts a
 persistent per-profile gateway (a systemd/launchd service where one exists,
 otherwise a detached daemon). That gateway keeps running after you close the
-app — it has no idle shutdown — until you stop it with `hermes gateway stop`.
+app — it has no idle shutdown — until you stop it with `aurora gateway stop`.
 
 Approval buttons route back to the session's owning backend, not whichever
 profile is currently selected. For a local secondary profile, Desktop can use
@@ -217,7 +217,7 @@ an obsolete backend.
 ### Gateways, profiles and scope
 
 The sidebar foot follows one hierarchy: **gateway → profile → sessions**.
-Gateways are machines or hosted backends; profiles are isolated Hermes agents
+Gateways are machines or hosted backends; profiles are isolated Aurora agents
 that live on one gateway.
 
 - With one registered gateway, no gateway control is added. Local-only Desktop
@@ -249,7 +249,7 @@ that live on one gateway.
   square offers **Open**, **Color**, **Rename**, **Edit SOUL.md** and
   **Delete**, all executed on the square's own gateway; the delete
   confirmation names the machine. Picking **This device** asks for
-  confirmation only when Hermes is not installed on this computer yet.
+  confirmation only when Aurora is not installed on this computer yet.
 - A gateway the last enumeration could not reach keeps its squares, marked
   with an amber dot on its glyph — a sleeping box is still yours. Two
   registrations of one backend collapse to a single group. Past thirteen
@@ -311,14 +311,14 @@ side effect of sharing one Desktop window.
 ## Updating every instance at once
 
 **Settings → Gateways → Update all instances** (shown once more than one
-connection is registered) dispatches `hermes update` to every eligible
+connection is registered) dispatches `aurora update` to every eligible
 connection in parallel:
 
 - **Local** updates through the app's own update pipeline (the same flow as
   Settings → Updates).
 - **Remote and SSH** connections are told to update themselves via their own
   backend — the update runs on *that* machine.
-- **Hermes Cloud** instances are skipped with a *"Managed by Hermes Cloud"*
+- **Aurora Cloud** instances are skipped with a *"Managed by Aurora Cloud"*
   note: the platform manages their versions.
 
 Each instance reports independently, so one unreachable box never wedges the
@@ -327,7 +327,7 @@ with their own message, per row.
 
 You rarely need the Settings button, though: once more than one update target
 exists, the app's regular update affordances (**Update now** on the About
-panel, ⌘K **Update Hermes**, the update-ready toast) run the same fan-out
+panel, ⌘K **Update Aurora**, the update-ready toast) run the same fan-out
 automatically — active backend first, then every other eligible gateway, then
 the desktop app itself last. See
 [Updating](./desktop.md#updating) in the desktop guide.
@@ -335,7 +335,7 @@ the desktop app itself last. See
 ## Security notes
 
 - **Where connections and tokens live.** The saved list is
-  `gateway-connections.json` in your Hermes home (beside `ui-preferences.json`):
+  `gateway-connections.json` in your Aurora home (beside `ui-preferences.json`):
   labels, URLs, SSH hosts, and each connection's session token and extra
   headers. Sign-in (OAuth) credentials, keyed by connection, are in
   `gateway-connection-tokens.json` next to it. Both are owner-only (0600)
@@ -377,7 +377,7 @@ multi-gateway roster is the reference consumer.
 ## Troubleshooting
 
 - **"Connection test failed"** — the backend isn't reachable at that URL from
-  this machine. Check that `hermes serve` is running on the remote host, the
+  this machine. Check that `aurora serve` is running on the remote host, the
   port is open, and (for token auth) the token is current. Re-run **Test**
   after fixing.
 - **An agent shows but won't open** — run **Test** on its connection. The
@@ -386,7 +386,7 @@ multi-gateway roster is the reference consumer.
 - **A remote gateway is missing from the roster** — its backend is down or
   unreachable; the roster lists it under gateways with the error, and Desktop
   keeps redialing it in the background.
-- **"Update Hermes Desktop to chat with agents on other connections"** — the
+- **"Update Aurora Desktop to chat with agents on other connections"** — the
   app predates the multi-connection stack; update the desktop app itself.
 - **Duplicate device names** — not possible; names are enforced unique at
   save time. If a migrated name collided, it was suffixed (`Homelab 2`).

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { $pinnedSessionIds, pinSession } from '@/store/layout'
 import { $sessions } from '@/store/session'
-import type { SessionInfo } from '@/types/hermes'
+import type { SessionInfo } from '@/types/aurora'
 
 import { toggleTilePin } from './session-tile'
 

@@ -1,12 +1,12 @@
 ---
 sidebar_position: 4
 title: "Contributing"
-description: "How to contribute to Hermes Agent — dev setup, code style, PR process"
+description: "How to contribute to Aurora Agent — dev setup, code style, PR process"
 ---
 
 # Contributing
 
-Thank you for contributing to Hermes Agent! This guide covers setting up your dev environment, understanding the codebase, and getting your PR merged.
+Thank you for contributing to Aurora Agent! This guide covers setting up your dev environment, understanding the codebase, and getting your PR merged.
 
 ## Contribution Priorities
 
@@ -23,7 +23,7 @@ We value contributions in this order:
 ## Contribution rubric
 
 The project's intent layer, summarised in the root `AGENTS.md`; this is the long form with the
-examples. Hermes ships a lot: most merges are bug fixes and the product surface (platforms,
+examples. Aurora ships a lot: most merges are bug fixes and the product surface (platforms,
 providers, models, desktop/TUI features) expands on purpose. The restraint targets the core agent
 and the model tool schema, where every addition is paid for on every API call: expansive at the
 edges, conservative at the waist.
@@ -34,7 +34,7 @@ edges, conservative at the waist.
   where it manifests, and fix the whole bug class — sibling call paths included.
 - **Expand reach at the edges.** New adapters, channels, providers, models, desktop/TUI/
   dashboard features land routinely, including large ones — as long as they integrate with
-  the existing setup/config UX (`hermes tools`, `hermes setup`, auto-install) rather than
+  the existing setup/config UX (`aurora tools`, `aurora setup`, auto-install) rather than
   bolting on a raw env var.
 - **Refactor god-files into clean modules.** Huge mechanical `+N/-N` extraction PRs are
   wanted work. "Every line traces to the request" applies to *feature* PRs; a declared
@@ -50,7 +50,7 @@ edges, conservative at the waist.
   freeze a current value (see `tests/AGENTS.md`).
 - **E2E validation, not just green unit mocks.** Anything touching resolution chains, config
   propagation, security boundaries, remote backends, or file/network I/O must exercise the
-  real path with real imports against a temp `HERMES_HOME` — two of them (A→B→A) when the
+  real path with real imports against a temp `AURORA_HOME` — two of them (A→B→A) when the
   change touches profile scope. Mocks hide integration bugs.
 - **Cache-, alternation-, and invariant-safe.** Preserve prompt caching, strict role
   alternation (never two same-role messages in a row; never a synthetic user message injected
@@ -63,7 +63,7 @@ edges, conservative at the waist.
 - **Speculative infrastructure.** Hooks/callbacks/extension points with no concrete consumer.
   Adding a hook is easy; removing one after plugins depend on it is hard. A hook with a real,
   stated use case is NOT speculative even if the consumer ships separately.
-- **New `HERMES_*` env vars for non-secret config.** `.env` is for secrets only. Behavioral
+- **New `AURORA_*` env vars for non-secret config.** `.env` is for secrets only. Behavioral
   settings (timeouts, thresholds, flags, display prefs) go in `config.yaml`; bridge to an
   internal env var in code if the mechanism needs one. Reject "set X in your .env" docs
   unless X is a credential.
@@ -76,14 +76,14 @@ edges, conservative at the waist.
   (`git log -p -S`) before restricting behavior; find a fix that preserves the feature.
 - **Outbound telemetry / usage attribution without opt-in gating.** No analytics,
   third-party identifier tagging, or attribution tags until a generic user-facing opt-in
-  (config gate + setup prompt + `hermes tools` toggle) exists. Park behind a label.
+  (config gate + setup prompt + `aurora tools` toggle) exists. Park behind a label.
 - **Change-detector tests, cache-breaking mid-conversation, dead code wired in without E2E
   proof, plugins that touch core files.** Plugins work within the ABCs/hooks we provide; if
   one needs more, widen the generic plugin surface, never special-case it in core.
 - **Third-party products integrated into the core tree.** Observability backends, vendor
   SaaS connectors, analytics dashboards, and other "someone else's product" plugins do NOT
   land under `plugins/` — every one becomes our burden against a fast-moving core for a
-  backend we don't own. Ship as a **standalone plugin repo** (`~/.hermes/plugins/` or pip
+  backend we don't own. Ship as a **standalone plugin repo** (`~/.aurora/plugins/` or pip
   entry point), promoted in the Nous Research Discord `#plugins-skills-and-skins`. This is a
   coupling decision, not a quality bar; such PRs are closed with a pointer to publish.
 
@@ -122,14 +122,14 @@ Choose the highest (least-footprint) rung that correctly solves the problem:
 
 1. **Extend existing code** — a variation of something that exists. Zero new surface.
 2. **CLI command + skill** — config/state/infra expressible as shell commands; the agent runs
-   `hermes <subcommand>` guided by a skill. Default for subscriptions, scheduled tasks,
-   service setup (`hermes webhook`, `hermes cron`, `hermes tools`).
+   `aurora <subcommand>` guided by a skill. Default for subscriptions, scheduled tasks,
+   service setup (`aurora webhook`, `aurora cron`, `aurora tools`).
 3. **Service-gated tool (`check_fn`)** — needs structured params/returns AND only appears when
    a prerequisite is configured (Home Assistant tools, memory-provider tools). This rung gates
    reachability/opt-in process-wide; a capability that varies per SESSION (who is watching) is
    a named toolset folded in by the toolset resolver, not a `check_fn` — see `tools/AGENTS.md` § "Surface
    capability is a property of the SESSION".
-4. **Plugin** — third-party/niche/user-specific; lives in `~/.hermes/plugins/` or a pip
+4. **Plugin** — third-party/niche/user-specific; lives in `~/.aurora/plugins/` or a pip
    package, discovered at runtime.
 5. **MCP server (in the catalog)** — genuinely a tool but not core-fundamental. Zero permanent
    core-schema footprint, reusable by any MCP host, reached via the built-in MCP client.
@@ -139,8 +139,8 @@ Choose the highest (least-footprint) rung that correctly solves the problem:
 
 ## Common contribution paths
 
-- Building a custom/local tool without modifying Hermes core? Start with [Build a Hermes Plugin](../developer-guide/plugins/index.md)
-- Building a new built-in core tool for Hermes itself? Start with [Adding Tools](./adding-tools.md)
+- Building a custom/local tool without modifying Aurora core? Start with [Build an Aurora Plugin](../developer-guide/plugins/index.md)
+- Building a new built-in core tool for Aurora itself? Start with [Adding Tools](./adding-tools.md)
 - Building a new skill? Start with [Creating Skills](./creating-skills.md)
 - Building a new inference provider? Start with [Adding Providers](./adding-providers.md)
 
@@ -168,18 +168,18 @@ Bash:
 
 ```bash
 source ./activate
-hermes --version
+aurora --version
 ```
 
 PowerShell:
 
 ```powershell
 . .\activate.ps1
-hermes --version
+aurora --version
 ```
 
-Run `hermes` for this checkout. Activation defines it as a function for this
-worktree, so it hides a global `hermes` alias and refuses outside the worktree.
+Run `aurora` for this checkout. Activation defines it as a function for this
+worktree, so it hides a global `aurora` alias and refuses outside the worktree.
 PM activation syncs tools and Python dependencies before adding them to the shell. It does
 not install JS workspaces or rewrite launchers and shell configuration. `deactivate` restores the prior shell environment and removes the function.
 
@@ -191,12 +191,12 @@ script or tool in this repository, so the commands below also work without
 
 | Recipe | Runs |
 |---|---|
-| `just setup` | `setup-hermes.sh --runtime-only --test-environment` (PowerShell: `setup-hermes.ps1 -RuntimeOnly`) |
+| `just setup` | `setup-aurora.sh --runtime-only --test-environment` (PowerShell: `setup-aurora.ps1 -RuntimeOnly`) |
 | `just check` | `scripts/check`, every blocking lint check; `just check --only health` selects checks |
 | `just fix` | the pinned ruff with `--fix`, then `pnpm -r fix` |
 | `just test <paths>` | `scripts/run_tests.sh <paths>`; refuses to start without a path, even with flags |
 | `just test-all` | the full Python suite |
-| `just js-install`, `just check-js`, `just test-js` | `pnpm install --frozen-lockfile`, `pnpm -r check`, `pnpm -r test` (after building `@hermes/ink`) |
+| `just js-install`, `just check-js`, `just test-js` | `pnpm install --frozen-lockfile`, `pnpm -r check`, `pnpm -r test` (after building `@aurora/ink`) |
 | `just desktop`, `just tui` | the desktop and TUI dev servers |
 | `just docs-install`, `just docs-build` | the website's `npm ci` and `build:fast` |
 | `just docs-generate`, `just docs-check` | regenerate the skill docs pages; then every docs check CI runs (committed pages match, links, diagrams) |
@@ -205,7 +205,7 @@ script or tool in this repository, so the commands below also work without
 | `just check-icons`, `just lint-docker`, `just check-plugin-catalog`, `just check-nix` | the committed-icons check, hadolint and shellcheck on the container inputs, the catalog validator, `nix flake check` |
 | `just test-catalog`, `just test-whatsapp-bridge`, `just test-rust` | the plugin-catalog tests, the WhatsApp bridge's node tests (after `just js-install-whatsapp-bridge`), the bootstrap installer's `cargo test --lib` |
 
-Recipes that run Python go through `scripts/run-in-hermes-env`, so they work in
+Recipes that run Python go through `scripts/run-in-aurora-env`, so they work in
 a shell that was never activated. A new developer command is a script under
 `scripts/` plus a recipe that calls it; the recipe holds no logic.
 
@@ -213,7 +213,7 @@ a shell that was never activated. A new developer command is a script under
 
 Use the [PM developer workflow](../reference/package-management.md#developer-workflow) to prepare Python 3.14 first.
 Run these commands from that checkout with its prepared Python. Keep the same
-development `HERMES_HOME`. PM must be able to start before it can build another
+development `AURORA_HOME`. PM must be able to start before it can build another
 environment. On Windows, initialize the native C++ build environment for your
 architecture before building source dependencies.
 
@@ -234,18 +234,18 @@ that disposable environment first. PM does not delete an existing destination.
 Do not run raw pip or uv commands to change a PM-built environment.
 
 To keep the test environment outside the checkout, replace `.venv` with a fresh absolute
-path. Set `HERMES_PYTHON` to that environment's interpreter:
+path. Set `AURORA_PYTHON` to that environment's interpreter:
 
-- POSIX: `export HERMES_PYTHON="/absolute/path/to/hermes-dev/bin/python"`
-- PowerShell: `$env:HERMES_PYTHON = 'C:\absolute\path\to\hermes-dev\Scripts\python.exe'`
+- POSIX: `export AURORA_PYTHON="/absolute/path/to/aurora-dev/bin/python"`
+- PowerShell: `$env:AURORA_PYTHON = 'C:\absolute\path\to\aurora-dev\Scripts\python.exe'`
 
 The canonical runner discovers repository `.venv` automatically. It clears
 `PYTHONPATH`, so pytest must be installed in the interpreter's own environment.
 This test environment does not replace PM's application selection or tool
 store. Do not point a bundled app at it or install into an MSIX payload.
 
-For an isolated development instance, select a disposable `HERMES_HOME` before
-starting the source command. Use `hermes setup` to configure it rather
+For an isolated development instance, select a disposable `AURORA_HOME` before
+starting the source command. Use `aurora setup` to configure it rather
 than copying production credentials into the checkout.
 
 ### JavaScript workspaces and website
@@ -278,7 +278,7 @@ refusal.
 `npx`, `npm exec` and `npm run` keep working, so MCP servers and tools still start.
 But `engine-strict` applies anywhere in the checkout: in these folders, and through
 the root `.npmrc` in every folder without a `package.json` of its own (`agent/`,
-`tools/`, the Docker image's `/opt/hermes`). There `npx` refuses to install a package
+`tools/`, the Docker image's `/opt/aurora`). There `npx` refuses to install a package
 when it or any non-optional dependency it pulls in declares `engines` the current Node
 or npm does not satisfy, where it would only warn outside the checkout.
 
@@ -287,7 +287,7 @@ Native desktop dependencies can also require the platform build toolchain.
 
 Logos and icons are generated from `assets/nous-girl-*.svg` and
 `assets/backgrounds/`. `node scripts/generate-icons.mjs` (`just icons`) renders them with the
-Hermes runtime Python (`HERMES_PYTHON`, else `python` on PATH): Pillow and
+Aurora runtime Python (`AURORA_PYTHON`, else `python` on PATH): Pillow and
 resvg-py are core dependencies. Do not commit generated PNG/ICO/ICNS outputs.
 
 ### Run tests
@@ -303,13 +303,13 @@ Both recipes call `scripts/run_tests.sh`; `just test` refuses to start
 without a path, and `just test-all` runs the full suite.
 
 On Windows, run the script through Bash. When no local `.venv` or `venv`
-contains pytest, the runner accepts the explicit `HERMES_PYTHON` above. It
-clears credentials, isolates `HERMES_HOME`, and runs each test file in a separate
+contains pytest, the runner accepts the explicit `AURORA_PYTHON` above. It
+clears credentials, isolates `AURORA_HOME`, and runs each test file in a separate
 subprocess through `scripts/run_tests_parallel.py`. It does not use xdist.
-When `tests/conftest.py` redirects a production `HERMES_HOME` to a temporary
-session home, it sets the internal `HERMES_TEST_SANDBOX_HOME` marker. This lets
+When `tests/conftest.py` redirects a production `AURORA_HOME` to a temporary
+session home, it sets the internal `AURORA_TEST_SANDBOX_HOME` marker. This lets
 re-imported test fixtures recognize their own sandbox instead of flagging it as
-real-home I/O. Do not set this marker yourself; set `HERMES_HOME` for a
+real-home I/O. Do not set this marker yourself; set `AURORA_HOME` for a
 disposable development home and let the test runner isolate it.
 
 Run the relevant JS workspace checks for JS changes. Native install/update
@@ -322,7 +322,7 @@ See [Package management](../reference/package-management.md) for PM commands and
 - **Comments**: Only when explaining non-obvious intent, trade-offs, or API quirks
 - **Error handling**: Catch specific exceptions. Use `logger.warning()`/`logger.error()` with `exc_info=True` for unexpected errors
 - **Cross-platform**: Never assume Unix (see below)
-- **Profile-safe paths**: Never hardcode `~/.hermes` — use `get_hermes_home()` from `hermes_constants` for code paths and `display_hermes_home()` for user-facing messages. See [AGENTS.md](https://github.com/NousResearch/hermes-agent/blob/main/AGENTS.md#profiles-multi-instance-support) for full rules.
+- **Profile-safe paths**: Never hardcode `~/.aurora` — use `get_aurora_home()` from `aurora_constants` for code paths and `display_aurora_home()` for user-facing messages. See [AGENTS.md](https://github.com/NousResearch/hermes-agent/blob/main/AGENTS.md#profiles-multi-instance-support) for full rules.
 
 ## Cross-Platform Compatibility
 
@@ -365,7 +365,7 @@ Use `pathlib.Path` instead of string concatenation with `/`.
 
 ## Security Considerations
 
-Hermes has terminal access. Security matters.
+Aurora has terminal access. Security matters.
 
 ### Existing Protections
 
@@ -402,10 +402,10 @@ refactor/description   # Code restructuring
 ### Before Submitting
 
 1. **Run tests**: `scripts/run_tests.sh` for CI-parity. Use direct `python -m pytest ...` only when the wrapper is unavailable or you are intentionally debugging outside the wrapper.
-2. **Test manually**: Run `hermes` and exercise the code path you changed
+2. **Test manually**: Run `aurora` and exercise the code path you changed
 3. **Check cross-platform impact**: Consider macOS, Linux, WSL2, and native Windows. If you touch file I/O, process management, terminal handling, subprocesses, or signals, run `scripts/check-windows-footguns.py`.
 4. **Keep PRs focused**: One logical change per PR
-5. **Prompt or tool-schema changes**: if `tests/ci/test_prompt_surface.py` fails, your change alters the system prompt or a tool schema that every session sends. Regenerate with `scripts/run-in-hermes-env python scripts/ci/prompt_surface.py render` and commit the snapshot. Changes there need a maintainer approval (see [Prompt Assembly](./prompt-assembly.md#reviewing-changes-to-the-prompt-surface)).
+5. **Prompt or tool-schema changes**: if `tests/ci/test_prompt_surface.py` fails, your change alters the system prompt or a tool schema that every session sends. Regenerate with `scripts/run-in-aurora-env python scripts/ci/prompt_surface.py render` and commit the snapshot. Changes there need a maintainer approval (see [Prompt Assembly](./prompt-assembly.md#reviewing-changes-to-the-prompt-surface)).
 6. **New config keys or slash commands**: if `tests/ci/test_docs_drift.py` fails, a `DEFAULT_CONFIG` key or slash command you added has no docs. Mention the dotted key (`agent.max_turns`) or show it in a YAML example under `website/docs/` (usually `user-guide/configuration.md`), and add slash commands to `reference/slash-commands.md`. If a key really should stay undocumented, `python scripts/ci/check_docs_drift.py --update` adds it to `scripts/ci/docs_drift_baseline.json` where reviewers see it. Keys that were undocumented when the check landed are already baselined; documenting one never fails.
 
 ### PR Description
@@ -446,7 +446,7 @@ fix(security): prevent shell injection in sudo password piping
 
 ### Repo-local review checklists: `.agents/checks/*.md`
 
-Projects built on (or reviewed by) Hermes can keep reviewer checklists inside the repository under `.agents/checks/`. Each file is a focused, plain-markdown checklist that an agent loads before reviewing a change touching the matching area:
+Projects built on (or reviewed by) Aurora can keep reviewer checklists inside the repository under `.agents/checks/`. Each file is a focused, plain-markdown checklist that an agent loads before reviewing a change touching the matching area:
 
 ```
 .agents/
@@ -463,12 +463,12 @@ Conventions that make these work well:
 - **State the trigger at the top** — which paths or change types the checklist applies to — so an agent (or human) can skip irrelevant ones cheaply.
 - Keep them in version control next to the code they guard: they evolve with the codebase, and a PR that changes the rules changes the checklist in the same diff.
 
-When you ask Hermes to review a PR in a repository that has `.agents/checks/`, tell it (or teach it via a skill) to read the relevant checklists first and report against them. This gives review agents the project-specific bar that generic review prompts miss.
+When you ask Aurora to review a PR in a repository that has `.agents/checks/`, tell it (or teach it via a skill) to read the relevant checklists first and report against them. This gives review agents the project-specific bar that generic review prompts miss.
 
 ## Reporting Issues
 
 - Use [GitHub Issues](https://github.com/NousResearch/hermes-agent/issues)
-- Include: OS, Python version, Hermes version (`hermes --version`), full error traceback
+- Include: OS, Python version, Aurora version (`aurora --version`), full error traceback
 - Include steps to reproduce
 - Check existing issues before creating duplicates
 - For security vulnerabilities, please report privately

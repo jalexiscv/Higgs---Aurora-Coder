@@ -95,7 +95,7 @@ import { $titlebarAppActionsSide, titlebarAppActionsClusterCounts } from '@/stor
 import { armWakeWord, stopClientCapture } from '@/store/wake-word'
 import { isAuxiliaryWindow, isBrowserWindow, isHudWindow, isMainWindow } from '@/store/windows'
 import { useSkinCommand } from '@/themes/use-skin-command'
-import type { SessionInfo } from '@/types/hermes'
+import type { SessionInfo } from '@/types/aurora'
 
 import { closeWorkspaceTab } from '../chat/close-tab'
 import { requestComposerInsert } from '../chat/composer/focus'
@@ -105,7 +105,7 @@ import { CommandPalette } from '../command-palette'
 import { triggerAndRefreshCronJobs } from '../cron/cron-actions'
 import { useGatewayBoot } from '../gateway/hooks/use-gateway-boot'
 import { useGatewayRequest } from '../gateway/hooks/use-gateway-request'
-import { useHermesConfigRecord } from '../hooks/use-config-record'
+import { useAuroraConfigRecord } from '../hooks/use-config-record'
 import { useKeybinds } from '../hooks/use-keybinds'
 import { useHudHandoff } from '../hud/handoff'
 import { ModelPickerOverlay } from '../model-picker-overlay'
@@ -128,10 +128,10 @@ import {
 import { SessionImportView } from '../session-import'
 import { SessionPickerOverlay } from '../session-picker-overlay'
 import { SessionSwitcher } from '../session-switcher'
+import { useAuroraConfig } from '../session/hooks/use-aurora-config'
 import { useBackgroundQueueDrain } from '../session/hooks/use-background-queue-drain'
 import { useContextSuggestions } from '../session/hooks/use-context-suggestions'
 import { useCwdActions } from '../session/hooks/use-cwd-actions'
-import { useHermesConfig } from '../session/hooks/use-hermes-config'
 import { useMessageStream } from '../session/hooks/use-message-stream'
 import { useModelControls } from '../session/hooks/use-model-controls'
 import { useOwnerQueueReconcile } from '../session/hooks/use-owner-queue-reconcile'
@@ -242,7 +242,7 @@ function useFirstRunOnboarding(request: OnboardingRequest, open: OnboardingResum
   }, [open])
 }
 
-// Recovery actions raised by toast buttons (Restart Hermes, Open Billing, cron
+// Recovery actions raised by toast buttons (Restart Aurora, Open Billing, cron
 // review) fire from stores with no router context. Each counter is
 // consumed here: the ref skips the initial mount value, and only a fresh
 // request navigates or recycles the backend.
@@ -265,14 +265,14 @@ function useRecoveryRequestToasts(): void {
 
     if (backendRestartRequest > 0) {
       if ($connection.get()?.mode === 'remote') {
-        void reconnectGateway().catch(err => notifyError(err, translateNow('notifications.errors.restartHermesFailed')))
+        void reconnectGateway().catch(err => notifyError(err, translateNow('notifications.errors.restartAuroraFailed')))
 
         return
       }
 
-      void window.hermesDesktop
+      void window.auroraDesktop
         ?.recycleBackend?.(normalizeProfileKey($activeGatewayProfile.get()))
-        .catch(err => notifyError(err, translateNow('notifications.errors.restartHermesFailed')))
+        .catch(err => notifyError(err, translateNow('notifications.errors.restartAuroraFailed')))
     }
   }, [backendRestartRequest])
 
@@ -452,7 +452,7 @@ export function ContribWiring({ children }: { children: ReactNode }) {
     requestGateway
   })
 
-  const { refreshHermesConfig, sttEnabled, voiceMaxRecordingSeconds } = useHermesConfig({ activeSessionIdRef })
+  const { refreshAuroraConfig, sttEnabled, voiceMaxRecordingSeconds } = useAuroraConfig({ activeSessionIdRef })
 
   const { applySavedMainModel, followDefaultModel, refreshCurrentModel, selectModel } = useModelControls({
     cacheOwnerConnectionId: activeConnectionId || undefined,
@@ -514,7 +514,7 @@ export function ContribWiring({ children }: { children: ReactNode }) {
     activeSessionIdRef,
     hydrateFromStoredSession,
     queryClient,
-    refreshHermesConfig,
+    refreshAuroraConfig,
     refreshSessions,
     sessionStateByRuntimeIdRef,
     updateSessionState
@@ -576,7 +576,7 @@ export function ContribWiring({ children }: { children: ReactNode }) {
   })
 
   useFreshSessionRequest(startFreshSessionDraft)
-  useGatewayScopeRefresh(activeConnectionId, activeGatewayProfile, refreshCurrentModel, refreshHermesConfig)
+  useGatewayScopeRefresh(activeConnectionId, activeGatewayProfile, refreshCurrentModel, refreshAuroraConfig)
 
   // New session anchored to a workspace. Seeds cwd + branch from the clicked
   // workspace; an explicit worktree path also drills the sidebar into that
@@ -887,7 +887,7 @@ export function ContribWiring({ children }: { children: ReactNode }) {
     onGatewayReady: g => {
       gatewayRef.current = g
     },
-    refreshHermesConfig,
+    refreshAuroraConfig,
     refreshSessions
   })
 
@@ -907,7 +907,7 @@ export function ContribWiring({ children }: { children: ReactNode }) {
     const report = () => void reportPendingUpdateRun(requestGateway)
     report()
 
-    return window.hermesDesktop?.updates?.onPendingRun?.(report)
+    return window.auroraDesktop?.updates?.onPendingRun?.(report)
   }, [gatewayState, requestGateway])
 
   useDesktopMetrics({
@@ -943,7 +943,7 @@ export function ContribWiring({ children }: { children: ReactNode }) {
     refreshActiveTranscript,
     refreshCronJobs,
     refreshCurrentModel,
-    refreshHermesConfig,
+    refreshAuroraConfig,
     refreshMessagingSessions,
     refreshSessions,
     requestGateway,
@@ -958,7 +958,7 @@ export function ContribWiring({ children }: { children: ReactNode }) {
   // display.resume_last_session gates the cold-start restore. `undefined` while
   // the record is still loading holds the restore latch open; a failed fetch
   // falls back to the historical behavior (resume).
-  const configRecord = useHermesConfigRecord()
+  const configRecord = useAuroraConfigRecord()
 
   const resumeLastSession = configRecord.isPending
     ? undefined
@@ -1225,7 +1225,7 @@ export function ContribWiring({ children }: { children: ReactNode }) {
   const titlebarToolsRight = titlebarToolsRightCss(nativeOverlayWidth, titlebarChrome)
   // WSLg: Electron's native overlay drifts its hit-region under RAIL, so the
   // renderer paints its own min/max/close (main decides via customWindowControls).
-  const customWindowControls = connection?.customWindowControls ?? window.hermesDesktop?.windowControls?.custom ?? false
+  const customWindowControls = connection?.customWindowControls ?? window.auroraDesktop?.windowControls?.custom ?? false
   const appActionsSide = useStore($titlebarAppActionsSide)
   const interfaceMode = useStore($interfaceMode)
   const shownTool = shownInMode(interfaceMode)
@@ -1285,7 +1285,7 @@ export function ContribWiring({ children }: { children: ReactNode }) {
         <DesktopOnboardingOverlay
           enabled={gatewayState === 'open'}
           onCompleted={() => {
-            void refreshHermesConfig()
+            void refreshAuroraConfig()
             void refreshCurrentModel()
             void queryClient.invalidateQueries({ queryKey: ['model-options'] })
           }}
@@ -1338,7 +1338,7 @@ export function ContribWiring({ children }: { children: ReactNode }) {
             gateway={gateway}
             onClose={closeOverlayToPreviousRoute}
             onConfigSaved={() => {
-              void refreshHermesConfig()
+              void refreshAuroraConfig()
               void refreshCurrentModel()
               void queryClient.invalidateQueries({ queryKey: ['model-options'] })
             }}

@@ -1,4 +1,4 @@
-import type { ScrollBoxHandle } from '@hermes/ink'
+import type { ScrollBoxHandle } from '@aurora/ink'
 import { useStore } from '@nanostores/react'
 import { type RefObject, useEffect, useRef } from 'react'
 

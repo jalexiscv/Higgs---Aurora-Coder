@@ -1,29 +1,29 @@
 #!/usr/bin/env bash
-# Run a Hermes instance in an isolated sandbox — separate HERMES_HOME,
+# Run an Aurora instance in an isolated sandbox — separate AURORA_HOME,
 # separate Electron userData, and a distinct Desktop app name so it doesn't compete
 # with your main desktop instance's single-instance lock.
 #
 # By default the sandbox is throwaway: a temp dir is created and removed on
 # exit. Use --persistent to keep the sandbox across restarts (stored under
-# .hermes-sandbox/ in the worktree git root).
+# .aurora-sandbox/ in the worktree git root).
 #
 # Usage:
-#   scripts/dev-sandbox.sh python -m hermes_cli.main
-#   scripts/dev-sandbox.sh hermes desktop
+#   scripts/dev-sandbox.sh python -m aurora_cli.main
+#   scripts/dev-sandbox.sh aurora desktop
 #   scripts/dev-sandbox.sh electron .
 #   scripts/dev-sandbox.sh -- pnpm run dev   # from apps/desktop/
-#   scripts/dev-sandbox.sh --persistent hermes desktop
+#   scripts/dev-sandbox.sh --persistent aurora desktop
 #   scripts/dev-sandbox.sh --persistent -- pnpm run dev
 #
-# Seed the sandbox HERMES_HOME from an existing directory (e.g. your main
-# ~/.hermes) so config, sessions, skills, etc. are pre-populated:
-#   scripts/dev-sandbox.sh --from ~/.hermes hermes desktop
+# Seed the sandbox AURORA_HOME from an existing directory (e.g. your main
+# ~/.aurora) so config, sessions, skills, etc. are pre-populated:
+#   scripts/dev-sandbox.sh --from ~/.aurora aurora desktop
 #
-# Override the app name (default: HermesSandbox):
-#   HERMES_DEV_SANDBOX_NAME=Staging scripts/dev-sandbox.sh hermes desktop
+# Override the app name (default: AuroraSandbox):
+#   AURORA_DEV_SANDBOX_NAME=Staging scripts/dev-sandbox.sh aurora desktop
 #
-# Override the persistent sandbox dir name (default: .hermes-sandbox):
-#   HERMES_DEV_SANDBOX_DIR=.staging-sandbox scripts/dev-sandbox.sh --persistent hermes desktop
+# Override the persistent sandbox dir name (default: .aurora-sandbox):
+#   AURORA_DEV_SANDBOX_DIR=.staging-sandbox scripts/dev-sandbox.sh --persistent aurora desktop
 
 set -euo pipefail
 
@@ -31,40 +31,40 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENTRYPOINT="$(basename "$0")"
 # The minimal entrypoint is an alias, but its existing data and app identity stay separate.
 if [ "$ENTRYPOINT" = dev-minimal-sandbox.sh ]; then
-  DEFAULT_DIR=.hermes-minimal-sandbox
-  APP_PREFIX=HermesMinimalSandbox
-  TEMP_PREFIX=hermes-minimal-sandbox
+  DEFAULT_DIR=.aurora-minimal-sandbox
+  APP_PREFIX=AuroraMinimalSandbox
+  TEMP_PREFIX=aurora-minimal-sandbox
 else
-  DEFAULT_DIR=.hermes-sandbox
-  APP_PREFIX=HermesSandbox
-  TEMP_PREFIX=hermes-sandbox
+  DEFAULT_DIR=.aurora-sandbox
+  APP_PREFIX=AuroraSandbox
+  TEMP_PREFIX=aurora-sandbox
 fi
 
 print_help() {
   cat <<EOF
 Usage: $ENTRYPOINT [--persistent] [--from DIR] [--] <command...>
 
-Run a Hermes instance in an isolated sandbox.
+Run an Aurora instance in an isolated sandbox.
 
 Options:
   --persistent    Keep the sandbox dir across restarts (under the worktree
                   git root, in $DEFAULT_DIR/). Without this flag the
                   sandbox is a temp dir that is removed on exit.
-  --from DIR      Copy DIR into the sandbox HERMES_HOME as the starting
+  --from DIR      Copy DIR into the sandbox AURORA_HOME as the starting
                   point (config, sessions, skills, etc.).
-                  Ignored if the sandbox HERMES_HOME already has content
+                  Ignored if the sandbox AURORA_HOME already has content
                   (e.g. reusing a --persistent sandbox) to avoid clobbering.
   --delete        Delete the existing persistent sandbox in $DEFAULT_DIR.
   -h, --help      Show this help message.
 
 Environment:
-  HERMES_DEV_SANDBOX_NAME  Override the app name (default prefix: $APP_PREFIX)
-  HERMES_DEV_SANDBOX_DIR   Override the persistent dir name (default: $DEFAULT_DIR)
+  AURORA_DEV_SANDBOX_NAME  Override the app name (default prefix: $APP_PREFIX)
+  AURORA_DEV_SANDBOX_DIR   Override the persistent dir name (default: $DEFAULT_DIR)
 
 Examples:
-  $ENTRYPOINT hermes desktop
-  $ENTRYPOINT --persistent hermes desktop
-  $ENTRYPOINT --from ~/.hermes hermes desktop
+  $ENTRYPOINT aurora desktop
+  $ENTRYPOINT --persistent aurora desktop
+  $ENTRYPOINT --from ~/.aurora aurora desktop
   $ENTRYPOINT -- pnpm run dev
 EOF
 }
@@ -128,7 +128,7 @@ if [ "$#" -eq 0 ]; then
 fi
 
 
-SANDBOX_DIR_NAME="${HERMES_DEV_SANDBOX_DIR:-$DEFAULT_DIR}"
+SANDBOX_DIR_NAME="${AURORA_DEV_SANDBOX_DIR:-$DEFAULT_DIR}"
 GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR/..")"
 GIT_ROOT="$(cd "$GIT_ROOT" && pwd)"
 PERSISTENT_SANDBOX_ROOT="$GIT_ROOT/$SANDBOX_DIR_NAME"
@@ -161,7 +161,7 @@ WORKTREE_HASH="$(printf '%s' "$WORKTREE_ROOT" | cksum | cut -d' ' -f1)"
 WORKTREE_NAME="$(basename "$WORKTREE_ROOT")"
 DEFAULT_SANDBOX_NAME="${APP_PREFIX}-${WORKTREE_NAME}-${WORKTREE_HASH}"
 
-SANDBOX_NAME="${HERMES_DEV_SANDBOX_NAME:-$DEFAULT_SANDBOX_NAME}"
+SANDBOX_NAME="${AURORA_DEV_SANDBOX_NAME:-$DEFAULT_SANDBOX_NAME}"
 
 if [ "$PERSISTENT" = true ]; then
   SANDBOX_ROOT="$PERSISTENT_SANDBOX_ROOT"
@@ -169,26 +169,26 @@ else
   SANDBOX_ROOT="$(mktemp -d -t "${TEMP_PREFIX}.XXXXXX")"
 fi
 
-export HERMES_HOME="$SANDBOX_ROOT/hermes-home"
-export HERMES_DESKTOP_USER_DATA_DIR="$SANDBOX_ROOT/user-data"
-export HERMES_DESKTOP_APP_NAME="$SANDBOX_NAME"
+export AURORA_HOME="$SANDBOX_ROOT/aurora-home"
+export AURORA_DESKTOP_USER_DATA_DIR="$SANDBOX_ROOT/user-data"
+export AURORA_DESKTOP_APP_NAME="$SANDBOX_NAME"
 
-mkdir -p "$HERMES_HOME" "$HERMES_DESKTOP_USER_DATA_DIR"
+mkdir -p "$AURORA_HOME" "$AURORA_DESKTOP_USER_DATA_DIR"
 
 if [ -n "$SEED_DIR" ]; then
-  # Only seed when the sandbox HERMES_HOME is empty — avoids clobbering an
+  # Only seed when the sandbox AURORA_HOME is empty — avoids clobbering an
   # existing persistent sandbox on re-run.
-  if [ -z "$(ls -A "$HERMES_HOME" 2>/dev/null)" ]; then
-    echo "[sandbox] seeding HERMES_HOME from $SEED_DIR" >&2
-    cp -a "$SEED_DIR/." "$HERMES_HOME/"
+  if [ -z "$(ls -A "$AURORA_HOME" 2>/dev/null)" ]; then
+    echo "[sandbox] seeding AURORA_HOME from $SEED_DIR" >&2
+    cp -a "$SEED_DIR/." "$AURORA_HOME/"
   else
-    echo "[sandbox] --from ignored: $HERMES_HOME already has content" >&2
+    echo "[sandbox] --from ignored: $AURORA_HOME already has content" >&2
   fi
 fi
 
-echo "[sandbox] HERMES_HOME=$HERMES_HOME" >&2
-echo "[sandbox] userData=$HERMES_DESKTOP_USER_DATA_DIR" >&2
-echo "[sandbox] appName=$HERMES_DESKTOP_APP_NAME" >&2
+echo "[sandbox] AURORA_HOME=$AURORA_HOME" >&2
+echo "[sandbox] userData=$AURORA_DESKTOP_USER_DATA_DIR" >&2
+echo "[sandbox] appName=$AURORA_DESKTOP_APP_NAME" >&2
 if [ "$PERSISTENT" = true ]; then
   echo "[sandbox] persistent: $SANDBOX_ROOT" >&2
 else

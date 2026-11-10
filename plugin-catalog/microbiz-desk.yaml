@@ -7,7 +7,7 @@ description: Customers, sales, debts and weekly reports for small businesses. Wo
 maintainer: Danzilla0
 tier: community
 category: tools
-requires_hermes: ">=0.23.0"
+requires_aurora: ">=0.23.0"
 docs_url: https://github.com/Danzilla0/microbiz-desk/blob/c737d9e4d73a5eeb6995408a0e10fb50a60ce7aa/README.md
 readme: true
 capabilities:

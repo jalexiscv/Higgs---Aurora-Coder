@@ -6,7 +6,7 @@ description: HostYourAI provider profile (hyai/auto, EU-only inference option) a
 maintainer: cogitor
 tier: community
 category: models
-requires_hermes: ">=0.21.7"
+requires_aurora: ">=0.21.7"
 docs_url: "https://github.com/cogitor/hermes-hostyourai#readme"
 version: "0.4.2"
 image: "https://raw.githubusercontent.com/cogitor/hermes-hostyourai/e86d5bf242166cb53dd0362cf960d91e7741194a/docs/banner.jpg"

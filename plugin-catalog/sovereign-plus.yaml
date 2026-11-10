@@ -7,7 +7,7 @@ description: "UK Construction Industry Scheme (CIS) and right to work answers fo
 maintainer: Sovereign Plus
 tier: community
 category: tools
-requires_hermes: ">=0.21.6"
+requires_aurora: ">=0.21.6"
 docs_url: https://github.com/Sovereignplus/splus-cis-mcp#readme
 readme: true
 platforms: []

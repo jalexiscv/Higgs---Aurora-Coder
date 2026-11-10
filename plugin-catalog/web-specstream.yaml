@@ -15,4 +15,4 @@ capabilities:
   provides_middleware: []
   requires_env:
   - SPECSTREAM_API_KEY
-requires_hermes: ">=0.21.6"
+requires_aurora: ">=0.21.6"

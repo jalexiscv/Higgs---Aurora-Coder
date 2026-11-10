@@ -32,7 +32,7 @@ from agent.conversation_compression import (
     _is_real_user_message,
 )
 from agent.message_metadata import DB_ROW_SNAPSHOT
-from hermes_state import SessionDB
+from aurora_state import SessionDB
 import itertools
 
 
@@ -144,9 +144,9 @@ class TestGoalMigratesOnRotation:
         agent = _build_agent_with_db(db, parent)
 
         # Set a persistent goal on the parent via the real persistence path.
-        with patch.dict(os.environ, {"HERMES_HOME": str(tmp_path / ".hermes")}):
-            (tmp_path / ".hermes").mkdir(exist_ok=True)
-            from hermes_cli import goals
+        with patch.dict(os.environ, {"AURORA_HOME": str(tmp_path / ".aurora")}):
+            (tmp_path / ".aurora").mkdir(exist_ok=True)
+            from aurora_cli import goals
             goals._DB_CACHE.clear()
             # Point the goal DB at the same state.db the agent uses.
             with patch.object(goals, "_get_session_db", return_value=db):
@@ -718,7 +718,7 @@ class TestRotationChildFlushDedup:
         )
 
         # (f) Markers on BOTH views. Note: the adopted view's rows are
-        # "born durable" (hermes_state stamps _DB_PERSISTED_MARKER on rows
+        # "born durable" (aurora_state stamps _DB_PERSISTED_MARKER on rows
         # materialized from the DB), so the adopted assert holds even
         # pre-fix; the DISCRIMINATING assert is the twin's — the old live
         # view is a constructed list the production code only stamps via

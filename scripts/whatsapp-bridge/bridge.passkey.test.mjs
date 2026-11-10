@@ -7,7 +7,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 
 test('bridge distinguishes interactive pairing failure from a non-retryable gateway challenge', async () => {
-  const dir = mkdtempSync(path.join(tmpdir(), 'hermes-passkey-'));
+  const dir = mkdtempSync(path.join(tmpdir(), 'aurora-passkey-'));
   const bridge = new URL('./bridge.js', import.meta.url);
   const stub = path.join(dir, 'socket.mjs');
   const loader = path.join(dir, 'loader.mjs');
@@ -44,7 +44,7 @@ test('bridge distinguishes interactive pairing failure from a non-retryable gate
     `);
     const argv = args => ['--no-warnings', '--experimental-loader', pathToFileURL(loader).href,
       fileURLToPath(bridge), '--session', path.join(dir, 'session'), '--port', '0', ...args];
-    const env = extraEnv => ({ PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, TEMP: dir, TMP: dir, HERMES_HOME: dir, ...extraEnv });
+    const env = extraEnv => ({ PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, TEMP: dir, TMP: dir, AURORA_HOME: dir, ...extraEnv });
     const run = args => spawnSync(process.execPath, argv(args), { encoding: 'utf8', timeout: 15000, windowsHide: true, env: env() });
     // Resolves once the child exits. `alive` is true only when the marker appeared and the child was
     // still running 300 ms later, when this helper killed it; an exit right after the warning, an exit

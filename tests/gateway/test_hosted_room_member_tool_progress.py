@@ -17,7 +17,7 @@ from tests.waiting import wait_until
 def test_member_info_reports_the_running_executions_tool_and_last_frame(hosted_owner):
     from gateway.hosted_room_driver import TaskIdentity
     from gateway.session_hosted_rpc import HostedRoomAuthorityRPC
-    from hermes_state_runtime import claim_session_input
+    from aurora_state_runtime import claim_session_input
     authority, loop, principal, _agent = hosted_owner
     rpc = HostedRoomAuthorityRPC(authority, loop, room_id='room', member_id='scout', profile='default',
                                  principal=principal, authorize=lambda *args: True)
@@ -85,7 +85,7 @@ def test_groups_state_names_the_tool_a_member_transport_reports(tmp_path: Path):
     service.rpc = service.runtime.rpc = _ToolRPC()
     service.local_profiles = lambda: ("default", "scout")
     service.create_room(room_id="room-1", name="Release room", members=[
-        {"member_id": "default", "profile": "default", "handle": "hermes"},
+        {"member_id": "default", "profile": "default", "handle": "aurora"},
         {"member_id": "scout", "profile": "scout", "handle": "scout"}])
     service.start()
     try:

@@ -1,8 +1,8 @@
-"""``plugins.catalog.lookup``: the deep link's catalog lookup, resolved by the backend (hermes-agent 136483)."""
+"""``plugins.catalog.lookup``: the deep link's catalog lookup, resolved by the backend (aurora-agent 136483)."""
 
 import pytest
 
-from hermes_cli import plugin_catalog as pc
+from aurora_cli import plugin_catalog as pc
 from tui_gateway import server
 
 SHA = "a" * 40

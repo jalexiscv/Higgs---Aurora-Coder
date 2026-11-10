@@ -220,16 +220,16 @@ describe('buildToolView web-search query', () => {
   it('keeps the query separate from structured search results', () => {
     const view = buildToolView(
       part({
-        args: { query: 'Hermes Agent Desktop tool calls' },
-        result: { web: [{ snippet: 'Desktop docs', title: 'Hermes docs', url: 'https://example.com/docs' }] },
+        args: { query: 'Aurora Agent Desktop tool calls' },
+        result: { web: [{ snippet: 'Desktop docs', title: 'Aurora docs', url: 'https://example.com/docs' }] },
         toolName: 'web_search'
       }),
       ''
     )
 
-    expect(view.searchQuery).toBe('Hermes Agent Desktop tool calls')
+    expect(view.searchQuery).toBe('Aurora Agent Desktop tool calls')
     expect(view.searchHits).toEqual([
-      { snippet: 'Desktop docs', title: 'Hermes docs', url: 'https://example.com/docs' }
+      { snippet: 'Desktop docs', title: 'Aurora docs', url: 'https://example.com/docs' }
     ])
   })
 })
@@ -463,7 +463,7 @@ describe('buildToolView title actions', () => {
     // prepends ("Running grep …") otherwise renders as "Running Running grep …".
     const view = buildToolView(
       part({
-        args: { context: 'Running grep -rn -i "bedrock" ~/.hermes/' },
+        args: { context: 'Running grep -rn -i "bedrock" ~/.aurora/' },
         result: undefined,
         toolName: 'terminal'
       }),
@@ -471,11 +471,11 @@ describe('buildToolView title actions', () => {
     )
 
     expect(view.title.startsWith('Running Running')).toBe(false)
-    expect(view.title).toBe('Running grep -rn -i "bedrock" ~/.hermes/')
+    expect(view.title).toBe('Running grep -rn -i "bedrock" ~/.aurora/')
     expect(view.titleAction).toEqual({
       prefix: '',
       text: 'Running',
-      suffix: ' grep -rn -i "bedrock" ~/.hermes/'
+      suffix: ' grep -rn -i "bedrock" ~/.aurora/'
     })
   })
 

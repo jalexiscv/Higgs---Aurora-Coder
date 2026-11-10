@@ -30,7 +30,7 @@ export function WebappGatewaySettings({ embedded }: { embedded: boolean }) {
   useEffect(() => {
     let cancelled = false
 
-    void window.hermesDesktop
+    void window.auroraDesktop
       .getConnectionConfig(null)
       .then(config => {
         if (!cancelled) {
@@ -48,7 +48,7 @@ export function WebappGatewaySettings({ embedded }: { embedded: boolean }) {
   // An edit in native Desktop or another tab shows here while the page is open (the read publishes
   // what changed, which the section and the gateway switcher follow).
   useEffect(() => {
-    const list = window.hermesDesktop?.connections?.list
+    const list = window.auroraDesktop?.connections?.list
 
     if (!list) {
       return
@@ -64,7 +64,7 @@ export function WebappGatewaySettings({ embedded }: { embedded: boolean }) {
     setSigningOut(true)
 
     try {
-      await window.hermesDesktop.oauthLogoutConnectionConfig(url)
+      await window.auroraDesktop.oauthLogoutConnectionConfig(url)
     } catch (err) {
       notifyError(err, g.signOutFailed)
       setSigningOut(false)

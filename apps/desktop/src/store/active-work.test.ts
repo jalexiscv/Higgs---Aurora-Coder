@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { ClientSessionState } from '@/app/types'
-import type { HermesActiveWork } from '@/global'
+import type { AuroraActiveWork } from '@/global'
 
 import { createStreamThrottle } from '../../electron/stream-throttle'
 
@@ -10,7 +10,7 @@ import { clearAllSessionStates, publishSessionState } from './session-states'
 import { $autoSpeakReplies } from './voice-prefs'
 import { retainVoiceStreamPaint } from './voice-stream-paint'
 
-const desktopWindow = window as unknown as { hermesDesktop?: Window['hermesDesktop'] }
+const desktopWindow = window as unknown as { auroraDesktop?: Window['auroraDesktop'] }
 const setActiveWork = vi.fn()
 
 const busy = (storedSessionId: string, isBusy: boolean) =>
@@ -19,7 +19,7 @@ const busy = (storedSessionId: string, isBusy: boolean) =>
 const session = (id: string, title: null | string) => ({ id, title }) as (typeof $sessions.value)[number]
 
 beforeAll(async () => {
-  desktopWindow.hermesDesktop = { setActiveWork } as unknown as Window['hermesDesktop']
+  desktopWindow.auroraDesktop = { setActiveWork } as unknown as Window['auroraDesktop']
   // Subscribes at import time, so the bridge has to exist first.
   await import('./active-work')
 })
@@ -69,7 +69,7 @@ describe('active work bridge', () => {
     throttle.register(owner)
     throttle.register(peer)
     // Exercise the real renderer summary and main-process policy, not a mocked summary.
-    setActiveWork.mockImplementation((work: HermesActiveWork) => {
+    setActiveWork.mockImplementation((work: AuroraActiveWork) => {
       throttle.setVoiceActive(owner, work.voiceActive === true)
       throttle.update(work.count > 0)
     })

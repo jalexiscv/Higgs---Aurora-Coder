@@ -1,6 +1,6 @@
-// FPS counter overlay (HERMES_TUI_FPS=1). Zero-cost when disabled.
+// FPS counter overlay (AURORA_TUI_FPS=1). Zero-cost when disabled.
 
-import { Text } from '@hermes/ink'
+import { Text } from '@aurora/ink'
 import { useStore } from '@nanostores/react'
 
 import { SHOW_FPS } from '../config/env.js'

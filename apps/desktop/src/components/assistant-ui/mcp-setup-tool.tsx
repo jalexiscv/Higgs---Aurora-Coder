@@ -1,7 +1,7 @@
 'use client'
 
 import { type ToolCallMessagePartProps, useAuiState } from '@assistant-ui/react'
-import type { ConnectionTargetLaunchKind } from '@hermes/shared'
+import type { ConnectionTargetLaunchKind } from '@aurora/shared'
 import { useStore } from '@nanostores/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -382,7 +382,7 @@ function McpSetupRow({ action, onReissue, reissueBlocked, reissuing, request, ta
       label: action === 'authorize' ? label : t.connectors.openInBrowser,
       onClick: () => {
         if (target.connectUrl) {
-          void window.hermesDesktop?.openExternal?.(target.connectUrl)
+          void window.auroraDesktop?.openExternal?.(target.connectUrl)
         }
       }
     },
@@ -436,7 +436,7 @@ function McpSetupRow({ action, onReissue, reissueBlocked, reissuing, request, ta
         onConnect={env => void approve(env)}
         onOpenBrowser={() => {
           if (target.connectUrl) {
-            void window.hermesDesktop?.openExternal?.(target.connectUrl)
+            void window.auroraDesktop?.openExternal?.(target.connectUrl)
           }
         }}
         open={setupOpen}

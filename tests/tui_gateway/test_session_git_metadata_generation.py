@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from tui_gateway import server
-from hermes_state import SessionDB
+from aurora_state import SessionDB
 
 
 class _ImmediateThread:

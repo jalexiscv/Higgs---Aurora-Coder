@@ -1,15 +1,15 @@
-import { LOCAL_CONNECTION_ID } from '@hermes/shared'
+import { LOCAL_CONNECTION_ID } from '@aurora/shared'
 import { map } from 'nanostores'
 
 import type { GatewaySessionWire } from '@/api/client'
-import type { HermesConnection } from '@/global'
+import type { AuroraConnection } from '@/global'
 import type { PrimaryGatewayRoute } from '@/store/gateway-primary-route'
 
 /** The session wire each connection's gateway negotiated on its last `gateway.ready`. A connection
  *  is one backend, so every socket to it (the primary and its profile secondaries) agrees. */
 export const $connectionWires = map<Record<string, GatewaySessionWire>>({})
 
-// A remote reached without a registry id (`HERMES_DESKTOP_REMOTE_URL`) is not the local source,
+// A remote reached without a registry id (`AURORA_DESKTOP_REMOTE_URL`) is not the local source,
 // which may run beside it as a secondary. It gets a key no registry id can take.
 export const UNNAMED_REMOTE_WIRE_KEY = '\u0000unnamed-remote'
 
@@ -53,7 +53,7 @@ export function primaryWireSource(route: PrimaryGatewayRoute, windowConnection: 
  *  id, else the one its profile's descriptor resolved to (a profile's remote override resolves to
  *  that remote, not the local source). A resolved remote without a registry id has no key of its
  *  own, so it publishes nothing rather than overwrite the local source's wire. */
-export function recordSecondaryWire(connectionId: null | string, resolved: null | Pick<HermesConnection, 'connectionId' | 'mode'>, wire: GatewaySessionWire | null): void {
+export function recordSecondaryWire(connectionId: null | string, resolved: null | Pick<AuroraConnection, 'connectionId' | 'mode'>, wire: GatewaySessionWire | null): void {
   const key = connectionId || resolved?.connectionId || (resolved?.mode === 'local' ? LOCAL_CONNECTION_ID : null)
 
   if (key) { recordConnectionWire(key, wire) }

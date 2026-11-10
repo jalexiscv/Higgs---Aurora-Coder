@@ -92,11 +92,11 @@ const zoneAt = (index: number) => {
 describe('Sessions/Bots strip — #91223', () => {
   beforeEach(() => {
     registerPane('sessions', { hideOnly: true, placement: 'left' }, 'Sessions')
-    registerPane('hermes-bots:pane', { hideOnly: true, placement: 'left' }, 'Bots')
+    registerPane('aurora-bots:pane', { hideOnly: true, placement: 'left' }, 'Bots')
     registerPane('workspace', { placement: 'main', uncloseable: true }, 'Chat')
     $layoutTree.set(
       split('row', [
-        group(['sessions', 'hermes-bots:pane'], { active: 'sessions', id: 'g-side' }),
+        group(['sessions', 'aurora-bots:pane'], { active: 'sessions', id: 'g-side' }),
         group(['workspace'], { active: 'workspace', id: 'g-main' })
       ])
     )
@@ -109,7 +109,7 @@ describe('Sessions/Bots strip — #91223', () => {
 
     expect(tablist()).toBeTruthy()
     expect(tabEl('sessions')).toBeTruthy()
-    expect(tabEl('hermes-bots:pane')).toBeTruthy()
+    expect(tabEl('aurora-bots:pane')).toBeTruthy()
     expect(zoneAt(0).minimized).toBeFalsy()
     expect(zoneAt(0).tabStrip).toBeUndefined()
   })
@@ -121,7 +121,7 @@ describe('Sessions/Bots strip — #91223', () => {
 
     expect(zoneAt(0).minimized).toBeFalsy()
     expect(tabEl('sessions')).toBeTruthy()
-    expect(tabEl('hermes-bots:pane')).toBeTruthy()
+    expect(tabEl('aurora-bots:pane')).toBeTruthy()
   })
 
   it('an explicit never hides the sessions/Bots strip', () => {
@@ -136,7 +136,7 @@ describe('Sessions/Bots strip — #91223', () => {
   it('lets keyboard focus move between tabs without activating until Enter or Space', () => {
     render(<LiveTreeGroup parentAxis="row" />)
     const sessions = tabEl('sessions') as HTMLElement
-    const bots = tabEl('hermes-bots:pane') as HTMLElement
+    const bots = tabEl('aurora-bots:pane') as HTMLElement
     act(() => sessions.focus())
 
     expect(sessions.tabIndex).toBe(0)
@@ -145,7 +145,7 @@ describe('Sessions/Bots strip — #91223', () => {
     expect(globalThis.document.activeElement).toBe(bots)
     expect(zoneAt(0).active).toBe('sessions')
     fireEvent.keyDown(bots, { key: 'Enter' })
-    expect(zoneAt(0).active).toBe('hermes-bots:pane')
+    expect(zoneAt(0).active).toBe('aurora-bots:pane')
     expect(globalThis.document.activeElement).toBe(bots)
     fireEvent.keyDown(bots, { key: 'Home' })
     fireEvent.keyDown(sessions, { key: ' ' })
@@ -157,11 +157,11 @@ describe('Sessions/Bots strip — #91223', () => {
 describe('docked tool tile — collapsing keeps the restore chip', () => {
   beforeEach(() => {
     registerPane('workspace', { placement: 'main', uncloseable: true }, 'Chat')
-    registerPane('hermes-bots:routines', { placement: 'main', width: '250px' }, 'Cronjobs')
+    registerPane('aurora-bots:routines', { placement: 'main', width: '250px' }, 'Cronjobs')
     $layoutTree.set(
       split('row', [
         group(['workspace'], { active: 'workspace', id: 'g-main' }),
-        group(['hermes-bots:routines'], { active: 'hermes-bots:routines', id: 'g-routines' })
+        group(['aurora-bots:routines'], { active: 'aurora-bots:routines', id: 'g-routines' })
       ])
     )
   })
@@ -169,12 +169,12 @@ describe('docked tool tile — collapsing keeps the restore chip', () => {
   it('clicking the active tab does not collapse the tile or drop its label', () => {
     render(<LiveTreeGroup index={1} parentAxis="row" />)
 
-    expect(tabEl('hermes-bots:routines')).toBeTruthy()
-    tap(tabEl('hermes-bots:routines')!)
+    expect(tabEl('aurora-bots:routines')).toBeTruthy()
+    tap(tabEl('aurora-bots:routines')!)
 
     expect(zoneAt(1).minimized).toBeFalsy()
-    expect(tabEl('hermes-bots:routines')).toBeTruthy()
-    expect(tabEl('hermes-bots:routines')?.textContent).toMatch(/cronjobs/i)
+    expect(tabEl('aurora-bots:routines')).toBeTruthy()
+    expect(tabEl('aurora-bots:routines')?.textContent).toMatch(/cronjobs/i)
   })
 
   it('tapping the strip gutter does not collapse a lone docked tile', () => {
@@ -183,7 +183,7 @@ describe('docked tool tile — collapsing keeps the restore chip', () => {
     tap(globalThis.document.querySelector('[data-zone-tabstrip="g-routines"]')!)
 
     expect(zoneAt(1).minimized).toBeFalsy()
-    expect(tabEl('hermes-bots:routines')).toBeTruthy()
+    expect(tabEl('aurora-bots:routines')).toBeTruthy()
   })
 
   it('chevron-collapse of a row-docked tile keeps the tab as a restore handle', () => {
@@ -192,20 +192,20 @@ describe('docked tool tile — collapsing keeps the restore chip', () => {
     fireEvent.click(globalThis.document.querySelector('[data-tree-group="g-routines"] button[aria-label="Minimize"]')!)
 
     expect(zoneAt(1).minimized).toBe(true)
-    expect(tabEl('hermes-bots:routines')).toBeTruthy()
-    expect(tabEl('hermes-bots:routines')?.textContent).toMatch(/cronjobs/i)
+    expect(tabEl('aurora-bots:routines')).toBeTruthy()
+    expect(tabEl('aurora-bots:routines')?.textContent).toMatch(/cronjobs/i)
   })
 
   it('collapsing via the store does not dismiss the pane from the tree', () => {
-    collapseTreePane('hermes-bots:routines')
+    collapseTreePane('aurora-bots:routines')
 
     expect(zoneAt(1).minimized).toBe(true)
-    expect($dismissedPanes.get().has('hermes-bots:routines')).toBe(false)
-    expect(zoneAt(1).panes).toContain('hermes-bots:routines')
+    expect($dismissedPanes.get().has('aurora-bots:routines')).toBe(false)
+    expect(zoneAt(1).panes).toContain('aurora-bots:routines')
 
     render(<LiveTreeGroup index={1} parentAxis="row" />)
 
-    expect(tabEl('hermes-bots:routines')).toBeTruthy()
+    expect(tabEl('aurora-bots:routines')).toBeTruthy()
   })
 })
 

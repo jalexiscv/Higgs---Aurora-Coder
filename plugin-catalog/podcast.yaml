@@ -7,7 +7,7 @@ description: "Turn any article, PDF, paper, notes or the day's news into a maste
 maintainer: suhas-svg
 tier: community
 category: voice
-requires_hermes: ">=0.22.5"
+requires_aurora: ">=0.22.5"
 docs_url: https://github.com/suhas-svg/hermes_podcast#readme
 readme: true
 platforms: []

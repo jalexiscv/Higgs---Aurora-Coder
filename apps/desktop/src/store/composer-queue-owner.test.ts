@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from 'vitest'
 
-import type { HermesConnection } from '@/global'
+import type { AuroraConnection } from '@/global'
 
 import { serverOwnsComposerQueue } from './composer-queue'
 import { $connectionWires, recordConnectionWire } from './connection-wire'
 import { $connection, _resetSessionOwnerHintsForTests, setSessionOwnerHint } from './session'
 
-const browser = (wsUrl: string) => ({ mode: 'remote', wsUrl }) as HermesConnection
+const browser = (wsUrl: string) => ({ mode: 'remote', wsUrl }) as AuroraConnection
 
 afterEach(() => $connection.set(null))
 
@@ -36,7 +36,7 @@ describe('composer queue ownership follows the negotiated wire', () => {
     _resetSessionOwnerHintsForTests({ storage: true })
   })
 
-  const remote = { connectionId: 'vps', mode: 'remote', wsUrl: 'wss://vps.example/api/ws?ticket=public' } as HermesConnection
+  const remote = { connectionId: 'vps', mode: 'remote', wsUrl: 'wss://vps.example/api/ws?ticket=public' } as AuroraConnection
 
   it('belongs to the owner of a public connection that negotiated the canonical wire', () => {
     $connection.set(remote)
@@ -65,7 +65,7 @@ describe('composer queue ownership follows the negotiated wire', () => {
 
   // Pre-existing on main: the webapp stamps Bot Chat owners `mode: 'remote'` on its own native dial.
   it('follows a native dial for a remote-stamped owner of the same connection before ready', () => {
-    $connection.set({ connectionId: 'served', mode: 'remote', wsUrl: 'wss://host.example/api/ws?native_dial=browser' } as HermesConnection)
+    $connection.set({ connectionId: 'served', mode: 'remote', wsUrl: 'wss://host.example/api/ws?native_dial=browser' } as AuroraConnection)
     setSessionOwnerHint('chat', { connectionId: 'served', mode: 'remote', profile: 'bot' })
     expect(serverOwnsComposerQueue('chat')).toBe(true)
   })

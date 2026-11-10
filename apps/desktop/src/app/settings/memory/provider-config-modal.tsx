@@ -1,6 +1,7 @@
 import { useStore } from '@nanostores/react'
 import { useEffect, useState } from 'react'
 
+import { saveMemoryProviderConfig } from '@/aurora'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -11,11 +12,10 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
-import { saveMemoryProviderConfig } from '@/hermes'
 import { ExternalLink, Loader2, Save, SlidersHorizontal } from '@/lib/icons'
 import { notify, notifyError } from '@/store/notifications'
 import { $activeGatewayProfile } from '@/store/profile'
-import type { MemoryProviderConfig, MemoryProviderField } from '@/types/hermes'
+import type { MemoryProviderConfig, MemoryProviderField } from '@/types/aurora'
 
 import { ListRow } from '../primitives'
 
@@ -106,7 +106,7 @@ export function ProviderConfigModal({
               href={config.docs_url}
               onClick={event => {
                 event.preventDefault()
-                void window.hermesDesktop?.openExternal?.(config.docs_url)
+                void window.auroraDesktop?.openExternal?.(config.docs_url)
               }}
               rel="noreferrer"
               target="_blank"

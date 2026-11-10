@@ -27,25 +27,25 @@ if not os.environ.get("OPENROUTER_API_KEY"):
     print("ABORT: OPENROUTER_API_KEY missing", file=sys.stderr)
     sys.exit(3)
 
-# --- hermetic env BEFORE any hermes import -------------------------------
+# --- hermetic env BEFORE any aurora import -------------------------------
 for var in list(os.environ):
     if var.endswith(("_API_KEY", "_TOKEN")) and var != "OPENROUTER_API_KEY":
         os.environ.pop(var, None)
 os.environ.pop("FAL_KEY", None)
-os.environ.pop("HERMES_PROFILE", None)
+os.environ.pop("AURORA_PROFILE", None)
 
 from sandbox import isolate_host
 
 tmp_root = tempfile.mkdtemp(prefix=f"ab-{ARM}-{TASK_ID}-")
-hermes_home = os.path.join(tmp_root, ".hermes")
+aurora_home = os.path.join(tmp_root, ".aurora")
 workspace = os.path.join(tmp_root, "ws")
-os.makedirs(hermes_home)
+os.makedirs(aurora_home)
 os.makedirs(workspace)
-isolate_host(tmp_root, hermes_home)
-with open(os.path.join(hermes_home, "config.yaml"), "w", encoding="utf-8") as f:
+isolate_host(tmp_root, aurora_home)
+with open(os.path.join(aurora_home, "config.yaml"), "w", encoding="utf-8") as f:
     f.write(f"model:\n  provider: openrouter\n  model: {MODEL}\n")
 
-os.environ["HERMES_HOME"] = hermes_home
+os.environ["AURORA_HOME"] = aurora_home
 os.environ["TERMINAL_CWD"] = workspace
 os.chdir(workspace)
 sys.path.insert(0, HARNESS)
@@ -56,7 +56,7 @@ TASK = taskmod.TASKS_BY_ID[TASK_ID]
 
 # --- seed session DB for recall tasks (both arms, always — cheap) ---------
 def seed_sessions():
-    from hermes_state import SessionDB
+    from aurora_state import SessionDB
     db = SessionDB()
     month_ago = time.time() - 30 * 86400
     def sess(sid, msgs, t0):
@@ -237,7 +237,7 @@ agent = AIAgent(
     connection_callback=connection_cb,
 )
 
-PREAMBLE = ("You are running inside the Hermes desktop app on the user's machine. "
+PREAMBLE = ("You are running inside the Aurora desktop app on the user's machine. "
             f"Your working directory (the workspace) is: {workspace}\n\nTask: ")
 
 t0 = time.time()
@@ -330,7 +330,7 @@ except Exception:
     pass
 
 ctx = {
-    "workspace": workspace, "hermes_home": hermes_home,
+    "workspace": workspace, "aurora_home": aurora_home,
     "events": EVENTS, "callback_log": CALLBACK_LOG,
     "tool_counts": tool_counts, "messages_tool_args": tool_args,
     "messages": messages, "final_answer": final_answer,

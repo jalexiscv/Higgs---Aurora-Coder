@@ -8,8 +8,8 @@ import { afterEach, beforeEach, test } from 'vitest'
 import { createDesktopProfilePreferences, type MissingLocalProfileCheck } from './desktop-profile'
 import { localProfileIsLive } from './local-profile-liveness'
 
-// The preference file lives in Electron userData, which a Hermes reinstall
-// does not touch; the profiles live under HERMES_HOME, which it can wipe.
+// The preference file lives in Electron userData, which an Aurora reinstall
+// does not touch; the profiles live under AURORA_HOME, which it can wipe.
 let root = ''
 let target = ''
 let profilesRoot = ''
@@ -18,7 +18,7 @@ let logs: string[] = []
 beforeEach(() => {
   root = fs.mkdtempSync(path.join(os.tmpdir(), 'desktop-profile-missing-'))
   target = path.join(root, 'user-data', 'active-profile.json')
-  profilesRoot = path.join(root, 'hermes-home', 'profiles')
+  profilesRoot = path.join(root, 'aurora-home', 'profiles')
   fs.mkdirSync(profilesRoot, { recursive: true })
   logs = []
 })
@@ -38,16 +38,16 @@ function check(overrides: Partial<MissingLocalProfileCheck> = {}): MissingLocalP
   }
 }
 
-test('a remembered local profile missing from the Hermes home falls back to default on disk', () => {
-  createDesktopProfilePreferences(target).remember('hermes-contributor')
+test('a remembered local profile missing from the Aurora home falls back to default on disk', () => {
+  createDesktopProfilePreferences(target).remember('aurora-contributor')
 
   const preferences = createDesktopProfilePreferences(target)
 
-  assert.deepEqual(preferences.forgetMissingLocalProfiles(check()), ['hermes-contributor'])
+  assert.deepEqual(preferences.forgetMissingLocalProfiles(check()), ['aurora-contributor'])
   assert.equal(preferences.readActive(), 'default')
   // The next launch reads the repaired file, not a cached value.
   assert.equal(createDesktopProfilePreferences(target).readActive(), 'default')
-  assert.match(logs.join('\n'), /last-used profile "hermes-contributor" no longer exists/)
+  assert.match(logs.join('\n'), /last-used profile "aurora-contributor" no longer exists/)
   assert.deepEqual(preferences.forgetMissingLocalProfiles(check()), [])
 })
 
@@ -64,17 +64,17 @@ test('existing, default and explicitly launched profiles are kept', () => {
   assert.deepEqual(preferences.forgetMissingLocalProfiles(check()), [])
   assert.equal(preferences.readActive(), 'default')
 
-  // `Hermes --profile typo` must still surface the backend's refusal.
+  // `Aurora --profile typo` must still surface the backend's refusal.
   preferences.remember('typo')
   assert.deepEqual(preferences.forgetMissingLocalProfiles(check({ launchProfile: 'typo' })), [])
   assert.equal(preferences.readActive(), 'typo')
   assert.deepEqual(logs, [])
 })
 
-// hermes_constants.named_profile_is_live refuses both shapes, so `--profile`
+// aurora_constants.named_profile_is_live refuses both shapes, so `--profile`
 // would fail every launch while the preference survived.
 test.each([
-  ['tombstoned by `hermes profile delete`', (home: string) => {
+  ['tombstoned by `aurora profile delete`', (home: string) => {
     fs.writeFileSync(path.join(home, 'config.yaml'), '')
     fs.mkdirSync(path.join(profilesRoot, '.deleted'))
     fs.writeFileSync(path.join(profilesRoot, '.deleted', 'ghost'), 'deleted\n')

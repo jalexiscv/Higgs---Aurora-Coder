@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-import hermes_yaml as yaml
+import aurora_yaml as yaml
 
 from gateway.config import GatewayConfig, Platform, PlatformConfig
 from gateway.platforms.event import MessageEvent
@@ -43,10 +43,10 @@ def _event(text, user_id, user_name):
 
 def write_approvers(approvers):
     """Write the profile's config.yaml as a user would (``DEFAULT`` leaves the key out)."""
-    from hermes_constants import get_hermes_home
+    from aurora_constants import get_aurora_home
 
     approvals = {"mode": "manual", **({} if approvers == DEFAULT else {"approvers": approvers})}
-    (get_hermes_home() / "config.yaml").write_text(yaml.safe_dump({"approvals": approvals}), encoding="utf-8")
+    (get_aurora_home() / "config.yaml").write_text(yaml.safe_dump({"approvals": approvals}), encoding="utf-8")
 
 
 def pending_from(user_id, user_name, session_key, platform="telegram"):

@@ -33,25 +33,25 @@ if not (INFER_URL and INFER_KEY and CHILD_MODEL):
 for var in list(os.environ):
     if var.endswith(("_API_KEY", "_TOKEN")):
         os.environ.pop(var, None)
-os.environ.pop("HERMES_PROFILE", None)
+os.environ.pop("AURORA_PROFILE", None)
 
 HARNESS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HARNESS, "..", "core_tool_deferral"))
 from sandbox import isolate_host
 
 tmp_root = tempfile.mkdtemp(prefix=f"dg-{ARM}-{TASK_ID}-")
-hermes_home = os.path.join(tmp_root, ".hermes")
+aurora_home = os.path.join(tmp_root, ".aurora")
 ws = os.path.join(tmp_root, "ws")
-os.makedirs(hermes_home)
+os.makedirs(aurora_home)
 os.makedirs(os.path.join(ws, "out"))
-isolate_host(tmp_root, hermes_home)
-with open(os.path.join(hermes_home, "config.yaml"), "w", encoding="utf-8") as f:
+isolate_host(tmp_root, aurora_home)
+with open(os.path.join(aurora_home, "config.yaml"), "w", encoding="utf-8") as f:
     f.write(
         f"model:\n  provider: custom\n  base_url: {INFER_URL}\n  model: {MODEL}\n"
         "delegation:\n  independent_completions: true\n  subagent_auto_approve: true\n"
         f"  max_concurrent_children: 5\n  model: {CHILD_MODEL}\n"
     )
-os.environ["HERMES_HOME"] = hermes_home
+os.environ["AURORA_HOME"] = aurora_home
 os.environ["TERMINAL_CWD"] = ws
 os.chdir(ws)
 sys.path.insert(0, TREE)

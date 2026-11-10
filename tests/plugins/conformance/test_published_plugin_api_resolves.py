@@ -1,6 +1,6 @@
-"""Every entry on the published plugin API (``hermes_cli/data/plugin_api.json``) exists on this tree.
+"""Every entry on the published plugin API (``aurora_cli/data/plugin_api.json``) exists on this tree.
 
-``hermes plugins validate`` and ``scripts/boundary_lint.py`` tell plugin authors these are the core
+``aurora plugins validate`` and ``scripts/boundary_lint.py`` tell plugin authors these are the core
 imports they may use, and ``public-api.md`` is generated from the same file. Both checks are static:
 a listed module that was moved, or a ``module:Name`` whose name was renamed away, still passes them
 while every plugin following the list fails to load. This imports each entry for real.
@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-_PLUGIN_API = Path(__file__).resolve().parents[3] / "hermes_cli" / "data" / "plugin_api.json"
+_PLUGIN_API = Path(__file__).resolve().parents[3] / "aurora_cli" / "data" / "plugin_api.json"
 
 
 def _entries() -> list[str]:

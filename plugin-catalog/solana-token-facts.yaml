@@ -7,7 +7,7 @@ description: "Verifiable on-chain facts about Solana tokens and their developers
 maintainer: Maxedwolf
 tier: community
 category: tools
-requires_hermes: ">=0.22.6"
+requires_aurora: ">=0.22.6"
 docs_url: https://github.com/Maxedwolf/solana-token-facts#readme
 readme: true
 platforms: []

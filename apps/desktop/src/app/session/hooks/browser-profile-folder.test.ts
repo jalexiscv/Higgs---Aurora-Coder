@@ -47,7 +47,7 @@ vi.mock('@/store/gateway', async original => ({
 
 const FOREGROUND_CREATE_DIAL = [undefined, undefined, { spawnPriority: 'foreground' }] as const
 
-const host = window as Window & { __HERMES_BASE_PATH__?: string; __HERMES_DASHBOARD_PROFILE__?: string }
+const host = window as Window & { __AURORA_BASE_PATH__?: string; __AURORA_DASHBOARD_PROFILE__?: string }
 
 const created = (id: string) => ({ info: {}, session_id: `${id}-runtime`, stored_session_id: `${id}-stored` })
 
@@ -88,8 +88,8 @@ function mountActions() {
 // Settings saves through the bridge for whichever profile the tab is on.
 async function saveFolderOn(profile: string, dir: string) {
   const booted = $connection.get()
-  setConnection(await window.hermesDesktop.getConnection(profile))
-  await window.hermesDesktop.settings.setDefaultProjectDir(dir)
+  setConnection(await window.auroraDesktop.getConnection(profile))
+  await window.auroraDesktop.settings.setDefaultProjectDir(dir)
   setConnection(booted)
 }
 
@@ -97,24 +97,24 @@ beforeEach(async () => {
   // A gateway launched as `alpha`, opened at its plain address: the tab boots
   // on the gateway's own profile with no `?profile=`, as adoptPrimaryProfile
   // leaves it, and the boot sync fills the window's folder cache.
-  host.__HERMES_BASE_PATH__ = '/hermes'
-  host.__HERMES_DASHBOARD_PROFILE__ = 'alpha'
+  host.__AURORA_BASE_PATH__ = '/aurora'
+  host.__AURORA_DASHBOARD_PROFILE__ = 'alpha'
   seedWebappSession('served-token')
-  window.history.replaceState(null, '', '/hermes#/')
+  window.history.replaceState(null, '', '/aurora#/')
   expect(installBrowserDesktopBridge()).toBe(true)
-  setConnection(await window.hermesDesktop.getConnection())
+  setConnection(await window.auroraDesktop.getConnection())
   $activeGatewayProfile.set('alpha')
-  await window.hermesDesktop.settings.setDefaultProjectDir('/srv/alpha')
+  await window.auroraDesktop.settings.setDefaultProjectDir('/srv/alpha')
   await syncConfiguredDefaultProjectDir()
 })
 
 afterEach(() => {
   cleanup()
-  Reflect.deleteProperty(window, 'hermesDesktop')
-  delete host.__HERMES_BASE_PATH__
-  delete host.__HERMES_DASHBOARD_PROFILE__
+  Reflect.deleteProperty(window, 'auroraDesktop')
+  delete host.__AURORA_BASE_PATH__
+  delete host.__AURORA_DASHBOARD_PROFILE__
   clearWebappSession()
-  document.documentElement.removeAttribute('data-hermes-desktop-host')
+  document.documentElement.removeAttribute('data-aurora-desktop-host')
   window.localStorage.clear()
   window.history.replaceState(null, '', '/')
   applyConfiguredDefaultProjectDir(null)

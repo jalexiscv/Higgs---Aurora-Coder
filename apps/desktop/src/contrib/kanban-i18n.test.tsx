@@ -3,10 +3,10 @@ import { afterEach, expect, it, vi } from 'vitest'
 
 import { PALETTE_AREA, usePaletteContributions } from '@/app/command-palette/contrib'
 import { ROUTES_AREA, SIDEBAR_NAV_AREA, type SidebarNavContribution } from '@/app/routes'
+import type { AuroraConfigRecord } from '@/aurora'
 import { createPluginContext } from '@/contrib/plugin'
 import { useContributions } from '@/contrib/react/use-contributions'
 import { registry } from '@/contrib/registry'
-import type { HermesConfigRecord } from '@/hermes'
 import { I18nProvider, useI18n } from '@/i18n'
 import type { I18nContextValue } from '@/i18n'
 import { setRuntimeI18nLocale } from '@/i18n/runtime'
@@ -61,9 +61,9 @@ it('relabels Kanban after delayed config load and locale switches without replac
   const route = registry.getArea(ROUTES_AREA).find(c => c.id === 'kanban:page')
   const handler = contributedKeybindHandler('kanban.newTask')
   setBinding('kanban.newTask', ['mod+alt+k'])
-  let resolveConfig!: (config: HermesConfigRecord) => void
+  let resolveConfig!: (config: AuroraConfigRecord) => void
 
-  const config = new Promise<HermesConfigRecord>(resolve => {
+  const config = new Promise<AuroraConfigRecord>(resolve => {
     resolveConfig = resolve
   })
 

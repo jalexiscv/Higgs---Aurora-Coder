@@ -21,20 +21,20 @@ const SESSION_WINDOW_MIN_HEIGHT = 620
 // throttling opt-out).
 //
 // Background throttling is deliberately NOT set here. It is managed at runtime
-// by main.ts (`setBackgroundThrottling` driven by the merged `hermes:active-work`
+// by main.ts (`setBackgroundThrottling` driven by the merged `aurora:active-work`
 // reports): while any turn is in flight visible chat windows are unthrottled,
 // including blurred or occluded windows. Hidden/minimized windows retain default
 // throttling unless bounded native work holds them awake. Once all turns finish,
 // Chromium's default throttling returns. A static `backgroundThrottling:
 // false` here would pin `document.visibilityState` to 'visible' forever,
 // turning every visibility-gated poll in the renderer into an always-on timer
-// (the "Hermes idles at 20% CPU while minimized" bug). The preload path is
+// (the "Aurora idles at 20% CPU while minimized" bug). The preload path is
 // injected because it depends on the Electron entry's __dirname.
 //
 // `autoplayPolicy: 'no-user-gesture-required'` is load-bearing for voice:
 // Chromium's default autoplay policy suspends audio (HTMLAudioElement.play()
 // and AudioContext) until the user has interacted with the frame. A voice
-// conversation started by the "Hey Hermes" wake word has NO preceding click,
+// conversation started by the "Hey Aurora" wake word has NO preceding click,
 // so the FIRST reply's audio playback was rejected (NotAllowedError, silently
 // swallowed) and only turn 2+ spoke — the very "first message in a new voice
 // session is silent" bug. Manual voice-start worked only because the button

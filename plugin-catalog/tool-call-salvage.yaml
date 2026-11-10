@@ -12,12 +12,12 @@ description: >-
   and limited to the models you list, turns the markup into a real call to a tool offered in
   that request. Disclosure: no network, files, shell, subprocesses, telemetry or stored state;
   logs name the format and tools, never arguments; in salvage mode text the model wrote can
-  become a real tool call (tools offered in the request, or Hermes's tool_call bridge when
-  deferred_tools is on), run through Hermes's normal approvals.
+  become a real tool call (tools offered in the request, or Aurora's tool_call bridge when
+  deferred_tools is on), run through Aurora's normal approvals.
 maintainer: Julientalbot
 tier: community
 category: models
-requires_hermes: ">=0.21.0"
+requires_aurora: ">=0.21.0"
 docs_url: https://github.com/Julientalbot/hermes-tool-call-salvage/blob/eae346510d680c3e6de211ef254e69b29ab95e4a/README.md
 capabilities:
   provides_tools: []

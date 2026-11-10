@@ -9,11 +9,11 @@ import {
 
 export function registerPreviewGuestIpc(holdWindow: (owner: BrowserWindow) => () => void): void {
   // Kept-alive, off-screen pages must not receive focused-guest gestures.
-  ipcMain.on('hermes:preview-guest-hidden', (event, payload) => {
+  ipcMain.on('aurora:preview-guest-hidden', (event, payload) => {
     notePreviewGuestHidden(event.sender, webContents.fromId(Number(payload?.webContentsId)), Boolean(payload?.hidden))
   })
 
-  ipcMain.handle('hermes:preview-guest-activity:begin', (event, webContentsId: unknown) => {
+  ipcMain.handle('aurora:preview-guest-activity:begin', (event, webContentsId: unknown) => {
     if (!Number.isSafeInteger(webContentsId)) {
       throw new Error('Invalid preview guest')
     }
@@ -31,13 +31,13 @@ export function registerPreviewGuestIpc(holdWindow: (owner: BrowserWindow) => ()
     )
   })
 
-  ipcMain.handle('hermes:preview-guest-activity:end', (event, token: unknown) => {
+  ipcMain.handle('aurora:preview-guest-activity:end', (event, token: unknown) => {
     if (Number.isSafeInteger(token)) {
       endPreviewGuestActivity(event.sender, token as number)
     }
   })
 
-  ipcMain.handle('hermes:preview-guest-activity:script', (event, token: unknown, code: unknown) => {
+  ipcMain.handle('aurora:preview-guest-activity:script', (event, token: unknown, code: unknown) => {
     if (!Number.isSafeInteger(token) || typeof code !== 'string') {
       throw new Error('Invalid preview script request')
     }

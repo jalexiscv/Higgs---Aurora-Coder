@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { HermesReadDirResult } from '@/global'
+import type { AuroraReadDirResult } from '@/global'
 
 import { $pluginRecords, enableCatalogDesktopPlugin, publishPlugin } from './plugins-store'
 import { discoverRuntimePlugins } from './runtime-loader'
 import { routeBlobImportsToDataUrls } from './runtime-loader.test-helpers'
 
-// A standalone desktop plugin installed from the catalog carries `.hermes-origin.json`
+// A standalone desktop plugin installed from the catalog carries `.aurora-origin.json`
 // (electron/desktop-plugins-root.ts INSTALL_ORIGIN). The loader puts that entry on the plugin's
 // record, which is what the catalog card matches; the folder stays standalone (no package).
-const root = '/local/.hermes/desktop-plugins'
-const readDir = vi.fn<(path: string) => Promise<HermesReadDirResult>>()
+const root = '/local/.aurora/desktop-plugins'
+const readDir = vi.fn<(path: string) => Promise<AuroraReadDirResult>>()
 const readFileText = vi.fn<(path: string) => Promise<{ text: string }>>()
 
 const ORIGIN = {
@@ -48,7 +48,7 @@ beforeEach(() => {
   $pluginRecords.set({})
   readDir.mockReset()
   readFileText.mockReset()
-  ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = {
+  ;(window as unknown as { auroraDesktop: unknown }).auroraDesktop = {
     desktopPluginsRoot: vi.fn(async () => root),
     onPreviewFileChanged: vi.fn(),
     readDir,
@@ -63,14 +63,14 @@ beforeEach(() => {
 
 afterEach(() => {
   restore()
-  delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as unknown as { auroraDesktop?: unknown }).auroraDesktop
 })
 
 const OFF_BY_DEFAULT = 'export default { id: "accent", defaultEnabled: false, register() {} }'
 
 describe('a standalone plugin installed from the catalog', () => {
   it('carries its catalog entry on its record and stays standalone', async () => {
-    stubDisk([folder('accent-picker', { 'plugin.js': OFF_BY_DEFAULT, '.hermes-origin.json': JSON.stringify(ORIGIN) })])
+    stubDisk([folder('accent-picker', { 'plugin.js': OFF_BY_DEFAULT, '.aurora-origin.json': JSON.stringify(ORIGIN) })])
 
     await discoverRuntimePlugins()
 
@@ -81,7 +81,7 @@ describe('a standalone plugin installed from the catalog', () => {
 
   it('ignores an origin file with no catalog entry, and a folder with none', async () => {
     stubDisk([
-      folder('a', { 'plugin.js': 'export default { id: "a", register() {} }', '.hermes-origin.json': '{"repo":"x"}' }),
+      folder('a', { 'plugin.js': 'export default { id: "a", register() {} }', '.aurora-origin.json': '{"repo":"x"}' }),
       folder('b', { 'plugin.js': 'export default { id: "b", register() {} }' })
     ])
 
@@ -97,19 +97,19 @@ describe('a standalone plugin installed from the catalog', () => {
     await discoverRuntimePlugins()
     expect($pluginRecords.get().accent.packageOrigin).toBeUndefined()
 
-    files['.hermes-origin.json'] = JSON.stringify(ORIGIN)
+    files['.aurora-origin.json'] = JSON.stringify(ORIGIN)
     await discoverRuntimePlugins()
 
     expect($pluginRecords.get().accent.packageOrigin).toEqual(ORIGIN)
   })
 
   it('a reload reads again what a folder is (a Force reinstall made it a package half)', async () => {
-    const files: Record<string, string> = { 'plugin.js': OFF_BY_DEFAULT, '.hermes-origin.json': JSON.stringify(ORIGIN) }
+    const files: Record<string, string> = { 'plugin.js': OFF_BY_DEFAULT, '.aurora-origin.json': JSON.stringify(ORIGIN) }
     stubDisk([folder('accent-picker', files)])
     await discoverRuntimePlugins()
     expect($pluginRecords.get().accent.packageName).toBeUndefined()
 
-    files['.hermes-package.json'] = JSON.stringify({ package: 'accent-pkg', repo: ORIGIN.repo })
+    files['.aurora-package.json'] = JSON.stringify({ package: 'accent-pkg', repo: ORIGIN.repo })
     await discoverRuntimePlugins()
 
     expect($pluginRecords.get().accent).toMatchObject({
@@ -123,10 +123,10 @@ describe('a standalone plugin installed from the catalog', () => {
     const files: Record<string, string> = { 'plugin.js': OFF_BY_DEFAULT }
     stubDisk([folder('accent-picker', files)])
     await discoverRuntimePlugins()
-    const watch = vi.mocked(window.hermesDesktop.watchPreviewFile)
+    const watch = vi.mocked(window.auroraDesktop.watchPreviewFile)
     expect(watch).not.toHaveBeenCalledWith('/dev/accent/desktop/plugin.js')
 
-    files['.hermes-package.json'] = JSON.stringify({
+    files['.aurora-package.json'] = JSON.stringify({
       linked: true,
       package: 'accent-pkg',
       source: '/dev/accent/desktop'
@@ -159,7 +159,7 @@ describe('a standalone plugin installed from the catalog', () => {
     const first = discoverRuntimePlugins()
     await reached
     // ... then the install records the origin and asks for its reload.
-    files['.hermes-origin.json'] = JSON.stringify(ORIGIN)
+    files['.aurora-origin.json'] = JSON.stringify(ORIGIN)
     readFileText.mockImplementation(read)
     const second = discoverRuntimePlugins()
     release()
@@ -169,7 +169,7 @@ describe('a standalone plugin installed from the catalog', () => {
   })
 
   it('enableCatalogDesktopPlugin turns on the plugin that entry installed, and only that one', async () => {
-    stubDisk([folder('accent-picker', { 'plugin.js': OFF_BY_DEFAULT, '.hermes-origin.json': JSON.stringify(ORIGIN) })])
+    stubDisk([folder('accent-picker', { 'plugin.js': OFF_BY_DEFAULT, '.aurora-origin.json': JSON.stringify(ORIGIN) })])
     await discoverRuntimePlugins()
     publishPlugin({ id: 'other', kind: 'disk', name: 'Other', status: 'disabled' })
     expect($pluginRecords.get().accent.status).toBe('disabled')

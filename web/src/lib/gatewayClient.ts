@@ -15,13 +15,13 @@
 
 import {
   JsonRpcGatewayClient,
-  buildHermesWebSocketUrl,
+  buildAuroraWebSocketUrl,
   type ConnectionState,
   type GatewayEvent,
   type GatewayEventName,
-} from "@hermes/shared";
+} from "@aurora/shared";
 
-import { HERMES_BASE_PATH, buildWsAuthParam } from "@/lib/api";
+import { AURORA_BASE_PATH, buildWsAuthParam } from "@/lib/api";
 import { maybeReloadForLoopbackWsAuthFailure } from "@/lib/dashboard-auth-reload";
 
 export type { ConnectionState, GatewayEvent, GatewayEventName };
@@ -48,14 +48,14 @@ export class GatewayClient extends JsonRpcGatewayClient {
     const authParam = token ? (["token", token] as const) : await buildWsAuthParam();
     if (!authParam[1]) {
       throw new Error(
-        "Session token not available — page must be served by the Hermes dashboard server",
+        "Session token not available — page must be served by the Aurora dashboard server",
       );
     }
 
     await super.connect(
-      buildHermesWebSocketUrl({
+      buildAuroraWebSocketUrl({
         authParam,
-        basePath: HERMES_BASE_PATH,
+        basePath: AURORA_BASE_PATH,
         path: "/api/ws",
       }),
     );

@@ -56,7 +56,7 @@ const session = (connectionId: string) => ({ connectionId, cwd: '/repo', id: `pt
 
 beforeEach(() => {
   window.localStorage.clear()
-  delete window.document.documentElement.dataset.hermesDesktopHost
+  delete window.document.documentElement.dataset.auroraDesktopHost
 })
 
 describe('a terminal tab owns the gateway it was opened on', () => {

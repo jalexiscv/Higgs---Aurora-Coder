@@ -8,7 +8,7 @@ maintainer: Dyslexia Steps
 tier: community
 category: tools
 docs_url: https://github.com/Dyslexia-Steps/dyslexiasteps-agent-plugin#readme
-requires_hermes: ">=0.21.6"
+requires_aurora: ">=0.21.6"
 readme: true
 platforms: []
 capabilities:

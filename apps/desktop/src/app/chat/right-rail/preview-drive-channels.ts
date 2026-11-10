@@ -34,7 +34,7 @@ export async function withPreviewGuestActivity<T>(
   signal?.throwIfAborted()
   releaseSignal?.throwIfAborted()
 
-  const desktop = window.hermesDesktop
+  const desktop = window.auroraDesktop
   const begin = desktop?.beginPreviewGuestActivity
   const end = desktop?.endPreviewGuestActivity
 
@@ -92,7 +92,7 @@ export async function withPreviewGuestActivity<T>(
 }
 
 export function runPreviewGuestScript(guest: PreviewDriveGuest, code: string, signal?: AbortSignal) {
-  const execute = window.hermesDesktop?.executePreviewGuestScript
+  const execute = window.auroraDesktop?.executePreviewGuestScript
 
   if (!execute) {
     return Promise.reject(new Error('preview script activity is unavailable'))

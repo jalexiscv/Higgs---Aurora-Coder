@@ -1,6 +1,7 @@
-import { REASONING_EFFORTS } from '@hermes/shared'
+import { REASONING_EFFORTS } from '@aurora/shared'
 import { type FormEvent, useState } from 'react'
 
+import type { DelegationModelRoute, ProfileScope } from '@/aurora'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -14,7 +15,6 @@ import { Field, FieldHint } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import type { DelegationModelRoute, ProfileScope } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { findCatalogProvider } from '@/lib/model-options'
 

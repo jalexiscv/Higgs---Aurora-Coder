@@ -33,7 +33,7 @@ function git(repo: string, ...args: string[]) {
 
 /** A desktop-only repo: a manifest beside `desktop/plugin.js`, no agent payload. */
 function desktopOnlyRepo(extra: Record<string, string> = {}): string {
-  const repo = mkdtemp('hermes-origin-repo-')
+  const repo = mkdtemp('aurora-origin-repo-')
   fs.mkdirSync(path.join(repo, 'desktop'))
   fs.writeFileSync(path.join(repo, 'plugin.yaml'), 'name: accent-picker\n')
   fs.writeFileSync(path.join(repo, 'desktop', 'plugin.js'), 'export default { id: "accent" }\n')
@@ -54,7 +54,7 @@ const originOf = (dir: string) => JSON.parse(fs.readFileSync(path.join(dir, INST
 describe('a standalone desktop plugin installed from the catalog', () => {
   it('records its catalog entry, and stays standalone (no package marker)', async () => {
     const repo = desktopOnlyRepo()
-    const appRoot = mkdtemp('hermes-origin-root-')
+    const appRoot = mkdtemp('aurora-origin-root-')
     const sha = git(repo, 'rev-parse', 'HEAD')
 
     const result = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot, {
@@ -71,7 +71,7 @@ describe('a standalone desktop plugin installed from the catalog', () => {
   it('records nothing for a Git URL install, and drops an origin file the repo ships', async () => {
     const forged = JSON.stringify({ catalogName: 'trusted-entry', repo: 'https://github.com/x/y', sha: 'a'.repeat(40) })
     const repo = desktopOnlyRepo({ [INSTALL_ORIGIN]: forged })
-    const appRoot = mkdtemp('hermes-origin-root-')
+    const appRoot = mkdtemp('aurora-origin-root-')
 
     const result = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot)
 
@@ -81,7 +81,7 @@ describe('a standalone desktop plugin installed from the catalog', () => {
 
   it('adopts an earlier install of the same tree instead of answering "already exists"', async () => {
     const repo = desktopOnlyRepo({ 'panel.js': 'mine\n' })
-    const appRoot = mkdtemp('hermes-origin-root-')
+    const appRoot = mkdtemp('aurora-origin-root-')
     const sha = git(repo, 'rev-parse', 'HEAD')
     // The install every build before this one made: no origin recorded.
     const first = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot, { sha })
@@ -101,7 +101,7 @@ describe('a standalone desktop plugin installed from the catalog', () => {
 
   it('still refuses to replace a different plugin of that name without Force', async () => {
     const repo = desktopOnlyRepo()
-    const appRoot = mkdtemp('hermes-origin-root-')
+    const appRoot = mkdtemp('aurora-origin-root-')
     const sha = git(repo, 'rev-parse', 'HEAD')
     const first = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot, { sha })
     const dir = path.join(appRoot, first.pluginName!)
@@ -120,7 +120,7 @@ describe('a standalone desktop plugin installed from the catalog', () => {
 
   it('records the commit it cloned when the install names no pin', async () => {
     const repo = desktopOnlyRepo()
-    const appRoot = mkdtemp('hermes-origin-root-')
+    const appRoot = mkdtemp('aurora-origin-root-')
 
     const result = await installDesktopPluginFromGit('git', pathToFileURL(repo).href, appRoot, {
       catalogName: 'accent-picker'
@@ -136,7 +136,7 @@ describe('a standalone desktop plugin installed from the catalog', () => {
 
   it('records the commit it checked out when the pin is an annotated tag', async () => {
     const repo = desktopOnlyRepo()
-    const appRoot = mkdtemp('hermes-origin-root-')
+    const appRoot = mkdtemp('aurora-origin-root-')
     const commit = git(repo, 'rev-parse', 'HEAD')
     git(repo, '-c', 'user.email=t@example.invalid', '-c', 'user.name=t', 'tag', '-a', 'v1', '-m', 'v1')
     const tagObject = git(repo, 'rev-parse', 'v1')

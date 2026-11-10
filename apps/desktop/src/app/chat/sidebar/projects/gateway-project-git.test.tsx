@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, renderHook, screen, waitFor } from '@testin
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { SidebarProvider } from '@/components/ui/sidebar'
-import type { HermesApiRequest } from '@/global'
+import type { AuroraApiRequest } from '@/global'
 import { $dismissedWorktreeIds, dismissWorktree } from '@/store/layout'
 import { $startWorkSessionRequest, $worktreeDialog } from '@/store/projects'
 
@@ -38,7 +38,7 @@ function installBridge() {
     worktreeList: vi.fn(async () => [])
   }
 
-  const api = vi.fn(async (request: HermesApiRequest) => {
+  const api = vi.fn(async (request: AuroraApiRequest) => {
     if (request.path.startsWith('/api/git/base-branches')) {
       return { branches: [{ isDefault: true, isRemote: true, name: 'origin/main' }] }
     }
@@ -64,7 +64,7 @@ function installBridge() {
     throw new Error(`unexpected ${request.path}`)
   })
 
-  ;(window as { hermesDesktop?: unknown }).hermesDesktop = { api, git: localGit }
+  ;(window as { auroraDesktop?: unknown }).auroraDesktop = { api, git: localGit }
 
   return { api, localGit }
 }
@@ -78,7 +78,7 @@ afterEach(() => {
   $worktreeDialog.set(null)
   $dismissedWorktreeIds.set([])
   $startWorkSessionRequest.set(null)
-  delete (window as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as { auroraDesktop?: unknown }).auroraDesktop
   ;(globalThis as ActGlobal).IS_REACT_ACT_ENVIRONMENT = true
 })
 

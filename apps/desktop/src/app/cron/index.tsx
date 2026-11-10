@@ -1,9 +1,24 @@
-import { createCronTriggerController, type CronTriggerController } from '@hermes/shared'
+import { createCronTriggerController, type CronTriggerController } from '@aurora/shared'
 import { useStore } from '@nanostores/react'
 import { useQuery } from '@tanstack/react-query'
 import type * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import {
+  type AutomationBlueprint,
+  createCronJob,
+  type CronDeliveryTarget,
+  type CronJob,
+  deleteCronJob,
+  getAutomationBlueprints,
+  getCronDeliveryTargets,
+  getCronJobRuns,
+  instantiateAutomationBlueprint,
+  pauseCronJob,
+  resumeCronJob,
+  type SessionInfo,
+  updateCronJob
+} from '@/aurora'
 import { PageLoader } from '@/components/page-loader'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -29,21 +44,6 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  type AutomationBlueprint,
-  createCronJob,
-  type CronDeliveryTarget,
-  type CronJob,
-  deleteCronJob,
-  getAutomationBlueprints,
-  getCronDeliveryTargets,
-  getCronJobRuns,
-  instantiateAutomationBlueprint,
-  pauseCronJob,
-  resumeCronJob,
-  type SessionInfo,
-  updateCronJob
-} from '@/hermes'
 import { type Translations, useI18n } from '@/i18n'
 import { AlertTriangle } from '@/lib/icons'
 import { requestModelOptions } from '@/lib/model-options'

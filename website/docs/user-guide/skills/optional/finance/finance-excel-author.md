@@ -14,7 +14,7 @@ Build auditable financial workbooks headless via openpyxl.
 
 | | |
 |---|---|
-| Source | Optional — install with `hermes skills install official/finance/excel-author` |
+| Source | Optional — install with `aurora skills install official/finance/excel-author` |
 | Path | `optional-skills/finance/excel-author` |
 | Version | `1.0.0` |
 | Author | Anthropic (adapted by Nous Research) |
@@ -26,7 +26,7 @@ Build auditable financial workbooks headless via openpyxl.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Aurora loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # excel-author
@@ -43,34 +43,34 @@ Adapted from Anthropic's `xlsx-author` and `audit-xls` skills in the [anthropics
 
 ## Setup
 
-Use `python` when it already imports `openpyxl` (the Hermes Docker image ships
-it). Otherwise, when `hermes` is on PATH, let Hermes build its shared, pinned
-documents environment under the Hermes home (safe to run from several agents
-at once); in a Docker sandbox without Hermes the block builds a venv in the
+Use `python` when it already imports `openpyxl` (the Aurora Docker image ships
+it). Otherwise, when `aurora` is on PATH, let Aurora build its shared, pinned
+documents environment under the Aurora home (safe to run from several agents
+at once); in a Docker sandbox without Aurora the block builds a venv in the
 sandbox home with the same pinned versions. It is the same block as the
 microsoft-office/pdf skills. Never `pip install` into the interpreter that
-runs Hermes:
+runs Aurora:
 
 ```bash
-python -c "import openpyxl" 2>/dev/null && PY=python || if command -v hermes >/dev/null 2>&1; then
-  PY="$(hermes pm environment documents --extra documents --extra documents-pdf)"
+python -c "import openpyxl" 2>/dev/null && PY=python || if command -v aurora >/dev/null 2>&1; then
+  PY="$(aurora pm environment documents --extra documents --extra documents-pdf)"
 else
-  PY="$HOME/.cache/hermes-docs-venv/bin/python"
+  PY="$HOME/.cache/aurora-docs-venv/bin/python"
   "$PY" -c "import docx, openpyxl, pptx, reportlab, pypdf, pdfplumber, pypdfium2" 2>/dev/null || (
     # Safe to run from several agents at once: each caller builds a private venv,
     # a symlink publishes the first finished one atomically, the others delete theirs;
     # a published build is replaced and deleted only while it still fails to import.
-    mkdir -p "$HOME/.cache" && cd "$HOME/.cache" && stage="$(mktemp -d hermes-docs-venv.XXXXXX)" || exit 1
-    old="$(readlink hermes-docs-venv)"  # the published build, if any (another agent may have just published it)
+    mkdir -p "$HOME/.cache" && cd "$HOME/.cache" && stage="$(mktemp -d aurora-docs-venv.XXXXXX)" || exit 1
+    old="$(readlink aurora-docs-venv)"  # the published build, if any (another agent may have just published it)
     python3 -m venv "$stage" &&
       "$stage/bin/python" -m pip install -q --disable-pip-version-check python-docx==1.2.0 openpyxl==3.1.5 python-pptx==1.0.2 reportlab==5.1.0 pypdf==6.21.4 pdfplumber==0.11.10 pypdfium2==5.14.0 &&
       "$stage/bin/python" -c "import docx, openpyxl, pptx, reportlab, pypdf, pdfplumber, pypdfium2" &&
-      if [ -z "$old" ]; then python3 -c 'import os, sys; os.symlink(*sys.argv[1:])' "$stage" hermes-docs-venv
-      elif [ "$(readlink hermes-docs-venv)" = "$old" ] && ! "$old/bin/python" -c "import docx, openpyxl, pptx, reportlab, pypdf, pdfplumber, pypdfium2" 2>/dev/null; then
-        ln -s "$stage" "$stage.lnk" && python3 -c 'import os, sys; os.replace(*sys.argv[1:])' "$stage.lnk" hermes-docs-venv &&
-          case "$old" in hermes-docs-venv.??????) rm -rf "$old" ;; esac
+      if [ -z "$old" ]; then python3 -c 'import os, sys; os.symlink(*sys.argv[1:])' "$stage" aurora-docs-venv
+      elif [ "$(readlink aurora-docs-venv)" = "$old" ] && ! "$old/bin/python" -c "import docx, openpyxl, pptx, reportlab, pypdf, pdfplumber, pypdfium2" 2>/dev/null; then
+        ln -s "$stage" "$stage.lnk" && python3 -c 'import os, sys; os.replace(*sys.argv[1:])' "$stage.lnk" aurora-docs-venv &&
+          case "$old" in aurora-docs-venv.??????) rm -rf "$old" ;; esac
       fi 2>/dev/null
-    [ "$(readlink hermes-docs-venv)" = "$stage" ] || rm -rf "$stage" "$stage.lnk"
+    [ "$(readlink aurora-docs-venv)" = "$stage" ] || rm -rf "$stage" "$stage.lnk"
   )
 fi
 export PY

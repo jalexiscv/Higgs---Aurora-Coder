@@ -2,7 +2,7 @@
  * The browser-hosted Desktop is served by the profile gateway's own listener, exactly like local
  * Electron Desktop talks to that gateway: one process runs every turn and owns the profile's store.
  *
- * `webapp.enabled` in the home's config.yaml turns it on; `hermes webapp` starts the gateway and prints
+ * `webapp.enabled` in the home's config.yaml turns it on; `aurora webapp` starts the gateway and prints
  * a one-use launch link it got over the gateway's control socket. Proof, end to end with a real browser:
  *  - exactly one gateway serves the sandbox, and the browser's socket is that gateway's own;
  *  - a turn's terminal tool runs under the gateway process (its ancestry);
@@ -10,14 +10,14 @@
  *  - reload resumes the chat;
  *  - after the gateway is killed and started again, the same tab is still signed in (the browser
  *    credential is kept in the home) and the next turn works;
- *  - `hermes webapp --sign-out` cuts that tab off.
+ *  - `aurora webapp --sign-out` cuts that tab off.
  *
  * A second test puts the Webapp and Electron Desktop on one chat: Electron answers the approval a
  * Webapp turn raised, and the Webapp stops a turn Electron started. A third puts the Webapp behind
- * the sign-in gate: `hermes webapp --sign-out` signs out a browser that signed in with a password.
+ * the sign-in gate: `aurora webapp --sign-out` signs out a browser that signed in with a password.
  *
  * Linux (the /proc ancestry walk); needs the Webapp renderer (`pnpm run build:webapp`) and a
- * Chromium Playwright can launch (`pnpm exec playwright install chromium`, or HERMES_E2E_CHROMIUM).
+ * Chromium Playwright can launch (`pnpm exec playwright install chromium`, or AURORA_E2E_CHROMIUM).
  */
 
 import { spawnSync } from 'node:child_process'
@@ -29,6 +29,7 @@ import { type Browser, chromium, expect, type Page, test } from '@playwright/tes
 
 import {
   appLogTail,
+  auroraCli,
   backendProcesses,
   composer,
   coreAppEnv,
@@ -37,7 +38,6 @@ import {
   currentSessionId,
   DESKTOP_ROOT,
   freePort,
-  hermesCli,
   launchCoreApp,
   recordWebSockets,
   REPO_ROOT,
@@ -57,7 +57,7 @@ const U = (n: number) => `U${n}-webapp${nonce}`
 const A = (n: number) => `A${n}-webapp${nonce}`
 const AI = (n: number) => `A${n}i-webapp${nonce}`
 
-const PYTHON = process.env.HERMES_E2E_PYTHON || 'python3'
+const PYTHON = process.env.AURORA_E2E_PYTHON || 'python3'
 /** A signed-in Webapp tab acts as the machine owner, the OS subject native Desktop's ticket carries
  * (`gateway/owner_identity.py`): sign-in decides who may open the Webapp, it names no second user. */
 const OWNER_SUBJECT = `uid:${process.getuid?.()}`
@@ -72,13 +72,13 @@ function alive(pid: number): boolean {
   }
 }
 
-/** `hermes webapp <args>` in the sandbox. */
-function hermesWebapp(sandbox: CoreSandbox, ...args: string[]): { code: number | null; output: string } {
-  return hermesCli(sandbox, ['webapp', ...args])
+/** `aurora webapp <args>` in the sandbox. */
+function auroraWebapp(sandbox: CoreSandbox, ...args: string[]): { code: number | null; output: string } {
+  return auroraCli(sandbox, ['webapp', ...args])
 }
 
 function admissionPrincipals(sandbox: CoreSandbox, sessionId: string): string[] {
-  const db = new DatabaseSync(path.join(sandbox.hermesHome, 'state.db'), { readOnly: true })
+  const db = new DatabaseSync(path.join(sandbox.auroraHome, 'state.db'), { readOnly: true })
 
   try {
     return (
@@ -105,22 +105,22 @@ test('the gateway serves the Webapp and runs every turn its browser sends', asyn
 
   const provider = await startScriptedProvider()
   const sandbox = createCoreSandbox('webapp')
-  writeProviderHome(sandbox.hermesHome, provider.url)
+  writeProviderHome(sandbox.auroraHome, provider.url)
   const port = await freePort()
-  fs.appendFileSync(path.join(sandbox.hermesHome, 'config.yaml'), `\nwebapp:\n  enabled: true\n  port: ${port}\n`)
+  fs.appendFileSync(path.join(sandbox.auroraHome, 'config.yaml'), `\nwebapp:\n  enabled: true\n  port: ${port}\n`)
   const ancestry = path.join(sandbox.root, 'tool-ancestry.txt')
   let browser: Browser | null = null
 
   try {
     const link = webappLaunchLink(sandbox)
     expect(new URL(link).port).toBe(String(port))
-    browser = await chromium.launch({ executablePath: process.env.HERMES_E2E_CHROMIUM || undefined })
+    browser = await chromium.launch({ executablePath: process.env.AURORA_E2E_CHROMIUM || undefined })
     const page: Page = await (await browser.newContext({ viewport: { width: 1280, height: 860 } })).newPage()
     const ws = recordWebSockets(page)
     await page.goto(link)
     await expect(composer(page)).toBeVisible({ timeout: 180_000 })
     expect(page.url()).not.toContain('ticket=')
-    expect(page.url()).not.toContain('hermes-session=')
+    expect(page.url()).not.toContain('aurora-session=')
     await installDuplicateSampler(page)
 
     // The browser's socket is the gateway's own, on the Webapp's origin.
@@ -168,7 +168,7 @@ test('the gateway serves the Webapp and runs every turn its browser sends', asyn
     await expect(page.getByText(A(1)).first()).toBeVisible({ timeout: 60_000 })
     expect(backendProcesses(sandbox).map(proc => proc.pid)).toEqual([gateway.pid])
 
-    // A gateway killed and started again (here by `hermes webapp`, whose new link this tab never
+    // A gateway killed and started again (here by `aurora webapp`, whose new link this tab never
     // uses): the same tab is still signed in and the next turn runs on the new gateway.
     process.kill(gateway.pid, 'SIGKILL')
     await expect.poll(() => alive(gateway.pid), { timeout: 30_000 }).toBe(false)
@@ -188,7 +188,7 @@ test('the gateway serves the Webapp and runs every turn its browser sends', asyn
     expect(replacement.pid).not.toBe(gateway.pid)
 
     // Signing out replaces the browser credential: the tab loses access.
-    const signedOut = hermesWebapp(sandbox, '--sign-out')
+    const signedOut = auroraWebapp(sandbox, '--sign-out')
     expect(signedOut.code, signedOut.output).toBe(0)
     await page.reload()
     await expect(composer(page)).toBeHidden({ timeout: 60_000 })
@@ -209,7 +209,7 @@ test('the gateway serves the Webapp and runs every turn its browser sends', asyn
 })
 
 /**
- * `hermes -p <profile> webapp` opens the default gateway's Webapp on that profile. The tab's own socket
+ * `aurora -p <profile> webapp` opens the default gateway's Webapp on that profile. The tab's own socket
  * answers for the gateway's profile, so each request for the tab's profile names it: a turn whose tool
  * stays quiet past the 45 s silence probe stays live, and a reload reads the transcript back.
  */
@@ -223,16 +223,16 @@ test('a Webapp tab opened on a named profile runs and reads that profile', async
 
   const provider = await startScriptedProvider()
   const sandbox = createCoreSandbox('webapp-profile')
-  writeProviderHome(sandbox.hermesHome, provider.url)
-  writeProviderHome(path.join(sandbox.hermesHome, 'profiles', 'p2'), provider.url)
+  writeProviderHome(sandbox.auroraHome, provider.url)
+  writeProviderHome(path.join(sandbox.auroraHome, 'profiles', 'p2'), provider.url)
   const port = await freePort()
-  fs.appendFileSync(path.join(sandbox.hermesHome, 'config.yaml'), `\nwebapp:\n  enabled: true\n  port: ${port}\n`)
+  fs.appendFileSync(path.join(sandbox.auroraHome, 'config.yaml'), `\nwebapp:\n  enabled: true\n  port: ${port}\n`)
   let browser: Browser | null = null
 
   try {
     webappLaunchLink(sandbox)
     const link = webappLaunchLink(sandbox, 'p2')
-    browser = await chromium.launch({ executablePath: process.env.HERMES_E2E_CHROMIUM || undefined })
+    browser = await chromium.launch({ executablePath: process.env.AURORA_E2E_CHROMIUM || undefined })
     const page: Page = await (await browser.newContext({ viewport: { width: 1280, height: 860 } })).newPage()
     const ws = recordWebSockets(page)
     await page.goto(link)
@@ -250,7 +250,7 @@ test('a Webapp tab opened on a named profile runs and reads that profile', async
     await expect.poll(() => storedSessionForMarker(sandbox, 'p2', U(1)), { timeout: 60_000 }).toBe(sessionId)
     expect(storedSessionForMarker(sandbox, 'default', U(1))).toBeNull()
 
-    const ended = page.getByText('Hermes ended this turn without a reply')
+    const ended = page.getByText('Aurora ended this turn without a reply')
     await page.waitForTimeout(50_000)
     await expect(ended).toHaveCount(0)
     await expect(page.getByText(A(1)).first()).toBeVisible({ timeout: 120_000 })
@@ -303,15 +303,15 @@ test("the Webapp and Electron Desktop answer and stop each other's turns on one 
 
   const provider = await startScriptedProvider()
   const sandbox = createCoreSandbox('webapp-cross')
-  writeProviderHome(sandbox.hermesHome, provider.url, '', 'manual')
+  writeProviderHome(sandbox.auroraHome, provider.url, '', 'manual')
   const port = await freePort()
-  fs.appendFileSync(path.join(sandbox.hermesHome, 'config.yaml'), `\nwebapp:\n  enabled: true\n  port: ${port}\n`)
+  fs.appendFileSync(path.join(sandbox.auroraHome, 'config.yaml'), `\nwebapp:\n  enabled: true\n  port: ${port}\n`)
   const hold = gate()
   let browser: Browser | null = null
   let desktop: Awaited<ReturnType<typeof launchCoreApp>> | null = null
 
   try {
-    browser = await chromium.launch({ executablePath: process.env.HERMES_E2E_CHROMIUM || undefined })
+    browser = await chromium.launch({ executablePath: process.env.AURORA_E2E_CHROMIUM || undefined })
     const page: Page = await (await browser.newContext({ viewport: { width: 1280, height: 860 } })).newPage()
     const ws = recordWebSockets(page)
     await page.goto(webappLaunchLink(sandbox))
@@ -441,7 +441,7 @@ function python(sandbox: CoreSandbox, code: string, ...args: string[]): string {
 
 /**
  * Behind the sign-in gate the browser signs in with the dashboard's password, not the browser
- * credential `hermes webapp` hands out; `hermes webapp --sign-out` must still sign it out: the open
+ * credential `aurora webapp` hands out; `aurora webapp --sign-out` must still sign it out: the open
  * tab is cut off, a reload lands on the sign-in page, and signing in again works.
  */
 test('signing out of a Webapp behind sign-in signs the browser out', async () => {
@@ -453,7 +453,7 @@ test('signing out of a Webapp behind sign-in signs the browser out', async () =>
 
   const provider = await startScriptedProvider()
   const sandbox = createCoreSandbox('webapp-gated')
-  writeProviderHome(sandbox.hermesHome, provider.url)
+  writeProviderHome(sandbox.auroraHome, provider.url)
   const port = await freePort()
   const origin = `http://127.0.0.1:${port}`
   const password = python(sandbox, 'import secrets; print("throwaway-" + secrets.token_urlsafe(12))')
@@ -466,16 +466,16 @@ test('signing out of a Webapp behind sign-in signs the browser out', async () =>
 
   const secret = python(sandbox, 'import secrets; print(secrets.token_hex(32))')
   fs.appendFileSync(
-    path.join(sandbox.hermesHome, 'config.yaml'),
-    signInGateYaml(port, `http://hermes-webapp.test:${port}`, 'owner', hash, secret)
+    path.join(sandbox.auroraHome, 'config.yaml'),
+    signInGateYaml(port, `http://aurora-webapp.test:${port}`, 'owner', hash, secret)
   )
   let browser: Browser | null = null
 
   try {
-    const started = hermesWebapp(sandbox, '--no-open', '--skip-build')
+    const started = auroraWebapp(sandbox, '--no-open', '--skip-build')
     expect(started.code, started.output).toBe(0)
     expect(started.output).toContain('sign in with your dashboard account')
-    browser = await chromium.launch({ executablePath: process.env.HERMES_E2E_CHROMIUM || undefined })
+    browser = await chromium.launch({ executablePath: process.env.AURORA_E2E_CHROMIUM || undefined })
     const page: Page = await (await browser.newContext({ viewport: { width: 1280, height: 860 } })).newPage()
     const ws = recordWebSockets(page)
 
@@ -493,7 +493,7 @@ test('signing out of a Webapp behind sign-in signs the browser out', async () =>
       .toBe(true)
 
     const open = ws.sockets.filter(socket => !socket.closed)
-    const signedOut = hermesWebapp(sandbox, '--sign-out')
+    const signedOut = auroraWebapp(sandbox, '--sign-out')
     expect(signedOut.code, signedOut.output).toBe(0)
     await expect
       .poll(() => open.every(socket => socket.closed), { timeout: 30_000, message: "sign-out closed the tab's socket" })
