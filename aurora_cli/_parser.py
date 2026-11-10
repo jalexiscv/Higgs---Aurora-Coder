@@ -365,7 +365,7 @@ class AuroraArgumentParser(argparse.ArgumentParser):
         if isinstance(action, argparse._SubParsersAction) and value not in action.choices:
             # ``self.prog`` is "aurora" at the top level and "aurora gateway" for a nested group
             # (argparse hands add_parser() the parent's class), so the copy stays correct for both.
-            lines = [f"{self.prog}: '{value}' is not a `{self.prog}` command."]
+            lines = [f"{self.prog}: '{value}' is not an `{self.prog}` command."]
             close = difflib.get_close_matches(str(value), list(action.choices), n=3, cutoff=0.6)
             install = _plugin_command_install_hint(self.prog, str(value))
             moved = "" if install else _moved_command_hint(self.prog, str(value))
