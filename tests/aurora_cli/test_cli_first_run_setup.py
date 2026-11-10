@@ -168,7 +168,7 @@ def test_offer_first_run_setup_routes_into_shared_picker(monkeypatch):
         picker_calls["count"] += 1
 
     monkeypatch.setattr("aurora_cli.main.select_provider_and_model", _fake_picker)
-    monkeypatch.setattr("builtins.input", lambda *a, **k: "y")
+    monkeypatch.setattr("aurora_cli.aurora_first_run.offer_aurora_key", lambda: "other")
     # After the picker "runs", config has a provider and creds resolve.
     monkeypatch.setattr(
         "aurora_cli.config.load_config",
@@ -202,7 +202,7 @@ def test_offer_first_run_setup_re_resolves_reasoning_for_picked_model(monkeypatc
     shell = _make_shell(cli, monkeypatch)
     assert shell.reasoning_config["effort"] == "medium"
     monkeypatch.setattr("aurora_cli.main.select_provider_and_model", lambda: None)
-    monkeypatch.setattr("builtins.input", lambda *a, **k: "y")
+    monkeypatch.setattr("aurora_cli.aurora_first_run.offer_aurora_key", lambda: "other")
     monkeypatch.setattr("aurora_cli.config.load_config",
                         lambda: {"model": {"provider": "nous", "default": "hermes-4-405b"}})
     monkeypatch.setattr(shell, "_runtime_credentials_ready", lambda: True)
@@ -210,6 +210,23 @@ def test_offer_first_run_setup_re_resolves_reasoning_for_picked_model(monkeypatc
     assert shell._offer_first_run_setup() is True
     assert shell.model == "hermes-4-405b"
     assert shell.reasoning_config["effort"] == "high"
+
+
+def test_offer_first_run_setup_with_an_aurora_key_skips_the_picker(monkeypatch):
+    """A key given at the Aurora prompt configures the install on its own: the picker never opens
+    and the shell adopts what the prompt persisted."""
+    cli = _import_cli()
+    shell = _make_shell(cli, monkeypatch)
+    monkeypatch.setattr("aurora_cli.main.select_provider_and_model",
+                        lambda: (_ for _ in ()).throw(AssertionError("picker must not run")))
+    monkeypatch.setattr("aurora_cli.aurora_first_run.offer_aurora_key", lambda: "configured")
+    monkeypatch.setattr("aurora_cli.config.load_config",
+                        lambda: {"model": {"provider": "aurora", "default": "Spark"}})
+    monkeypatch.setattr(shell, "_runtime_credentials_ready", lambda: True)
+
+    assert shell._offer_first_run_setup() is True
+    assert (shell.requested_provider, shell.model) == ("aurora", "Spark")
+    assert shell.agent is None
 
 
 def test_offer_first_run_setup_declined(monkeypatch):
@@ -220,7 +237,7 @@ def test_offer_first_run_setup_declined(monkeypatch):
         raise AssertionError("picker must not run when declined")
 
     monkeypatch.setattr("aurora_cli.main.select_provider_and_model", _fail_picker)
-    monkeypatch.setattr("builtins.input", lambda *a, **k: "n")
+    monkeypatch.setattr("aurora_cli.aurora_first_run.offer_aurora_key", lambda: "cancelled")
     assert shell._offer_first_run_setup() is False
 
 
@@ -232,8 +249,8 @@ def test_offer_first_run_setup_picker_cancel_is_graceful(monkeypatch):
         raise KeyboardInterrupt()
 
     monkeypatch.setattr("aurora_cli.main.select_provider_and_model", _cancel_picker)
-    monkeypatch.setattr("builtins.input", lambda *a, **k: "")
-    # Empty answer defaults to yes -> picker runs -> cancels -> False, no raise.
+    monkeypatch.setattr("aurora_cli.aurora_first_run.offer_aurora_key", lambda: "other")
+    # No Aurora key -> picker runs -> cancels -> False, no raise.
     assert shell._offer_first_run_setup() is False
 
 

@@ -10,12 +10,11 @@ from providers.base import OMIT_TEMPERATURE, ProviderProfile
 
 AURORA_BASE_URL = "https://aurora.dtacenter.com"
 AURORA_KEYS_URL = "https://aurora.dtacenter.com/developers"
-AURORA_DEFAULT_MODEL = "Spark"
 
 # The router's published catalog (GET /v1/models) with each model's context window; the live
-# listing replaces the ids when reachable.
+# listing replaces the ids when reachable. The first id is the one a new install starts on.
 _CATALOG = {
-    "AuroraAGI": 1_000_000, "AuroraPRO": 1_048_576, "AuroraFlash": 1_048_576, "Spark": 1_000_000,
+    "Spark": 1_000_000, "AuroraAGI": 1_000_000, "AuroraPRO": 1_048_576, "AuroraFlash": 1_048_576,
     "Itzel": 1_000_000,
 }
 

@@ -1553,36 +1553,9 @@ def _start_chat_background_prefetch() -> None:
 
 
 def _first_run_setup_guard(args) -> None:
-    """No provider configured: offer `aurora setup` (TTY) or exit 1 with guidance."""
-    print()
-    print(
-        "It looks like Aurora isn't configured yet -- no API keys or providers found."
-    )
-    print()
-    print("  Run:  aurora setup")
-    print()
-
-    from aurora_cli.setup import (
-        is_interactive_stdin,
-        print_noninteractive_setup_guidance,
-    )
-
-    if not is_interactive_stdin():
-        print_noninteractive_setup_guidance(
-            "No interactive TTY detected for the first-run setup prompt."
-        )
-        sys.exit(1)
-
-    try:
-        reply = input("Run setup now? [Y/n] ").strip().lower()
-    except (EOFError, KeyboardInterrupt):
-        reply = "n"
-    if reply in {"", "y", "yes"}:
-        cmd_setup(args)
-        return
-    print()
-    print("You can run 'aurora setup' at any time to configure.")
-    sys.exit(1)
+    """No provider configured: ask for an Aurora key, or run `aurora setup` (TTY); else exit 1 with guidance."""
+    from aurora_cli.aurora_first_run import first_run_setup_guard
+    first_run_setup_guard(args, cmd_setup)
 
 
 # args attr -> (kwarg, default) passed through to _launch_tui / cli.main; only cli.main takes --api-key/--base-url.

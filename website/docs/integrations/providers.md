@@ -14,6 +14,7 @@ You need at least one way to connect to an LLM. Use `aurora model` to switch pro
 
 | Provider | Setup |
 |----------|-------|
+| **Aurora** | The built-in default. A new install asks for an Aurora API key on first start; or set `AURORA_API_KEY` in `~/.aurora/.env` (provider: `aurora`). See [Aurora](#aurora). |
 | **Nous Portal** | `aurora model` (OAuth, subscription-based) |
 | **OpenAI Codex** | `aurora model` → **ChatGPT or Codex Subscription** (ChatGPT OAuth, uses Codex models) |
 | **Anthropic** | `aurora model` (Claude Max + extra usage credits via OAuth; also supports Anthropic API key or manual setup-token — see note below) |
@@ -68,6 +69,40 @@ For the official API-key path, see the dedicated [Google Gemini guide](../guides
 In the `model:` config section, you can use either `default:` or `model:` as the key name for your model ID. Both `model: { default: my-model }` and `model: { model: my-model }` work identically.
 :::
 
+
+### Aurora
+
+Aurora is the provider Aurora Coder uses out of the box. On a new install, the first start asks for
+one thing, an Aurora API key:
+
+```text
+☤ Aurora Coder runs on Aurora. Paste your API key to get started.
+  Get a key at https://aurora.dtacenter.com/developers
+  Aurora API key (Enter to choose another provider):
+```
+
+The key is checked against Aurora's model listing, saved as `AURORA_API_KEY` in `~/.aurora/.env`,
+and the install starts on the `Spark` model. Pressing Enter without a key opens the regular setup
+with every other provider. To configure it by hand:
+
+```yaml
+model:
+  provider: "aurora"
+  default: "Spark"
+```
+
+| Model | Context | Notes |
+|-------|---------|-------|
+| `Spark` | 1,000,000 | Default. |
+| `AuroraAGI` | 1,000,000 | Most capable. |
+| `AuroraPRO` | 1,048,576 | Does not read images. |
+| `AuroraFlash` | 1,048,576 | |
+| `Itzel` | 1,000,000 | Used for auxiliary tasks (titles, summaries, vision). |
+
+Switch between them with `aurora model` or `/model`. Aurora speaks the Anthropic Messages API at
+`https://aurora.dtacenter.com`; reasoning is always requested as adaptive thinking with an effort
+level, and on `Spark`, `AuroraAGI` and `Itzel` turning reasoning off leaves the model's own default
+in place. Keys carry a monthly token quota set by whoever issued them.
 
 ### Nous Portal
 

@@ -471,26 +471,23 @@ class CLIAgentSetupMixin:
         return True
 
     def _offer_first_run_setup(self) -> bool:
-        """Offer the provider picker when no provider is configured at all (interactive
-        startup, TTY). Runs the same flow as ``aurora model`` so onboarding has a single
-        source of truth. True when a provider was configured."""
+        """Set up a provider when none is configured at all (interactive startup, TTY): ask for
+        an Aurora key, or, on an empty answer, run the same picker as ``aurora model``. True
+        when a provider was configured."""
         from cli import _cprint, logger
-        _cprint("")
-        _cprint(t("cli.startup.first_run_no_provider"))
-        _cprint(f"  {t('cli.startup.first_run_pick_provider')}")
+        from aurora_cli.aurora_first_run import CANCELLED, OTHER_PROVIDER, offer_aurora_key
         try:
-            answer = input(f"  {t('cli.startup.first_run_prompt')} ").strip().lower()
-        except (KeyboardInterrupt, EOFError):
-            print()
-            answer = "n"
-        if answer in {"n", "no"}:
-            _cprint(f"  {t('cli.startup.first_run_skipped')}")
-            return False
-        try:
-            from aurora_cli.main import select_provider_and_model
-            from aurora_cli.observability.shared_metrics_setup import provider_setup_surface
-            with provider_setup_surface("cli_setup"):
-                select_provider_and_model()
+            # Aurora is the built-in provider: one key and the install is ready. An empty answer
+            # opens the full picker instead.
+            outcome = offer_aurora_key()
+            if outcome == CANCELLED:
+                _cprint(f"  {t('cli.startup.first_run_skipped')}")
+                return False
+            if outcome == OTHER_PROVIDER:
+                from aurora_cli.main import select_provider_and_model
+                from aurora_cli.observability.shared_metrics_setup import provider_setup_surface
+                with provider_setup_surface("cli_setup"):
+                    select_provider_and_model()
         except (KeyboardInterrupt, EOFError, SystemExit):
             print()
             _cprint(f"  {t('cli.startup.first_run_cancelled')}")
