@@ -6,6 +6,10 @@ description: "通过签名 APT 仓库安装适用于 aarch64 Android 的 Aurora 
 
 # 在 Android 上使用 Termux
 
+:::danger 尚未发布适用于 Termux 的 Aurora 软件包
+下文提到的 APT 仓库属于上游项目，其中没有 `aurora-agent` 软件包，因此 `pkg install aurora-agent` 找不到任何内容。本页介绍的是本仓库 Termux 流水线（`scripts/termux/`）构建的软件包；只有将该软件包发布到你自己的 APT 仓库后，这些步骤才能使用。安装脚本不支持 Termux。
+:::
+
 Aurora 的 Termux 软件包适用于 aarch64（arm64-v8a）设备，目前处于预发布测试阶段。
 它包含 Python、Node.js、npm、uv、ripgrep、FFmpeg 和核心 Python 依赖。
 首次运行 `aurora dashboard` 时会下载 pnpm，并安装 Web UI 的 JavaScript 依赖。

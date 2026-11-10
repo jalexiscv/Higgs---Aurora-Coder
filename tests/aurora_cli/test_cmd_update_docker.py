@@ -10,7 +10,7 @@ was actively misleading.
 These tests pin the new behaviour: when ``detect_install_method`` reports
 ``"docker"`` (stamped by ``docker/stage2-hook.sh``), both the apply path
 (``cmd_update``) and the check path (``_cmd_update_check``) print the
-``docker pull`` guidance from ``format_docker_update_message`` and exit
+``docker build`` guidance from ``format_docker_update_message`` and exit
 with status 1, without running ``git fetch`` / ``subprocess.run``.
 """
 
@@ -44,7 +44,7 @@ def test_cmd_update_in_docker_prints_guidance_and_exits(
     # Spot-check the key guidance — exhaustive wording is locked in by the
     # config-module test below to keep these CLI tests resilient to copy edits.
     assert "doesn't apply inside the Docker container" in out
-    assert "docker pull nousresearch/hermes-agent:latest" in out
+    assert "docker build -t aurora-agent https://github.com/jalexiscv/Higgs---Aurora-Coder.git#main" in out
 
     # No git invocations — the early-return must beat every git command.
     git_calls = [c for c in mock_run.call_args_list if c.args and c.args[0] and "git" in str(c.args[0][0])]

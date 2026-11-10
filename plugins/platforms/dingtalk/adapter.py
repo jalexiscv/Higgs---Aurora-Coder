@@ -327,7 +327,7 @@ class DingTalkAdapter(BasePlatformAdapter):
             return
         msg = (f"dingtalk-stream cannot open its websocket with the installed websockets package ({exc}). "
                "Aurora pins dingtalk-stream==0.24.3 with websockets==15.0.1; reinstall the dingtalk extra "
-               "so those versions are used (e.g. `pip install 'aurora-agent[dingtalk]'`).")
+               "so those versions are used (`aurora pm install --extra dingtalk`).")
         logger.error("[%s] %s", self.name, msg)
         # Not retryable: only a reinstall + restart fixes it, and connect() returns True before the
         # socket exists, so a gateway reconnect would re-fail every watcher tick forever.

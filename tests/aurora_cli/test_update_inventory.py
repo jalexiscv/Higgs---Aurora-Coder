@@ -70,12 +70,12 @@ class TestCollectInventory:
         monkeypatch.setattr("aurora_cli.config.detect_install_method", lambda *a, **k: "docker")
         monkeypatch.setattr(
             "aurora_cli.config.recommended_update_command_for_method",
-            lambda m: "docker pull nousresearch/hermes-agent:latest",
+            lambda m: "docker build -t aurora-agent https://github.com/jalexiscv/Higgs---Aurora-Coder.git#main",
         )
         plan = ui.collect_runtime_inventory()
         assert plan.install_method == "docker"
         assert plan.updatable_in_place is False
-        assert "docker pull" in plan.update_mechanism
+        assert "docker build" in plan.update_mechanism
 
     def test_dead_pids_excluded(self, fleet, monkeypatch):
         monkeypatch.setattr("gateway.status._pid_exists", lambda pid: False)

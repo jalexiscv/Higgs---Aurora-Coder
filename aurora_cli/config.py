@@ -326,7 +326,7 @@ def is_nix_install_method(method: str) -> bool:
 
 
 _UPDATE_COMMAND_BY_METHOD = {
-    "docker": "docker pull nousresearch/hermes-agent:latest",
+    "docker": "docker build -t aurora-agent https://github.com/jalexiscv/Higgs---Aurora-Coder.git#main",
     "apt": "pkg upgrade aurora-agent",  # "apt" == Termux APT by contract; uses Termux's `pkg`.
 }
 
@@ -347,36 +347,33 @@ def recommended_update_command() -> str:
 
 
 # Shared by ``cmd_update`` and ``_cmd_update_check`` (aurora_cli/main.py) so the wording never
-# forks. The published image excludes ``.git``, so the git update path can never succeed there
+# forks. The image excludes ``.git``, so the git update path can never succeed there
 # and the generic "reinstall via install.sh" fallback would install a NEW host-side Aurora.
 _DOCKER_UPDATE_MESSAGE = """\
 ✗ ``aurora update`` doesn't apply inside the Docker container.
 
-Aurora Agent runs as a published image (nousresearch/hermes-agent), not a
-git checkout — the container has no working tree to pull into.  Update by
-pulling a fresh image and restarting your container instead:
+Aurora Agent runs as an image built from its repository, not a git
+checkout — the container has no working tree to pull into.  No Aurora image
+is published to a registry, so update by rebuilding the image from the
+current source and restarting your container:
 
-  docker pull nousresearch/hermes-agent:latest
+  docker build -t aurora-agent https://github.com/jalexiscv/Higgs---Aurora-Coder.git#main
   # then restart whatever started the container, e.g.:
-  docker compose up -d --force-recreate aurora-agent
+  docker compose up -d --force-recreate
   # or, for ad-hoc runs, exit the current container and `docker run` again
 
 Verify the new version after restart:
-  docker run --rm nousresearch/hermes-agent:latest --version
+  docker run --rm aurora-agent --version
 
 Notes:
-  • If you pinned a specific tag (e.g. ``:v0.14.0``) the ``:latest`` tag
-    won't move your container — pull the newer tag you actually want, or
-    switch to ``:latest`` / ``:main`` for rolling updates.  See available
-    tags at https://hub.docker.com/r/nousresearch/hermes-agent/tags
-  • On a ``-desktop`` tag (the one carrying Bot Screen)?  Keep the suffix:
-    the unsuffixed image has no Xvnc/Xfce and no sudo to add them, so
-    pulling it stops the bots' screens from starting.
+  • Built from a local clone instead?  ``git pull`` there, then
+    ``docker build -t aurora-agent .`` (or ``docker compose up -d --build``).
+  • Running the Bot Screen variant?  Rebuild with
+    ``--build-arg AURORA_BOT_DESKTOP=1``: the plain image has no Xvnc/Xfce
+    and no sudo to add them, so the bots' screens would stop starting.
   • Your config and session history live under ``$AURORA_HOME`` (``/opt/data``
     in the container, typically bind-mounted from the host) and persist
-    across image upgrades — re-pulling doesn't lose any state.
-  • Running a fork?  Build your own image with this repo's ``Dockerfile``
-    and replace the ``docker pull`` step with your build/push pipeline."""
+    across image upgrades — rebuilding doesn't lose any state."""
 
 
 def format_docker_update_message() -> str:

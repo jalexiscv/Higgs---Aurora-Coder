@@ -24,7 +24,7 @@ aurora plugins install homeassistant
 aurora -p <profile> plugins install homeassistant
 ```
 
-插件自行声明其 Python 依赖（`aiohttp`），因此无需安装 pip extra。旧的 `aurora-agent[homeassistant]` extra 已被移除。
+插件自行声明其 Python 依赖（`aiohttp`），因此无需安装 pip extra。旧的 `homeassistant` extra 已被移除。
 
 :::info 从内置 Home Assistant 的版本升级
 无需任何操作。每个已在使用 Home Assistant 的 profile（`.env` 中有 `HASS_TOKEN`、`config.yaml` 中启用了 `platforms.homeassistant`（或为其设置了 `token`），或 `platform_toolsets` 中列出了 `homeassistant` 工具集）都会在 `aurora update` 时自动从插件目录安装该插件（覆盖共享同一安装的所有 profile）。若该步骤未能执行，Aurora 会在该 profile 首次启动时（agent 启动或 gateway 启动）安装插件，此行为遵循 `security.allow_lazy_installs`。若某次尝试失败（离线、插件目录不可达），启动时最多每小时重试一次；`aurora update` 总会重试。安装结果会显示在终端、Desktop 应用和聊天中。每个 profile 只会自动安装一次：之后若你移除插件（`aurora plugins remove homeassistant`），它将保持移除状态。

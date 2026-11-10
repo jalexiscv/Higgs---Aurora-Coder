@@ -62,7 +62,7 @@ iex (irm https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/s
 کا تصدیق شدہ آرکائیو ارورا کے ٹول اسٹور میں نصب کرتا ہے۔ سسٹم کا Git تبدیل نہیں
 ہوتا۔ MSIX/App Installer ایک الگ پیکیج ہے۔
 
-> **اینڈرائیڈ / ٹرمکس (Android / Termux):** aarch64 آلات کے لیے آزمائشی APT پیکیج دستیاب ہے۔ اس میں Python، Node.js اور TUI شامل ہیں۔ ڈیسک ٹاپ اور سرور کے انسٹالیشن اسکرپٹ کے بجائے [Termux گائیڈ](https://hermes-agent.nousresearch.com/docs/getting-started/termux) استعمال کریں۔
+> **اینڈرائیڈ / ٹرمکس (Android / Termux):** Termux کے لیے Aurora کا کوئی پیکیج ابھی شائع نہیں ہوا، اور اوپر والا انسٹالیشن اسکرپٹ Termux کو سپورٹ نہیں کرتا۔ [Termux گائیڈ](website/docs/getting-started/termux.md) اس پیکیج کی وضاحت کرتی ہے جو اس ریپوزٹری کی پائپ لائن بناتی ہے۔
 >
 > **ونڈوز (Windows):** مقامی سورس انسٹال کے لیے اوپر دیا گیا PowerShell کمانڈ استعمال کریں۔ WSL2 میں لینکس کمانڈ استعمال ہوتا ہے۔ مقامی ڈیٹا `%LOCALAPPDATA%\aurora` میں اور WSL2 کا ڈیٹا `~/.aurora` میں ہوتا ہے۔ ڈیش بورڈ چیٹ مقامی Windows پر pywinpty/ConPTY استعمال کرتا ہے؛ پلیٹ فارم کی حدود [Windows گائیڈ](https://hermes-agent.nousresearch.com/docs/user-guide/windows-native) میں درج ہیں۔
 

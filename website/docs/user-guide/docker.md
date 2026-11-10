@@ -11,19 +11,23 @@ There are two distinct ways Docker intersects with Aurora Agent:
 1. **Running Aurora IN Docker** — the agent itself runs inside a container (this page's primary focus)
 2. **Docker as a terminal backend** — the agent runs on your host but executes every command inside a single, persistent Docker sandbox container that survives across tool calls, `/new`, and subagents for the life of the Aurora process (see [Configuration → Docker Backend](./configuration.md#docker-backend))
 
-This page covers option 1. The container stores all user data (config, API keys, sessions, skills, memories) in a single directory mounted from the host at `/opt/data`. The image itself is stateless and can be upgraded by pulling a new version without losing any configuration.
+This page covers option 1. The container stores all user data (config, API keys, sessions, skills, memories) in a single directory mounted from the host at `/opt/data`. The image itself is stateless and can be upgraded by rebuilding it without losing any configuration.
 
-## Image channels and runtime ownership
+## Build the image
 
-| Image tag | Meaning |
-|---|---|
-| `latest` / `stable` | The image accepted by the stable release gate. |
-| `main` | The development image published from main-branch builds. |
-| `X.Y.Z` | A versioned stable image. Use a digest for an exact deployment pin. |
+Aurora does not publish a container image to a registry. Build it from the
+repository; every command on this page then uses that local `aurora-agent`
+image:
 
-The workflow builds and tests amd64 and arm64 images. Stable publication uses
-the tested image archives rather than rebuilding them. Only the full release
-promotion moves `stable` and `latest`; a main push does not advance those tags.
+```sh
+git clone https://github.com/jalexiscv/Higgs---Aurora-Coder.git
+cd Higgs---Aurora-Coder
+docker build -t aurora-agent .
+```
+
+`docker compose up -d --build` with the bundled `docker-compose.yml` builds the
+same image. Add `--build-arg AURORA_BOT_DESKTOP=1` for the variant that carries
+Bot Screen.
 
 The image's Python environment follows `pyproject.toml` and `uv.lock` (currently
 Python 3.14). Its curated extras are not the native desktop bundle's
@@ -50,7 +54,7 @@ result before hitting Enter.
 mkdir -p ~/.aurora
 docker run -it --rm \
   -v ~/.aurora:/opt/data \
-  nousresearch/hermes-agent setup
+  aurora-agent setup
 ```
 
 This drops you into the setup wizard, which will prompt you for your API keys and write them to `~/.aurora/.env`. You only need to do this once. It is highly recommended to set up a chat system for the gateway to work with at this point.
@@ -69,7 +73,7 @@ docker run -d \
   --restart unless-stopped \
   -v ~/.aurora:/opt/data \
   -p 8642:8642 \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 Port 8642 exposes the gateway's [OpenAI-compatible API server](./features/api-server.md) and health endpoint. It's optional if you only use chat platforms (Telegram, Discord, etc.), but required if you want the dashboard or external tools to reach the gateway.
@@ -109,7 +113,7 @@ docker run -d \
   -e API_SERVER_HOST=0.0.0.0 \
   -e API_SERVER_KEY="$(openssl rand -hex 32)" \
   -e API_SERVER_CORS_ORIGINS='*' \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 Opening any port on an internet facing machine is a security risk. You should not do it unless you understand the risks.
@@ -126,7 +130,7 @@ docker run -d \
   -p 8642:8642 \
   -p 9119:9119 \
   -e AURORA_DASHBOARD=1 \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 The dashboard is supervised by s6 — if it crashes, `s6-supervise` restarts it automatically after a short backoff. Dashboard stdout/stderr is forwarded to `docker logs <container>` (no prefix; the gateway's own output now lives in a per-profile s6-log file — see [Where the logs go](#where-the-logs-go) below — so the two streams don't clash).
@@ -203,7 +207,7 @@ docker run -d \
   -p 9120:9120 \
   -e AURORA_DASHBOARD_BASIC_AUTH_USERNAME=admin \
   -e AURORA_DASHBOARD_BASIC_AUTH_PASSWORD="$(openssl rand -hex 16)" \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 A non-loopback `host` needs one of the [dashboard's auth providers](#running-the-dashboard), and the listener refuses to start without one. Without `public_url`, links printed by `aurora webapp` inside the container use the container's own address, not the published one.
@@ -232,7 +236,7 @@ Cloudflare Tunnel needs no published port, because `cloudflared` dials out; it o
 ```yaml
 services:
   aurora:
-    image: nousresearch/hermes-agent
+    image: aurora-agent
     command: gateway run
     restart: unless-stopped
     volumes:
@@ -270,7 +274,7 @@ To open an interactive chat session against a running data directory:
 ```sh
 docker run -it --rm \
   -v ~/.aurora:/opt/data \
-  nousresearch/hermes-agent
+  aurora-agent
 ```
 
 Or if you have already opened a terminal in your running container (via Docker Desktop for instance), just run:
@@ -411,7 +415,7 @@ In those cases, declare one service per profile with distinct `container_name`, 
 ```yaml
 services:
   aurora-work:
-    image: nousresearch/hermes-agent:latest
+    image: aurora-agent
     container_name: aurora-work
     restart: unless-stopped
     command: gateway run
@@ -421,7 +425,7 @@ services:
       - ~/.aurora-work:/opt/data
 
   aurora-personal:
-    image: nousresearch/hermes-agent:latest
+    image: aurora-agent
     container_name: aurora-personal
     restart: unless-stopped
     command: gateway run
@@ -462,7 +466,7 @@ docker run -it --rm \
   -v ~/.aurora:/opt/data \
   -e ANTHROPIC_API_KEY="sk-ant-..." \
   -e OPENAI_API_KEY="sk-..." \
-  nousresearch/hermes-agent
+  aurora-agent
 ```
 
 Direct `-e` flags override values from `.env`. This is useful for CI/CD or secrets-manager integrations where you don't want keys on disk.
@@ -478,7 +482,7 @@ For persistent deployment with both the gateway and dashboard, a `docker-compose
 ```yaml
 services:
   aurora:
-    image: nousresearch/hermes-agent:latest
+    image: aurora-agent
     container_name: aurora
     restart: unless-stopped
     command: gateway run
@@ -533,7 +537,7 @@ ctl.!default {
 Then build a small derived image with the ALSA PulseAudio plugin installed:
 
 ```dockerfile title="Dockerfile.audio"
-FROM nousresearch/hermes-agent:latest
+FROM aurora-agent
 
 USER root
 RUN apt-get update \
@@ -602,7 +606,7 @@ docker run -d \
   --restart unless-stopped \
   --memory=4g --cpus=2 \
   -v ~/.aurora:/opt/data \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 ## What the Dockerfile does
@@ -675,7 +679,7 @@ If you must override the entrypoint, add Docker's init as PID 1 so orphans are r
 ```yaml
 services:
   aurora-dashboard:
-    image: nousresearch/hermes-agent:latest
+    image: aurora-agent
     init: true                                      # docker-init becomes PID 1 and reaps orphans
     entrypoint: ["/opt/aurora/.venv/bin/aurora"]
     command: ["dashboard", "--host", "0.0.0.0", "--port", "9119", "--no-open", "--skip-build"]
@@ -711,26 +715,27 @@ Each profile created with `aurora profile create <name>` automatically gets an s
 
 ## Upgrading
 
-Pull the latest image and recreate the container. Your data directory is
+Rebuild the image from the current source and recreate the container. Your data directory is
 preserved, and the container runs non-interactive config-schema migrations
 against the mounted `$AURORA_HOME/config.yaml` before starting the gateway.
 When a migration is needed, Aurora writes timestamped backups next to
 `config.yaml` and `.env` first.
 
 ```sh
-docker pull nousresearch/hermes-agent:latest
+git -C Higgs---Aurora-Coder pull
+docker build -t aurora-agent Higgs---Aurora-Coder
 docker rm -f aurora
 docker run -d \
   --name aurora \
   --restart unless-stopped \
   -v ~/.aurora:/opt/data \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 Or with Docker Compose:
 
 ```sh
-docker compose pull
+docker compose build
 docker compose up -d
 ```
 
@@ -765,10 +770,10 @@ This is a good fit for tools that are quick to install and used occasionally. Fo
 
 ### Durable installs — build a derived image
 
-When a tool must be available immediately on every container start with no re-install delay, build a new image that inherits from `nousresearch/hermes-agent` and installs the tool in a layer:
+When a tool must be available immediately on every container start with no re-install delay, build a new image that inherits from `aurora-agent` and installs the tool in a layer:
 
 ```dockerfile
-FROM nousresearch/hermes-agent:latest
+FROM aurora-agent
 
 USER root
 RUN apt-get update \
@@ -777,7 +782,7 @@ RUN apt-get update \
 # Keep the root entrypoint; s6 drops privileges for the runtime.
 ```
 
-Build it and use it in place of the official image:
+Build it and use it in place of the base image:
 
 ```sh
 docker build -t my-aurora:latest .
@@ -789,7 +794,7 @@ docker run -d \
   my-aurora:latest gateway run
 ```
 
-The entrypoint script and `/opt/data` semantics are inherited unchanged, so the rest of this page still applies. Remember to rebuild the image when pulling a newer upstream `nousresearch/hermes-agent`.
+The entrypoint script and `/opt/data` semantics are inherited unchanged, so the rest of this page still applies. Remember to rebuild it after you rebuild `aurora-agent`.
 
 ### Complex tools or multi-service stacks — run a sidecar container
 
@@ -798,7 +803,7 @@ For tools that bring their own service (a database, a web server, a queue, a hea
 ```yaml
 services:
   aurora:
-    image: nousresearch/hermes-agent:latest
+    image: aurora-agent
     container_name: aurora
     restart: unless-stopped
     command: gateway run
@@ -856,7 +861,7 @@ services:
             - capabilities: [gpu]
 
   aurora:
-    image: nousresearch/hermes-agent:latest
+    image: aurora-agent
     container_name: aurora
     restart: unless-stopped
     command: gateway run
@@ -900,7 +905,7 @@ docker run -d \
   --name aurora \
   -v ~/.aurora:/opt/data \
   -p 8642:8642 \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 ```yaml
@@ -919,7 +924,7 @@ docker run -d \
   --name aurora \
   --network host \
   -v ~/.aurora:/opt/data \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 ```yaml
@@ -982,7 +987,7 @@ docker run -d \
   --name aurora \
   -e PUID=1000 -e PGID=10 \
   -v /volume1/docker/aurora:/opt/data \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 `docker exec aurora <cmd>` automatically drops to UID 10000 too — see [`docker exec` automatically drops to the `aurora` user](#docker-exec-automatically-drops-to-the-aurora-user) for details and the per-invocation opt-out.
@@ -1014,7 +1019,7 @@ docker run -d \
   --name aurora \
   --shm-size=1g \
   -v ~/.aurora:/opt/data \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 ### Gateway not reconnecting after network issues
@@ -1029,6 +1034,6 @@ docker restart aurora
 
 ```sh
 docker logs --tail 50 aurora          # Recent logs
-docker run -it --rm nousresearch/hermes-agent:latest --version   # Verify version
+docker run -it --rm aurora-agent --version   # Verify version
 docker stats aurora                    # Resource usage
 ```

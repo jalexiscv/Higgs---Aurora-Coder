@@ -11,18 +11,20 @@ Docker 与 Aurora Agent 的交集有两种截然不同的方式：
 1. **在 Docker 中运行 Aurora** — agent 本身在容器内运行（本页的主要内容）
 2. **Docker 作为终端后端** — agent 在宿主机上运行，但将每条命令在单个持久化 Docker 沙箱容器中执行，该容器在工具调用、`/new` 和子 agent 之间保持存活，直至 Aurora 进程结束（参见 [配置 → Docker 后端](./configuration.md#docker-后端)）
 
-本页介绍选项 1。容器将所有用户数据（配置、API 密钥、会话、技能、记忆）存储在从宿主机挂载于 `/opt/data` 的单个目录中。镜像本身是无状态的，可通过拉取新版本进行升级而不会丢失任何配置。
+本页介绍选项 1。容器将所有用户数据（配置、API 密钥、会话、技能、记忆）存储在从宿主机挂载于 `/opt/data` 的单个目录中。镜像本身是无状态的，可通过重新构建进行升级而不会丢失任何配置。
 
-## 镜像标签和更新
+## 构建镜像
 
-| 标签 | 含义 |
-|---|---|
-| `stable` / `latest` | 通过完整稳定发布验收后提升的镜像 |
-| `main` | 主分支开发构建 |
-| `X.Y.Z` | 发布流程生成的版本化稳定镜像；精确部署使用摘要 |
+Aurora 没有向任何镜像仓库发布容器镜像。请从代码仓库自行构建；本页的所有命令都使用这个本地 `aurora-agent` 镜像：
 
-镜像流程构建并测试 amd64 和 arm64。稳定发布复用已测试归档，不重新构建。
-主分支推送只更新 `main`，不会提升 `stable` 或 `latest`。
+```sh
+git clone https://github.com/jalexiscv/Higgs---Aurora-Coder.git
+cd Higgs---Aurora-Coder
+docker build -t aurora-agent .
+```
+
+使用仓库自带的 `docker-compose.yml` 执行 `docker compose up -d --build` 会构建同一个镜像。需要 Bot Screen 的变体时，加上 `--build-arg AURORA_BOT_DESKTOP=1`。
+
 应用代码位于 `/opt/aurora`，持久数据位于挂载的 `/opt/data`，两者分别管理。
 
 ## 快速开始
@@ -33,7 +35,7 @@ Docker 与 Aurora Agent 的交集有两种截然不同的方式：
 mkdir -p ~/.aurora
 docker run -it --rm \
   -v ~/.aurora:/opt/data \
-  nousresearch/hermes-agent setup
+  aurora-agent setup
 ```
 
 这将进入设置向导，向导会提示你输入 API 密钥并将其写入 `~/.aurora/.env`。你只需执行一次。强烈建议此时为 gateway 配置一个聊天系统。
@@ -48,7 +50,7 @@ docker run -d \
   --restart unless-stopped \
   -v ~/.aurora:/opt/data \
   -p 8642:8642 \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 端口 8642 暴露 gateway 的 [OpenAI 兼容 API 服务器](./features/api-server.md)和健康检查端点。如果你只使用聊天平台（Telegram、Discord 等），该端口是可选的；但如果你希望 dashboard 或外部工具访问 gateway，则必须开放。
@@ -65,7 +67,7 @@ docker run -d \
   -e API_SERVER_HOST=0.0.0.0 \
   -e API_SERVER_KEY="$(openssl rand -hex 32)" \
   -e API_SERVER_CORS_ORIGINS='*' \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 在面向互联网的机器上开放任何端口都存在安全风险。除非你了解相关风险，否则不应这样做。
@@ -82,7 +84,7 @@ docker run -d \
   -p 8642:8642 \
   -p 9119:9119 \
   -e AURORA_DASHBOARD=1 \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 Dashboard 由 s6 监管：若进程崩溃，`s6-supervise` 会在短暂退避后自动重启。Dashboard 的 stdout/stderr 会直接转发到 `docker logs <container>`；gateway 的主输出现在写入每个 profile 的 s6 日志文件，见下方的 per-profile 日志说明。
@@ -129,7 +131,7 @@ Dashboard 由 s6 监管：若进程崩溃，`s6-supervise` 会在短暂退避后
 ```sh
 docker run -it --rm \
   -v ~/.aurora:/opt/data \
-  nousresearch/hermes-agent
+  aurora-agent
 ```
 
 或者，如果你已通过 Docker Desktop 等方式在运行中的容器内打开了终端，直接运行：
@@ -207,7 +209,7 @@ docker run -it --rm \
   -v ~/.aurora:/opt/data \
   -e ANTHROPIC_API_KEY="sk-ant-..." \
   -e OPENAI_API_KEY="sk-..." \
-  nousresearch/hermes-agent
+  aurora-agent
 ```
 
 直接传入的 `-e` 标志会覆盖 `.env` 中的值。这对于不希望将密钥写入磁盘的 CI/CD 或密钥管理器集成非常有用。
@@ -223,7 +225,7 @@ docker run -it --rm \
 ```yaml
 services:
   aurora:
-    image: nousresearch/hermes-agent:latest
+    image: aurora-agent
     container_name: aurora
     restart: unless-stopped
     command: gateway run
@@ -267,7 +269,7 @@ docker run -d \
   --restart unless-stopped \
   --memory=4g --cpus=2 \
   -v ~/.aurora:/opt/data \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 ## Dockerfile 说明 {#what-the-dockerfile-does}
@@ -330,22 +332,23 @@ aurora profile delete coder            # 拆除 s6 槽
 
 ## 升级
 
-拉取最新镜像并重建容器。你的数据目录不受影响。
+从最新源码重新构建镜像并重建容器。你的数据目录不受影响。
 
 ```sh
-docker pull nousresearch/hermes-agent:latest
+git -C Higgs---Aurora-Coder pull
+docker build -t aurora-agent Higgs---Aurora-Coder
 docker rm -f aurora
 docker run -d \
   --name aurora \
   --restart unless-stopped \
   -v ~/.aurora:/opt/data \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 或使用 Docker Compose：
 
 ```sh
-docker compose pull
+docker compose build
 docker compose up -d
 ```
 
@@ -373,10 +376,10 @@ SSH 和 Modal 后端也会进行相同的同步——技能和凭据文件在每
 
 ### 持久安装——构建派生镜像
 
-当工具必须在每次容器启动时立即可用且无需重新安装延迟时，构建一个继承自 `nousresearch/hermes-agent` 并在层中安装该工具的新镜像：
+当工具必须在每次容器启动时立即可用且无需重新安装延迟时，构建一个继承自 `aurora-agent` 并在层中安装该工具的新镜像：
 
 ```dockerfile
-FROM nousresearch/hermes-agent:latest
+FROM aurora-agent
 
 USER root
 RUN apt-get update \
@@ -397,7 +400,7 @@ docker run -d \
   my-aurora:latest gateway run
 ```
 
-入口点脚本和 `/opt/data` 语义原样继承，本页其余内容仍然适用。拉取更新的上游 `nousresearch/hermes-agent` 时记得重新构建镜像。
+入口点脚本和 `/opt/data` 语义原样继承，本页其余内容仍然适用。重新构建 `aurora-agent` 之后，记得也重新构建这个派生镜像。
 
 ### 复杂工具或多服务栈——运行 sidecar 容器
 
@@ -406,7 +409,7 @@ docker run -d \
 ```yaml
 services:
   aurora:
-    image: nousresearch/hermes-agent:latest
+    image: aurora-agent
     container_name: aurora
     restart: unless-stopped
     command: gateway run
@@ -464,7 +467,7 @@ services:
             - capabilities: [gpu]
 
   aurora:
-    image: nousresearch/hermes-agent:latest
+    image: aurora-agent
     container_name: aurora
     restart: unless-stopped
     command: gateway run
@@ -508,7 +511,7 @@ docker run -d \
   --name aurora \
   -v ~/.aurora:/opt/data \
   -p 8642:8642 \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 ```yaml
@@ -527,7 +530,7 @@ docker run -d \
   --name aurora \
   --network host \
   -v ~/.aurora:/opt/data \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 ```yaml
@@ -593,7 +596,7 @@ docker run -d \
   --name aurora \
   --shm-size=1g \
   -v ~/.aurora:/opt/data \
-  nousresearch/hermes-agent gateway run
+  aurora-agent gateway run
 ```
 
 ### 网络问题后 gateway 无法重连
@@ -608,6 +611,6 @@ docker restart aurora
 
 ```sh
 docker logs --tail 50 aurora          # 最近日志
-docker run -it --rm nousresearch/hermes-agent:latest version     # 验证版本
+docker run -it --rm aurora-agent version     # 验证版本
 docker stats aurora                    # 资源使用情况
 ```

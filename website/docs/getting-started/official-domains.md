@@ -21,8 +21,8 @@ Nous Research operates `nousresearch.com` and its subdomains. The ones Aurora Ag
 
 Outside `nousresearch.com`:
 
-- **GitHub:** the [NousResearch organization](https://github.com/NousResearch) and its [aurora-agent repository](https://github.com/jalexiscv/Higgs---Aurora-Coder) (source, releases, the Nix flake). Raw files from that repository are served from `raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/...`; that is the same repository, not a separate source. Any other account or repository is not ours.
-- **Docker Hub:** the [`nousresearch/hermes-agent`](https://hub.docker.com/r/nousresearch/hermes-agent) image, published by the repository's release workflow (see [Docker](../user-guide/docker.md)). Only the `nousresearch` namespace is official; images under other names or registries are not.
+- **GitHub:** the [jalexiscv/Higgs---Aurora-Coder repository](https://github.com/jalexiscv/Higgs---Aurora-Coder) (source, the installer scripts, the Nix flake). Raw files from that repository are served from `raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/...`; that is the same repository, not a separate source. Any other account or repository is not ours.
+- **Docker:** no Aurora image is published to any registry; you build it from the repository (see [Docker](../user-guide/docker.md)). An Aurora image offered on a registry is not official.
 - **X (Twitter):** [@NousResearch](https://x.com/NousResearch)
 - **Discord:** [discord.gg/NousResearch](https://discord.gg/NousResearch)
 
@@ -40,7 +40,7 @@ curl -fsSL https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main
 iex (irm https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.ps1)
 ```
 
-The other supported routes also stay on official sources: Desktop packages download from the [Aurora website](https://hermes-agent.nousresearch.com/), Termux uses the signed APT repository on `hermes-assets.nousresearch.com` (see the [Termux guide](./termux.md), not the script above), Nix builds from the GitHub repository (see [Nix & NixOS](./nix-setup.md)), and Docker pulls `nousresearch/hermes-agent` from Docker Hub. Some guides fetch `install.ps1` straight from the repository at `raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.ps1`; it is the same script.
+The other supported routes also stay on official sources: Desktop packages download from the [Aurora website](https://hermes-agent.nousresearch.com/), Termux has no published Aurora package yet (see the [Termux guide](./termux.md)), Nix builds from the GitHub repository (see [Nix & NixOS](./nix-setup.md)), and Docker builds its image from the GitHub repository (see [Docker](../user-guide/docker.md)). Some guides fetch `install.ps1` straight from the repository at `raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main/scripts/install.ps1`; it is the same script.
 
 If an installer, download, image, or "portal" is hosted anywhere other than the sources listed on this page, treat it as untrusted.
 

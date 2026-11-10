@@ -100,8 +100,8 @@ def evaluate_update_admission(project_root: Path) -> Optional[UpdateRefusal]:
                 return _refusal("image-marker-invalid", "docker", lambda command: (
                     "✗ This install is image-managed, but its provenance "
                     f"marker is invalid ({provenance.error}).\n"
-                    "  In-place update is disabled. Update by pulling a "
-                    f"new image:\n    {command}"
+                    "  In-place update is disabled. Update by rebuilding "
+                    f"the image:\n    {command}"
                 ))
             return _refusal("image-marker", provenance.manager)
     except Exception as exc:

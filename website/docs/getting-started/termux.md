@@ -6,10 +6,12 @@ description: "Install Aurora Agent on Android from its signed Termux APT reposit
 
 # Aurora on Android with Termux
 
-:::danger Termux is currently broken
-The Termux package does not work right now. A fix is in progress and will
-ship soon. Until then, the steps below may fail or install a package that
-does not run.
+:::danger No Aurora package is published for Termux
+The APT repository named below belongs to the upstream project and does not
+carry an `aurora-agent` package, so `pkg install aurora-agent` finds nothing.
+This page describes the package the repository's Termux pipeline
+(`scripts/termux/`) builds; the steps work only once that package is published
+to an APT repository of your own. The installer script does not support Termux.
 :::
 
 The Termux package runs Aurora on **aarch64 (arm64-v8a)** Android devices.

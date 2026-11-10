@@ -268,7 +268,7 @@ class WhatsAppCloudAdapter(WhatsAppBehaviorMixin, BasePlatformAdapter):
     async def connect(self, *, is_reconnect: bool = False) -> bool:
         for ok, code, message in (
             (check_whatsapp_cloud_requirements(), "whatsapp_cloud_deps_missing",
-             "aiohttp and httpx are required for whatsapp_cloud — reinstall aurora-agent."),
+             "aiohttp and httpx are required for whatsapp_cloud — reinstall Aurora."),
             (self._phone_number_id and self._access_token, "whatsapp_cloud_unconfigured",
              "WHATSAPP_CLOUD_PHONE_NUMBER_ID and WHATSAPP_CLOUD_ACCESS_TOKEN are required."),
         ):
@@ -1145,7 +1145,7 @@ def register(ctx) -> None:
         check_fn=check_whatsapp_cloud_requirements, is_connected=_is_connected,
         config_connected_fn=config_connected_extra("phone_number_id", "access_token"),
         required_env=["WHATSAPP_CLOUD_PHONE_NUMBER_ID", "WHATSAPP_CLOUD_ACCESS_TOKEN"],
-        install_hint="aiohttp/httpx missing — reinstall aurora-agent", setup_fn=_interactive_setup,
+        install_hint="aiohttp/httpx missing — reinstall Aurora", setup_fn=_interactive_setup,
         cron_deliver_env_var="WHATSAPP_CLOUD_HOME_CHANNEL", emoji="📱", allow_update_command=False,
         platform_hint=_PLATFORM_HINT,
         # Adapter lacks edit_message; promote once it lands.

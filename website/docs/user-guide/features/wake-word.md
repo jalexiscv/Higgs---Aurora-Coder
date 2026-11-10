@@ -321,7 +321,7 @@ PORCUPINE_ACCESS_KEY=your-key-here
 - A TTS provider for speaking the reply (the default `edge-tts` works with no
   key). The wake flow is fully hands-free, so the toggle refuses to arm until
   both STT and TTS are ready — `aurora tools` (Voice section) sets them up.
-- The wake engine deps (auto-installed, or `aurora-agent[wake]`).
+- The wake engine deps (auto-installed, or `aurora pm install --extra wake`).
 
 `/wake status` reports exactly what's missing if the listener won't start.
 

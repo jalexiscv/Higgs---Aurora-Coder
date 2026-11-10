@@ -11,7 +11,7 @@ into Aurora and does not require an Aurora observability plugin. Aurora remains
 importable without Relay on other native targets. Those targets use an
 explicit reduced-capability no-op host:
 Aurora execution remains available, while Relay scopes, middleware, plugins,
-and subscribers are unavailable. The `aurora-agent[nemo-relay]` extra remains
+and subscribers are unavailable. The `nemo-relay` extra remains
 as a no-op compatibility alias for existing installation commands.
 
 > [!WARNING]

@@ -28,7 +28,7 @@ def _valid_marker(tmp_path: Path) -> Path:
         "schema": 1,
         "deployment_kind": "image",
         "manager": "docker",
-        "image": "nousresearch/hermes-agent",
+        "image": "aurora-agent",
         "version": "1.0.0",
         "revision": "a" * 40,
     }))
@@ -99,7 +99,7 @@ def test_admission_marker_refuses_even_on_git_checkout(tmp_path, monkeypatch):
     refusal = evaluate_update_admission(tmp_path)
     assert refusal is not None
     assert refusal.code == "image-marker"
-    assert "docker pull" in refusal.update_command
+    assert "docker build" in refusal.update_command
 
 
 def test_admission_invalid_marker_fails_closed(tmp_path, monkeypatch):
@@ -111,7 +111,7 @@ def test_admission_invalid_marker_fails_closed(tmp_path, monkeypatch):
     refusal = evaluate_update_admission(tmp_path)
     assert refusal is not None
     assert refusal.code == "image-marker-invalid"
-    assert "docker pull" in refusal.update_command
+    assert "docker build" in refusal.update_command
 
 
 def test_admission_no_marker_falls_back_to_heuristics(tmp_path, monkeypatch):
@@ -162,7 +162,7 @@ def test_refusal_receipt_written_as_refused(tmp_path, monkeypatch):
         UpdateRefusal(
             code="image-marker",
             message="msg",
-            update_command="docker pull nousresearch/hermes-agent:latest",
+            update_command="docker build -t aurora-agent https://github.com/jalexiscv/Higgs---Aurora-Coder.git#main",
         )
     )
     receipts = list((tmp_path / "receipts").glob("*.json"))
@@ -173,7 +173,7 @@ def test_refusal_receipt_written_as_refused(tmp_path, monkeypatch):
     assert data["stop_reason"] == "image-marker"
     steps = {s["name"]: s for s in data["steps"]}
     assert "admission" in steps and steps["admission"]["ok"] is False
-    assert "docker pull" in steps["admission"]["detail"]
+    assert "docker build" in steps["admission"]["detail"]
 
 
 # ---------------------------------------------------------------------------

@@ -54,8 +54,8 @@ reverse proxy's access log may record an already-spent ticket.
   runs as root — the usual case in a container — the installer runs the package
   manager directly, with no sudo and no password card. When it is not root and
   the host has no `sudo` at all, the pane and the CLI print the exact install
-  command for you to run on the host instead of showing a card. The official
-  Docker image (`nousresearch/hermes-agent`, which also powers Aurora Cloud) is
+  command for you to run on the host instead of showing a card. The Docker
+  image (`aurora-agent`) is
   that second case: the gateway runs as an unprivileged user and the image has no
   `sudo`, so the pane shows the `apt-get` line and an operator runs it once as
   root in the container (`docker exec -u 0 <container> apt-get install -y …`).

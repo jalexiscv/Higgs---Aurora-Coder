@@ -1221,7 +1221,7 @@ def compute_next_run(
             logger.warning(
                 "Cannot compute next run for cron schedule %r: 'croniter' is "
                 "not installed. croniter is a core dependency as of v0.9.x; "
-                "reinstall aurora-agent or run 'pip install croniter' in your runtime env "
+                "reinstall Aurora or run 'pip install croniter' in your runtime env "
                 "(interpreter: %s).",
                 expr, sys.executable)
             return None

@@ -472,7 +472,7 @@ The plugin authenticates with `X-API-Key` and uses the server's `/search` / `/me
 
 ### Migrating from bundled Mem0
 
-Mem0 used to ship inside the Aurora tree (and as the `aurora-agent[mem0]` pip extra). If your `config.yaml` already has `memory.provider: mem0`, there is nothing to do for most users:
+Mem0 used to ship inside the Aurora tree (and as the `mem0` pip extra). If your `config.yaml` already has `memory.provider: mem0`, there is nothing to do for most users:
 
 - `aurora update` installs the catalog plugin into every profile home that names the provider.
 - If the plugin is still missing on the first agent start (`aurora chat`, the gateway, Desktop), Aurora installs it and tells you it did.
@@ -534,7 +534,7 @@ See the [upstream Aurora integration docs](https://hindsight.vectorize.io/sdks/i
 
 #### Migrating from bundled Hindsight
 
-Hindsight used to ship inside the Aurora tree (and as the `aurora-agent[hindsight]` pip extra). If your `config.yaml` already has `memory.provider: hindsight`, there is nothing to do for most users:
+Hindsight used to ship inside the Aurora tree (and as the `hindsight` pip extra). If your `config.yaml` already has `memory.provider: hindsight`, there is nothing to do for most users:
 
 - `aurora update` installs the catalog plugin into every profile home that names the provider. Each line names the profile it is about. In a terminal it asks before preparing the plugin's Python dependencies; when several profiles use the provider, the questions are asked once and the answers apply to all of them. Without a terminal (the Desktop app, a script, a service) nobody can answer, so each profile prepares them unattended when its `security.allow_lazy_installs` is on (the default); a profile with it off gets the exact `aurora -p <profile> plugins install hindsight` command instead, and the other profiles still migrate.
 - If the plugin is still missing on the first agent start (`aurora chat`, Desktop, the gateway, …), Aurora installs it, dependencies included, and shows ``✓ Memory provider 'hindsight' moved out of core — installed its plugin from the catalog (memory.provider and your stored memories are unchanged; check its settings with `aurora memory status`).`` Messaging platforms get the line with the first reply.
@@ -748,13 +748,13 @@ Base URL precedence is `supermemory.json` → `SUPERMEMORY_BASE_URL` → `https:
 
 ### Migrating from bundled Supermemory
 
-Supermemory used to ship inside the Aurora tree (and as the `aurora-agent[supermemory]` pip extra). If your `config.yaml` already has `memory.provider: supermemory`, there is nothing to do for most users:
+Supermemory used to ship inside the Aurora tree (and as the `supermemory` pip extra). If your `config.yaml` already has `memory.provider: supermemory`, there is nothing to do for most users:
 
 - `aurora update` installs the catalog plugin into every profile home that names the provider (this runs even when `security.allow_lazy_installs` is `false`).
 - If the plugin is still missing on the first agent start (`aurora chat`, the gateway, …), Aurora installs it and prints `✓ Memory provider 'supermemory' moved out of core — installed its plugin from the catalog (your memory.supermemory settings and data are unchanged).`
 - With `security.allow_lazy_installs: false`, the agent-start path instead logs one line — ``Memory provider 'supermemory' is not installed; security.allow_lazy_installs is off — run `aurora plugins install supermemory`.`` — and you run `aurora plugins install supermemory` yourself.
 
-What changes on disk: the plugin appears in `~/.aurora/plugins/supermemory/` and `config.yaml` gains `plugins.enabled: [supermemory]`. The Supermemory SDK is installed from the plugin's own package metadata, so the `aurora-agent[supermemory]` extra is no longer needed. `memory.provider`, `$AURORA_HOME/supermemory.json`, the `SUPERMEMORY_*` keys in `.env` and the memories stored in your Supermemory account are untouched. Verify with `aurora memory status` (provider active) and `aurora plugins list` (plugin installed and enabled).
+What changes on disk: the plugin appears in `~/.aurora/plugins/supermemory/` and `config.yaml` gains `plugins.enabled: [supermemory]`. The Supermemory SDK is installed from the plugin's own package metadata, so the `supermemory` extra is no longer needed. `memory.provider`, `$AURORA_HOME/supermemory.json`, the `SUPERMEMORY_*` keys in `.env` and the memories stored in your Supermemory account are untouched. Verify with `aurora memory status` (provider active) and `aurora plugins list` (plugin installed and enabled).
 
 ### Memori
 

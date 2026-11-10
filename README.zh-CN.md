@@ -37,7 +37,7 @@ curl -fsSL https://raw.githubusercontent.com/jalexiscv/Higgs---Aurora-Coder/main
 
 支持 Linux、macOS 和 WSL2。安装程序会自动处理平台特定的配置。
 
-> **Android / Termux：** aarch64 设备可使用预发布的 APT 软件包，其中包含 Python、Node.js 和 TUI。请按照 [Termux 指南](https://hermes-agent.nousresearch.com/docs/getting-started/termux)安装，不要使用桌面和服务器的安装脚本。
+> **Android / Termux：** 目前还没有为 Termux 发布 Aurora 软件包，上面的安装脚本也不支持 Termux。[Termux 指南](website/docs/getting-started/termux.md)介绍的是本仓库流水线构建的软件包。
 >
 > **Windows：** 在 PowerShell 中运行：
 > ```powershell

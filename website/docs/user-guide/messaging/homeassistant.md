@@ -24,7 +24,7 @@ Plugins are installed per profile. To use Home Assistant in another profile, ins
 aurora -p <profile> plugins install homeassistant
 ```
 
-The plugin declares its own Python dependency (`aiohttp`), so there is no pip extra to install. The old `aurora-agent[homeassistant]` extra has been removed.
+The plugin declares its own Python dependency (`aiohttp`), so there is no pip extra to install. The old `homeassistant` extra has been removed.
 
 :::info Upgrading from a release that bundled Home Assistant
 Nothing to do. Every profile that was already using Home Assistant — `HASS_TOKEN` in its `.env`, `platforms.homeassistant` enabled (or given a `token`) in `config.yaml`, or the `homeassistant` toolset listed in `platform_toolsets` — gets the plugin installed automatically from the catalog by `aurora update` (for all profiles sharing the install). If that step could not run, Aurora installs it the first time the profile starts (agent or gateway start; this honours `security.allow_lazy_installs`). After a failed attempt (offline, catalog unreachable) starts retry at most once an hour; `aurora update` always retries. The outcome is reported in the terminal, the Desktop app and chat. This happens once per profile: if you later remove the plugin (`aurora plugins remove homeassistant`), it stays removed.

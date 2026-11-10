@@ -88,7 +88,7 @@ class TestDoctorPlatformHints:
 
         hint = doctor_platform._sqlite_upgrade_hint()
 
-        assert "docker pull nousresearch/hermes-agent:latest" in hint
+        assert "docker build -t aurora-agent https://github.com/jalexiscv/Higgs---Aurora-Coder.git#main" in hint
         assert "aurora update" not in hint
 
 
