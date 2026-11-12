@@ -387,7 +387,7 @@ def test_stable_zip_consumes_the_same_commit_through_the_real_swap(update_tree, 
             assert request['snapshot_id'] == 'release-snapshot'
             assert (t.clone / 'content.txt').read_text(encoding='utf-8-sig') == 'release\n'
             assert [url for url in urls if '/archive/' in url] == [
-                f'https://github.com/jalexiscv/Higgs---Aurora-Coder/archive/{t.wanted}.zip']
+                f'https://github.com/{OFFICIAL_REPOSITORY}/archive/{t.wanted}.zip']
         assert t.resumed
         if transport in {'git-error', 'dirty'}:
             assert failed and fetched

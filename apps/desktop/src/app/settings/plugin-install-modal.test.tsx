@@ -20,7 +20,7 @@ vi.mock('@/aurora', async importOriginal => ({
 
 import { $pluginDecisions, $pluginRecords, dropPlugin, patchPlugin, publishPlugin } from '@/contrib/plugins-store'
 import { queryClient } from '@/lib/query-client'
-import { $notifications } from '@/store/notifications'
+import { $notifications, clearNotifications } from '@/store/notifications'
 import {
   $pluginInstallRequest,
   closePluginInstallRequest,
@@ -102,6 +102,8 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
   closePluginInstallRequest()
+  // A toast left behind keeps its auto-dismiss timer, which fires after jsdom is torn down.
+  clearNotifications()
   vi.unstubAllGlobals()
 })
 
