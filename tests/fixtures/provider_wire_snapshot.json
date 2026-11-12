@@ -1920,6 +1920,192 @@
    ]
   }
  },
+ "aurora": {
+  "api_mode": "anthropic_messages",
+  "base_url": "https://aurora.dtacenter.com",
+  "high": {
+   "max_tokens": 128000,
+   "messages": [
+    {
+     "content": "list files",
+     "role": "user"
+    },
+    {
+     "content": [
+      {
+       "id": "call_1",
+       "input": {
+        "command": "ls"
+       },
+       "name": "terminal",
+       "type": "tool_use"
+      }
+     ],
+     "role": "assistant"
+    },
+    {
+     "content": [
+      {
+       "content": "a.txt\nb.txt",
+       "tool_use_id": "call_1",
+       "type": "tool_result"
+      },
+      {
+       "text": "thanks, now summarize",
+       "type": "text"
+      }
+     ],
+     "role": "user"
+    }
+   ],
+   "model": "Spark",
+   "output_config": {
+    "effort": "high"
+   },
+   "system": "You are a test agent.",
+   "thinking": {
+    "display": "summarized",
+    "type": "adaptive"
+   },
+   "tool_choice": {
+    "type": "auto"
+   },
+   "tools": [
+    {
+     "description": "Run a shell command.",
+     "input_schema": {
+      "properties": {
+       "command": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "command"
+      ],
+      "type": "object"
+     },
+     "name": "terminal"
+    }
+   ]
+  },
+  "model": "Spark",
+  "off": {
+   "max_tokens": 128000,
+   "messages": [
+    {
+     "content": "list files",
+     "role": "user"
+    },
+    {
+     "content": [
+      {
+       "id": "call_1",
+       "input": {
+        "command": "ls"
+       },
+       "name": "terminal",
+       "type": "tool_use"
+      }
+     ],
+     "role": "assistant"
+    },
+    {
+     "content": [
+      {
+       "content": "a.txt\nb.txt",
+       "tool_use_id": "call_1",
+       "type": "tool_result"
+      },
+      {
+       "text": "thanks, now summarize",
+       "type": "text"
+      }
+     ],
+     "role": "user"
+    }
+   ],
+   "model": "Spark",
+   "system": "You are a test agent.",
+   "tool_choice": {
+    "type": "auto"
+   },
+   "tools": [
+    {
+     "description": "Run a shell command.",
+     "input_schema": {
+      "properties": {
+       "command": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "command"
+      ],
+      "type": "object"
+     },
+     "name": "terminal"
+    }
+   ]
+  },
+  "unset": {
+   "max_tokens": 128000,
+   "messages": [
+    {
+     "content": "list files",
+     "role": "user"
+    },
+    {
+     "content": [
+      {
+       "id": "call_1",
+       "input": {
+        "command": "ls"
+       },
+       "name": "terminal",
+       "type": "tool_use"
+      }
+     ],
+     "role": "assistant"
+    },
+    {
+     "content": [
+      {
+       "content": "a.txt\nb.txt",
+       "tool_use_id": "call_1",
+       "type": "tool_result"
+      },
+      {
+       "text": "thanks, now summarize",
+       "type": "text"
+      }
+     ],
+     "role": "user"
+    }
+   ],
+   "model": "Spark",
+   "system": "You are a test agent.",
+   "tool_choice": {
+    "type": "auto"
+   },
+   "tools": [
+    {
+     "description": "Run a shell command.",
+     "input_schema": {
+      "properties": {
+       "command": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "command"
+      ],
+      "type": "object"
+     },
+     "name": "terminal"
+    }
+   ]
+  }
+ },
  "azure-foundry": {
   "api_mode": "chat_completions",
   "base_url": "https://example.openai.azure.com/openai/v1",

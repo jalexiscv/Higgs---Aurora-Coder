@@ -416,6 +416,9 @@ def host_mandated_api_mode(base_url: str = "") -> Optional[str]:
         return "anthropic_messages"
     if hostname == "api.anthropic.com" or url_lower.endswith("/anthropic"):
         return "anthropic_messages"
+    # Aurora's router serves the Messages API only: /v1/chat/completions is a 404 there.
+    if hostname == "aurora.dtacenter.com":
+        return "anthropic_messages"
     # Official OpenAI host family (canonical + us./eu. data-residency hosts) mandates Responses;
     # the shared predicate keeps this in lockstep with catalog filtering and listing authority.
     if is_official_openai_host(base_url) or hostname in _RESPONSES_NATIVE_HOSTS:

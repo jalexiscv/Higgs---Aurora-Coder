@@ -36,3 +36,10 @@ def test_reasoning_off_sends_no_thinking_parameter():
 def test_the_same_id_on_another_relay_keeps_the_manual_budget():
     kwargs = _build("AuroraAGI", {"enabled": True, "effort": "high"}, base_url="https://relay.example.test")
     assert kwargs["thinking"]["type"] == "enabled"
+
+
+def test_the_endpoint_mandates_the_messages_wire():
+    """The router has no /v1/chat/completions, so a caller that names no API mode must not get it."""
+    from aurora_cli.providers import host_mandated_api_mode
+
+    assert host_mandated_api_mode(AURORA) == "anthropic_messages"
