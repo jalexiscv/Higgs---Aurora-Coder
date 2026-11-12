@@ -25,10 +25,10 @@ If a skill is missing from this list but present in the repo, the catalog is reg
 
 | Skill | Description | Path |
 |-------|-------------|------|
+| [`aurora-agent`](../user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-aurora-agent.md) | Use, configure, theme, extend, and orchestrate Aurora Agent. | `autonomous-ai-agents/aurora-agent` |
 | [`claude-code`](../user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-claude-code.md) | Delegate coding to Claude Code CLI (features, PRs). | `autonomous-ai-agents/claude-code` |
 | [`codex`](../user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-codex.md) | Delegate coding to OpenAI Codex CLI (features, PRs). | `autonomous-ai-agents/codex` |
 | [`computer-use`](../user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-computer-use.md) | Drive the desktop background-first; escalate on signal. | `autonomous-ai-agents/computer-use` |
-| [`aurora-agent`](../user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-aurora-agent.md) | Use, configure, theme, extend, and orchestrate Aurora Agent. | `autonomous-ai-agents/aurora-agent` |
 
 ## creative
 

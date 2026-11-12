@@ -21,13 +21,16 @@ Use, configure, theme, extend, and orchestrate Aurora Agent.
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `aurora`, `setup`, `configuration`, `multi-agent`, `spawning`, `cli`, `gateway`, `bots`, `bot-mode`, `features`, `themes`, `skins`, `desktop-plugins`, `tui-widgets`, `petdex`, `development` |
-| Related skills | [`claude-code`](../../bundled/autonomous-ai-agents/autonomous-ai-agents-claude-code.md), [`codex`](../../bundled/autonomous-ai-agents/autonomous-ai-agents-codex.md), [`opencode`](../../optional/autonomous-ai-agents/autonomous-ai-agents-opencode.md) |
 
 ## Reference: full SKILL.md
 
 :::info
 The following is the complete skill definition that Aurora loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
+
+Aurora-Coder
+    related_skills: [claude-code, codex, opencode]
+---
 
 # Aurora Agent
 

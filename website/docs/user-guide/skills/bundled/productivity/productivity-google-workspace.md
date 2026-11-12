@@ -21,13 +21,16 @@ Gmail, Calendar, Drive, Docs, Sheets via gws CLI or Python.
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `Google`, `Gmail`, `Calendar`, `Drive`, `Sheets`, `Docs`, `Contacts`, `Email`, `OAuth` |
-| Related skills | [`himalaya`](../../bundled/email/email-himalaya.md) |
 
 ## Reference: full SKILL.md
 
 :::info
 The following is the complete skill definition that Aurora loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
+
+Aurora-Coder
+    related_skills: [himalaya]
+---
 
 # Google Workspace
 

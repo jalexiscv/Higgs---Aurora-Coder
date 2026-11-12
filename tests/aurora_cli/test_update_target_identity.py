@@ -282,8 +282,11 @@ def test_stable_zip_consumes_the_same_commit_through_the_real_swap(update_tree, 
     git(t.origin, 'archive', '--format=zip', '--prefix=aurora-agent-source/', f'--output={archive}', t.wanted)
     archive_bytes = archive.read_bytes()
     _publish_stable(monkeypatch, t)
+    from aurora_cli.source_releases import OFFICIAL_REPOSITORY
+
+    # The fixture's origin is a local path, so the release belongs to the official repository.
     routes = {
-        f'/jalexiscv/Higgs---Aurora-Coder/archive/{t.wanted}.zip': archive_bytes,
+        f'/{OFFICIAL_REPOSITORY}/archive/{t.wanted}.zip': archive_bytes,
     }
 
     class Handler(BaseHTTPRequestHandler):

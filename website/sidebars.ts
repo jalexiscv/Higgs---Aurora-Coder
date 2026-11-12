@@ -183,10 +183,10 @@ const sidebars: SidebarsConfig = {
                   key: 'skills-bundled-autonomous-ai-agents',
                   collapsed: true,
                   items: [
+                    'user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-aurora-agent',
                     'user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-claude-code',
                     'user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-codex',
                     'user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-computer-use',
-                    'user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-aurora-agent',
                   ],
                 },
                 {
@@ -402,8 +402,8 @@ const sidebars: SidebarsConfig = {
                   collapsed: true,
                   items: [
                     'user-guide/skills/optional/devops/devops-actual-setup',
-                    'user-guide/skills/optional/devops/devops-docker-management',
                     'user-guide/skills/optional/devops/devops-aurora-s6-container-supervision',
+                    'user-guide/skills/optional/devops/devops-docker-management',
                     'user-guide/skills/optional/devops/devops-inference-sh-cli',
                     'user-guide/skills/optional/devops/devops-pinggy-tunnel',
                     'user-guide/skills/optional/devops/devops-setup-wizard-generator',
@@ -605,9 +605,9 @@ const sidebars: SidebarsConfig = {
                   collapsed: true,
                   items: [
                     'user-guide/skills/optional/software-development/software-development-ast-grep',
+                    'user-guide/skills/optional/software-development/software-development-aurora-agent-skill-authoring',
                     'user-guide/skills/optional/software-development/software-development-code-wiki',
                     'user-guide/skills/optional/software-development/software-development-grill-me',
-                    'user-guide/skills/optional/software-development/software-development-aurora-agent-skill-authoring',
                     'user-guide/skills/optional/software-development/software-development-inspecting-aurora-desktop-dom',
                     'user-guide/skills/optional/software-development/software-development-node-inspect-debugger',
                     'user-guide/skills/optional/software-development/software-development-pr-lens',

@@ -100,8 +100,8 @@ aurora skills uninstall <skill-name>
 | Skill | Description |
 |-------|-------------|
 | [**actual-setup**](../user-guide/skills/optional/devops/devops-actual-setup.md) | Set up Actual Computer (actual.inc) inference in Aurora. |
-| [**docker-management**](../user-guide/skills/optional/devops/devops-docker-management.md) | Manage Docker containers, images, volumes, and Compose. |
 | [**aurora-s6-container-supervision**](../user-guide/skills/optional/devops/devops-aurora-s6-container-supervision.md) | Modify or debug s6 services in the Aurora Docker image. |
+| [**docker-management**](../user-guide/skills/optional/devops/devops-docker-management.md) | Manage Docker containers, images, volumes, and Compose. |
 | [**inference-sh-cli**](../user-guide/skills/optional/devops/devops-inference-sh-cli.md) | Run 150+ AI apps (image, video, LLM) via inference.sh CLI. |
 | [**pinggy-tunnel**](../user-guide/skills/optional/devops/devops-pinggy-tunnel.md) | Zero-install localhost tunnels over SSH via Pinggy. |
 | [**setup-wizard-generator**](../user-guide/skills/optional/devops/devops-setup-wizard-generator.md) | Generate a bash wizard guiding a human through manual setup. |
@@ -258,9 +258,9 @@ aurora skills uninstall <skill-name>
 | Skill | Description |
 |-------|-------------|
 | [**ast-grep**](../user-guide/skills/optional/software-development/software-development-ast-grep.md) | AST-aware structural code search and rewrite via ast-grep. |
+| [**aurora-agent-skill-authoring**](../user-guide/skills/optional/software-development/software-development-aurora-agent-skill-authoring.md) | Author in-repo SKILL.md files: frontmatter and structure. |
 | [**code-wiki**](../user-guide/skills/optional/software-development/software-development-code-wiki.md) | Generate wiki docs + Mermaid diagrams for any codebase. |
 | [**grill-me**](../user-guide/skills/optional/software-development/software-development-grill-me.md) | Adversarial plan interview before implementation. |
-| [**aurora-agent-skill-authoring**](../user-guide/skills/optional/software-development/software-development-aurora-agent-skill-authoring.md) | Author in-repo SKILL.md files: frontmatter and structure. |
 | [**inspecting-aurora-desktop-dom**](../user-guide/skills/optional/software-development/software-development-inspecting-aurora-desktop-dom.md) | Read the live Aurora desktop DOM/CSS over CDP. |
 | [**node-inspect-debugger**](../user-guide/skills/optional/software-development/software-development-node-inspect-debugger.md) | Debug Node.js via --inspect + Chrome DevTools Protocol CLI. |
 | [**pr-lens**](../user-guide/skills/optional/software-development/software-development-pr-lens.md) | Draw code changes as animated architecture/data-flow SVGs. |
