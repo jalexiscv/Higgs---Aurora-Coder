@@ -531,8 +531,36 @@ class SlowConnection:
             time.sleep(0.01)
             return handler() if handler is not None else 0
         return self._conn.set_progress_handler(slow, 5)
+    def execute(self, sql, *a):
+        t = time.monotonic()
+        try:
+            return self._conn.execute(sql, *a)
+        finally:
+            DIAG.append(("exec", str(sql)[:40], round(t - started, 3), round(time.monotonic() - t, 3)))
     def close(self):
-        return self._conn.close()
+        t = time.monotonic()
+        try:
+            return self._conn.close()
+        finally:
+            DIAG.append(("close", "", round(t - started, 3), round(time.monotonic() - t, 3)))
+
+DIAG = []
+import contextlib
+import gateway.runtime_ownership as _ro
+_real_em = _ro.exclusive_maintenance
+@contextlib.contextmanager
+def _timed_em(*a, **kw):
+    t = time.monotonic()
+    try:
+        with _real_em(*a, **kw):
+            DIAG.append(("lock-acquired", str(kw.get("purpose")), round(t - started, 3), round(time.monotonic() - t, 3)))
+            try:
+                yield
+            finally:
+                DIAG.append(("lock-releasing", "", round(time.monotonic() - started, 3), 0))
+    finally:
+        DIAG.append(("lock-released", "", round(time.monotonic() - started, 3), 0))
+_ro.exclusive_maintenance = _timed_em
 
 def holding_lock():
     """Only connections opened while THIS process holds gateway.lock are slowed."""
@@ -547,7 +575,9 @@ def slowed(path, *a, **kw):
     read_only = "mode=ro" in str(path)
     if holding_lock() and (phase == "integrity") == read_only:
         print("slowed", flush=True)  # this process holds gateway.lock and the slow phase begins
+        DIAG.append(("slowed", str(path)[-30:], round(time.monotonic() - started, 3), 0))
         return SlowConnection(conn)
+    DIAG.append(("connect", ("ro " if read_only else "rw ") + str(holding_lock()), round(time.monotonic() - started, 3), 0))
     return conn
 
 ssr.connect_tracked = slowed
@@ -555,8 +585,10 @@ started = time.monotonic()
 print("started", flush=True)
 try:
     _open_session_db_at_path(Path(sys.argv[1]), read_only=True).close()
+    print("DIAG T", json.dumps(DIAG), flush=True)
     print("RESULT 200", time.monotonic() - started, flush=True)
 except HTTPException as exc:
+    print("DIAG T", json.dumps(DIAG), flush=True)
     print("RESULT", exc.status_code, time.monotonic() - started, exc.detail, flush=True)
 '''
 
@@ -588,12 +620,19 @@ def test_slow_browse_reconcile_gives_up_inside_its_budget_and_boot_waits_it_out(
     assert browse.stdout.readline().strip() == "started"
     assert browse.stdout.readline().strip() == "slowed", "the slow phase never ran under the lock"
     booting = ProfileOwnership()
+    t_wait = time.monotonic()
     try:
         bootstrap._reserve_waiting_out_browse_reconcile(booting, [home])  # default wait: must not raise
         assert booting.owns(home)
+    except BaseException:
+        print("DIAG parent waited", round(time.monotonic() - t_wait, 3))
+        print("DIAG OUT", browse.communicate(timeout=60)[0])
+        raise
     finally:
         booting.close()
+    print("DIAG parent waited ok", round(time.monotonic() - t_wait, 3))
     out = browse.communicate(timeout=60)[0]
+    print("DIAG OUT", out)
     result = next(line for line in out.splitlines() if line.startswith("RESULT"))
     _, status, elapsed, *detail = result.split(" ", 3)
     assert status == "503", out
