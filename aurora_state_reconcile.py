@@ -232,8 +232,10 @@ def _apply_additive_schema(path: Path, budget: _Budget | None = None) -> None:
     budget.check()
     with closing(connect_tracked(path, tracking_path=path, timeout=budget.busy_timeout(),
                                  isolation_level=None)) as conn:
-        _reapply_durability_barriers(conn)
+        # Armed first: on macOS the barriers are pragmas that load the schema, which on a slow
+        # store took longer than the whole budget while gateway.lock was held.
         budget.arm(conn)
+        _reapply_durability_barriers(conn)
         try:
             # Inside the handler below: a budget already spent interrupts BEGIN itself.
             conn.execute('BEGIN IMMEDIATE')
