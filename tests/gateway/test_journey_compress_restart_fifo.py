@@ -87,7 +87,9 @@ def test_followers_survive_compression_and_restart_in_order_exactly_once(tmp_pat
         'model': {'provider': 'custom', 'default': 'original', 'base_url': url, 'context_length': 64000},
         'auxiliary': {'title_generation': {'enabled': False},
                       'compression': {'provider': 'custom', 'model': 'summary', 'base_url': url}},
-        'compression': {'protect_first_n': 1, 'protect_last_n': 2, 'threshold_tokens': 12000,
+        # 13700 sits midway between the estimates of the fourth and fifth pressure turns (~11.9k and
+        # ~15.5k), so the fifth compacts whatever the system prompt's host paths and date add.
+        'compression': {'protect_first_n': 1, 'protect_last_n': 2, 'threshold_tokens': 13700,
                         'threshold': 0.5, 'in_place': False},
         'platform_toolsets': {'cli': []}}))
     (home / 'models_dev_cache.json').write_text(json.dumps({'custom': {'id': 'custom', 'models': {
