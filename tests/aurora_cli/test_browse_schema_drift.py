@@ -557,9 +557,6 @@ try:
     _open_session_db_at_path(Path(sys.argv[1]), read_only=True).close()
     print("RESULT 200", time.monotonic() - started, flush=True)
 except HTTPException as exc:
-    import sqlite3, traceback
-    print("DIAG sqlite", sqlite3.sqlite_version, sys.platform, flush=True)
-    print("DIAG TRACE", "".join(traceback.format_exception(exc)).replace("\n", " || "), flush=True)
     print("RESULT", exc.status_code, time.monotonic() - started, exc.detail, flush=True)
 '''
 
@@ -597,7 +594,6 @@ def test_slow_browse_reconcile_gives_up_inside_its_budget_and_boot_waits_it_out(
     finally:
         booting.close()
     out = browse.communicate(timeout=60)[0]
-    print("DIAG OUT", out)
     result = next(line for line in out.splitlines() if line.startswith("RESULT"))
     _, status, elapsed, *detail = result.split(" ", 3)
     assert status == "503", out
@@ -607,6 +603,54 @@ def test_slow_browse_reconcile_gives_up_inside_its_budget_and_boot_waits_it_out(
     assert "`aurora -p scribe sessions repair`" in detail and "gateway" not in detail.lower()
     assert _file_state(path) == before
     assert "last_read_at" not in _session_columns(path)
+
+
+def test_a_budget_spent_before_the_catch_up_transaction_opens_is_still_the_too_slow_refusal(tmp_path, monkeypatch):
+    """The budget can run out before the DDL starts (slow durability pragmas on a cold disk), and
+    sqlite then interrupts BEGIN itself, as it does on macOS. That is the same too-slow refusal,
+    not a corrupt-schema report."""
+    import aurora_cli.sqlite_safe_read as ssr
+    import aurora_state_reconcile as reconcile
+
+    class ConsultsItsHandlerOnBegin:
+        """A real connection that asks its progress handler before opening the transaction."""
+        def __init__(self, conn):
+            self.__dict__.update(_conn=conn, _handler=None)
+        def __getattr__(self, name):
+            return getattr(self._conn, name)
+        def __setattr__(self, name, value):
+            setattr(self._conn, name, value)
+        def set_progress_handler(self, handler, n):
+            self.__dict__["_handler"] = handler
+            return self._conn.set_progress_handler(handler, n)
+        def execute(self, sql, *args):
+            if sql == "BEGIN IMMEDIATE" and self._handler is not None and self._handler():
+                raise sqlite3.OperationalError("interrupted")
+            return self._conn.execute(sql, *args)
+
+    class SpentBeforeTheWrite(reconcile._Budget):
+        """The read-only verification fits; the budget is gone once the writing connection is armed."""
+        def arm(self, conn):
+            if isinstance(conn, ConsultsItsHandlerOnBegin):
+                self.deadline = self._clock()
+            super().arm(conn)
+
+    original = ssr.connect_tracked
+
+    def connect(path, *args, **kwargs):
+        conn = original(path, *args, **kwargs)
+        return conn if "mode=ro" in str(path) else ConsultsItsHandlerOnBegin(conn)
+
+    monkeypatch.setattr(reconcile, "_Budget", SpentBeforeTheWrite)
+    monkeypatch.setattr(ssr, "connect_tracked", connect)
+    path = _lagging_store_with_history(_profile_home(tmp_path), rows=10)
+    before = _file_state(path)
+    with pytest.raises(HTTPException) as caught:
+        _open_session_db_at_path(path, read_only=True)
+    detail = str(caught.value.detail)
+    assert caught.value.status_code == 503
+    assert "nothing was changed" in detail and "corrupt" not in detail
+    assert _file_state(path) == before
 
 
 def test_equal_cardinality_corrupt_index_plus_drift_is_not_written(tmp_path):
