@@ -87,7 +87,9 @@ def test_followers_survive_compression_and_restart_in_order_exactly_once(tmp_pat
         'model': {'provider': 'custom', 'default': 'original', 'base_url': url, 'context_length': 64000},
         'auxiliary': {'title_generation': {'enabled': False},
                       'compression': {'provider': 'custom', 'model': 'summary', 'base_url': url}},
-        'compression': {'protect_first_n': 1, 'protect_last_n': 2, 'threshold_tokens': 12000,
+        # 13700 sits midway between the estimates of the fourth and fifth pressure turns (~11.9k and
+        # ~15.5k), so the fifth compacts whatever the system prompt's host paths and date add.
+        'compression': {'protect_first_n': 1, 'protect_last_n': 2, 'threshold_tokens': 13700,
                         'threshold': 0.5, 'in_place': False},
         'platform_toolsets': {'cli': []}}))
     (home / 'models_dev_cache.json').write_text(json.dumps({'custom': {'id': 'custom', 'models': {
@@ -185,21 +187,6 @@ def test_followers_survive_compression_and_restart_in_order_exactly_once(tmp_pat
                 assert retried['admission_id'] == admission_id, (input_id, retried)
             return await call(ws, 'session.resume', session_id=sid)
 
-    def _diag():
-        print('DIAG admissions', json.dumps(admissions(), default=str))
-        print('DIAG sessions', json.dumps(rows('SELECT * FROM sessions'), default=str)[:6000])
-        print('DIAG before', json.dumps({k: v for k, v in before.items() if k != 'compacted'}, default=str)[:3000])
-        for i, r in enumerate(peer.requests):
-            turns = [str(m.get('content', ''))[:14] for m in json.loads(r['wire'])]
-            print('DIAG req', i, r['model'], repr(r['text'][:24]), len(r['wire']),
-                  'SUMMARY' if 'SUMMARY_RETAINED_FACTS' in r['wire'] else '-', turns)
-        print('DIAG SYSTEM', repr(json.loads(peer.requests[0]['wire'])[0]['content']))
-        for sid_row in rows('SELECT id FROM sessions'):
-            print('DIAG transcript', sid_row['id'], [(i, role, str(c)[:20]) for i, role, c in transcript(sid_row['id'])])
-        for log in sorted(home.rglob('*.log')):
-            print('DIAG LOG', log)
-            print(log.read_text(errors='replace')[-12000:])
-
     try:
         with daemon(root, home, env, barrier=False) as (owner, desc):
             asyncio.run(first(desc, owner))
@@ -209,8 +196,6 @@ def test_followers_survive_compression_and_restart_in_order_exactly_once(tmp_pat
         order = [r['text'] for r in peer.requests if r['model'] == 'original' and r['text'] in FOLLOWERS]
         assert order == list(FOLLOWERS), order
         assert executed(compacting['text'][:12]) == before['compacting_requests'], 'compacted turn replayed'
-        _diag()
-        assert False, 'DIAG forced failure so the trace is printed'
         for name in FOLLOWERS:
             wire = next(r['wire'] for r in peer.requests if r['text'] == name)
             # protect_first_n keeps PRESSURE_0 verbatim; the compacted middle is only inside the summary.
