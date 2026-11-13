@@ -1,0 +1,52 @@
+name: Diagnose CI-only failures (temporary)
+
+on:
+  push:
+    branches: ['claude/exciting-pasteur-j528t5']
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux journey
+            runner: ubuntu-24.04
+            files: tests/gateway/test_journey_compress_restart_fifo.py
+            marker: not integration and not live
+          - name: macos schema drift
+            runner: macos-latest
+            files: tests/aurora_cli/test_browse_schema_drift.py
+            marker: platforms and not integration
+          - name: windows git trampoline
+            runner: windows-2025
+            files: tests/aurora_cli/test_git_trampoline_windows_live.py
+            marker: platforms and not integration
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+
+      - name: Set up locked Python and test dependencies
+        uses: ./.github/actions/setup-pm
+        with:
+          packages: ${{ runner.os == 'Windows' && 'git,ripgrep,pnpm' || 'ripgrep,pnpm' }}
+          extras: '["all", "anthropic", "mistral", "fal", "modal", "daytona", "parallel-web", "keychain"]'
+          test-environment: 'true'
+          prune-python-cache: true
+
+      - name: Run the failing file with diagnostics
+        shell: bash
+        run: |
+          set -uo pipefail
+          scripts/run_tests.sh --files "${{ matrix.files }}" -- -m "${{ matrix.marker }}" -vv --tb=long -rA
+        env:
+          AURORA_TEST_FILE_RETRIES: '0'
+          OPENROUTER_API_KEY: ''
+          OPENAI_API_KEY: ''
+          NOUS_API_KEY: ''

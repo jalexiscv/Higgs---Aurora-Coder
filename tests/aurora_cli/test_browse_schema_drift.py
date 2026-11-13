@@ -557,6 +557,9 @@ try:
     _open_session_db_at_path(Path(sys.argv[1]), read_only=True).close()
     print("RESULT 200", time.monotonic() - started, flush=True)
 except HTTPException as exc:
+    import sqlite3, traceback
+    print("DIAG sqlite", sqlite3.sqlite_version, sys.platform, flush=True)
+    print("DIAG TRACE", "".join(traceback.format_exception(exc)).replace("\n", " || "), flush=True)
     print("RESULT", exc.status_code, time.monotonic() - started, exc.detail, flush=True)
 '''
 
