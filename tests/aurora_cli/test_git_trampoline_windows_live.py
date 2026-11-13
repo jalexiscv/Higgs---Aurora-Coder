@@ -7,9 +7,10 @@ helpers against the runner's genuine Git-for-Windows install plus a real
 broken-trampoline stand-in (a .bat that reproduces the launcher's
 "BUG (fork bomb)" guard output and refuses to run).
 
-windows-latest ships full Git for Windows at ``C:\\Program Files\\Git`` with
-the real ``mingw64\\libexec\\git-core\\git.exe`` — exactly the layout the
-locator targets — so the swap path is exercised end to end.
+The hosted runners ship full Git for Windows at ``C:\\Program Files\\Git`` with
+the real ``<arch>\\libexec\\git-core\\git.exe`` (``ucrt64`` on x64, ``clangarm64`` on
+arm64; ``mingw64`` on older images) — the layouts the locator targets — so the
+swap path is exercised end to end.
 """
 
 from __future__ import annotations
@@ -57,26 +58,6 @@ class TestGitTrampolineLive:
     def test_locate_real_git_finds_runner_git_core(self):
         from aurora_cli import update_cmd
 
-        import os, shutil, traceback
-        from aurora_cli import update_cmd_git
-        from aurora_cli.update_custody import run_git
-        print('DIAG which git', shutil.which('git'), 'PATH', os.environ.get('PATH'))
-        cands = [Path(base) / 'Git' / arch / 'libexec' / 'git-core' / 'git.exe'
-                 for base in (r'C:\Program Files', r'C:\Program Files (x86)')
-                 for arch in ('clangarm64', 'mingw64', 'mingw32')] + update_cmd_git._portable_git_candidates()
-        for c in cands:
-            print('DIAG cand', c, c.exists())
-            if c.exists():
-                try:
-                    r = run_git([str(c)], ['--version'], timeout=15, **update_cmd_git._GIT_TEXT_KW)
-                    print('DIAG run_git', r.returncode, repr(r.stdout), repr(r.stderr))
-                except Exception:
-                    print('DIAG run_git raised', traceback.format_exc())
-                r = subprocess.run([str(c), '--version'], capture_output=True, text=True, check=False)
-                print('DIAG plain', r.returncode, repr(r.stdout), repr(r.stderr))
-                print('DIAG probe', update_cmd_git._probe_fork_bomb([str(c)]))
-        for d in (r'C:\Program Files\Git', r'C:\Program Files\Git\mingw64\libexec\git-core'):
-            print('DIAG ls', d, sorted(os.listdir(d))[:40] if os.path.isdir(d) else 'MISSING')
         real = update_cmd._locate_real_git()
         # windows-latest ships Git for Windows under Program Files with the
         # canonical git-core layout the locator searches first.

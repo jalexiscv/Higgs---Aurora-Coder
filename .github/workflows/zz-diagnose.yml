@@ -11,23 +11,17 @@ jobs:
   diagnose:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 30
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: linux journey
+          - name: linux slice 1 of 8
             runner: ubuntu-24.04
-            files: tests/gateway/test_journey_compress_restart_fifo.py
-            marker: not integration and not live
           - name: macos schema drift
             runner: macos-latest
-            files: tests/aurora_cli/test_browse_schema_drift.py
-            marker: platforms and not integration
-          - name: windows git trampoline
+          - name: windows git layout
             runner: windows-2025
-            files: tests/aurora_cli/test_git_trampoline_windows_live.py
-            marker: platforms and not integration
     steps:
       - name: Checkout code
         uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
@@ -36,17 +30,31 @@ jobs:
         uses: ./.github/actions/setup-pm
         with:
           packages: ${{ runner.os == 'Windows' && 'git,ripgrep,pnpm' || 'ripgrep,pnpm' }}
-          extras: '["all", "anthropic", "mistral", "fal", "modal", "daytona", "parallel-web", "keychain"]'
+          extras: '["all", "anthropic", "bedrock", "mistral", "fal", "modal", "daytona", "parallel-web", "keychain"]'
           test-environment: 'true'
           prune-python-cache: true
 
-      - name: Run the failing file with diagnostics
-        shell: bash
-        run: |
-          set -uo pipefail
-          scripts/run_tests.sh --files "${{ matrix.files }}" -- -m "${{ matrix.marker }}" -vv --tb=long -rA
+      - name: Linux, the whole slice the journey test fails in
+        if: runner.os == 'Linux'
+        run: just test-all
         env:
-          AURORA_TEST_FILE_RETRIES: '0'
+          AURORA_TEST_SLICE: 1/8
+          AURORA_TEST_FORKSERVER: "1"
+          AURORA_TEST_FILE_TIMEOUT: 600
           OPENROUTER_API_KEY: ''
           OPENAI_API_KEY: ''
           NOUS_API_KEY: ''
+
+      - name: macOS, the schema drift file
+        if: runner.os == 'macOS'
+        shell: bash
+        run: scripts/run_tests.sh --files "tests/aurora_cli/test_browse_schema_drift.py" -- -m "platforms and not integration" -vv --tb=long
+        env:
+          AURORA_TEST_FILE_RETRIES: '0'
+
+      - name: Windows, the git layout files
+        if: runner.os == 'Windows'
+        shell: bash
+        run: scripts/run_tests.sh --files "tests/aurora_cli/test_git_trampoline_windows_live.py;tests/tools/test_local_env_windows_msys.py;tests/aurora_cli/test_cmd_update.py" -- -m "platforms and not integration" -vv --tb=long
+        env:
+          AURORA_TEST_FILE_RETRIES: '0'

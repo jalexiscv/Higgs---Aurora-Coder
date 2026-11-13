@@ -597,6 +597,7 @@ def test_slow_browse_reconcile_gives_up_inside_its_budget_and_boot_waits_it_out(
     finally:
         booting.close()
     out = browse.communicate(timeout=60)[0]
+    print("DIAG OUT", out)
     result = next(line for line in out.splitlines() if line.startswith("RESULT"))
     _, status, elapsed, *detail = result.split(" ", 3)
     assert status == "503", out
