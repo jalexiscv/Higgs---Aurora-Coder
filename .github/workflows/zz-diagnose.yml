@@ -36,11 +36,10 @@ jobs:
 
       - name: Linux, the whole slice the journey test fails in
         if: runner.os == 'Linux'
-        run: just test-all
+        run: scripts/run_tests.sh --files "tests/gateway/test_journey_compress_restart_fifo.py" -- -m "not integration and not live" -vv --tb=short
         env:
-          AURORA_TEST_SLICE: 1/8
           AURORA_TEST_FORKSERVER: "1"
-          AURORA_TEST_FILE_TIMEOUT: 600
+          AURORA_TEST_FILE_RETRIES: '0'
           OPENROUTER_API_KEY: ''
           OPENAI_API_KEY: ''
           NOUS_API_KEY: ''

@@ -193,6 +193,7 @@ def test_followers_survive_compression_and_restart_in_order_exactly_once(tmp_pat
             turns = [str(m.get('content', ''))[:14] for m in json.loads(r['wire'])]
             print('DIAG req', i, r['model'], repr(r['text'][:24]), len(r['wire']),
                   'SUMMARY' if 'SUMMARY_RETAINED_FACTS' in r['wire'] else '-', turns)
+        print('DIAG SYSTEM', repr(json.loads(peer.requests[0]['wire'])[0]['content']))
         for sid_row in rows('SELECT id FROM sessions'):
             print('DIAG transcript', sid_row['id'], [(i, role, str(c)[:20]) for i, role, c in transcript(sid_row['id'])])
         for log in sorted(home.rglob('*.log')):
@@ -209,6 +210,7 @@ def test_followers_survive_compression_and_restart_in_order_exactly_once(tmp_pat
         assert order == list(FOLLOWERS), order
         assert executed(compacting['text'][:12]) == before['compacting_requests'], 'compacted turn replayed'
         _diag()
+        assert False, 'DIAG forced failure so the trace is printed'
         for name in FOLLOWERS:
             wire = next(r['wire'] for r in peer.requests if r['text'] == name)
             # protect_first_n keeps PRESSURE_0 verbatim; the compacted middle is only inside the summary.
